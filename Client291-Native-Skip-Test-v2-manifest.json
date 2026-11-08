@@ -1,0 +1,38 @@
+{
+  "status": "NATIVE_BUILTIN_SKIP_COMPARISON_V2_PREPARED; WINDOWS_PENDING",
+  "archive_sha256": "b980060e7bb7237a2d1d6e68be286a69c36e154aa24365da70e29f3e5986e8a1",
+  "bytes": 6024,
+  "files": {
+    "Test-Native-Skip.ps1": "cc3c2729c3ba9f8eb1b90a6b415398bfe2ed8d68b0a597a8c0f64c10cc6e6a20",
+    "Palaist-Testu.cmd": "08b4a2b415ff30c455f42b74b9513052f629631494747a2506ab7782eca7a530",
+    "Atjaunot-Originalu.cmd": "691be2613b397059b0d85bfe643821cc8c406546668a26c65c1a424667270314",
+    "README.txt": "b96df64bdbf033b902dd2b976dcfcc1036753c58a7d2ae354a62c4c7ac60d5c7"
+  },
+  "arguments": "breaklee skip gameguard",
+  "SDK_temporarily_disabled_by_existing_audio_copy": true,
+  "original_SDK_backup": "F:\\CABAL_291_TEST\\.client291-native-skip-v2\\original-libogg.dll",
+  "xdata_file_or_Main_or_server_changed_by_script": false,
+  "native_xdata_skip_branch_locally_checked": true,
+  "actual_runtime_argv_and_native_skip_helper_guarded": true,
+  "validation": [
+    "PowerShell parse",
+    "CSharp reader compile",
+    "five native skip helper/loader instruction cases with controlled argv/strcmp",
+    "real FileReplace lifecycle checks",
+    "ZIP CRC/byte identity"
+  ],
+  "lifecycle_checks": [
+    "inspect-no-client-changes",
+    "real-FileReplace-apply-preserves-original-and-source",
+    "idempotent-apply",
+    "real-FileReplace-restore-and-idempotence",
+    "unknown-target-refused",
+    "corrupt-source-refused",
+    "corrupt-backup-refused",
+    "running-game-refused-without-termination",
+    "Main-D3D-source-original-preserved"
+  ],
+  "Windows_startup_verified": false,
+  "local_transport_verified": false,
+  "authentication_verified": false
+}
