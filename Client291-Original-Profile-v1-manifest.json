@@ -1,0 +1,24 @@
+{
+  "status": "READ_ONLY_ORIGINAL_PROFILE_PREPARED; WINDOWS_PENDING",
+  "archive_sha256": "0e5c9d45dd403748de85ddd0c7a788c50dc645b583573881c8dfd572c6a37f6c",
+  "archive_bytes": 3325,
+  "files": {
+    "Read-Original-Profile.ps1": "46c160945885d21f84fbebd17da1370e3a45aa0f4c3f149f257e92c4daa54ad6",
+    "Palaist-Nolasisanu.cmd": "206f6c4741c875d237d2d1b1e185951adf583969c261e4002d851a217c0df472",
+    "README.txt": "d469f8e8d21b7d8949582959be615d287212bfc3e47807322dfedab3da242697"
+  },
+  "validation": [
+    "PowerShell7.4.6 parser",
+    "CSharp reader compiled with dotnet",
+    "ZIP CRC and extracted byte identity"
+  ],
+  "windows_execution_verified": false,
+  "installs_dll": false,
+  "process_memory_writes": false,
+  "server_changes": false,
+  "purpose": "same-process mode/source/cache before and following requested Login, missing from old four-field after-click result",
+  "sampling_ms": 500,
+  "observing_exact_function_call": false,
+  "original_recovery_login_user_confirmed": true,
+  "candidate81ad_withdrawn": true
+}
