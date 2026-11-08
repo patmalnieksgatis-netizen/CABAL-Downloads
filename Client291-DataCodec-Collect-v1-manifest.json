@@ -1,0 +1,36 @@
+{
+  "status": "READ_ONLY_ORIGINAL_SDK_DATA_CODEC_COLLECTOR_PREPARED; WINDOWS_PENDING",
+  "archive_sha256": "d1d090719193260308985189bd236de16b218a30eaa7d5683b6c75f7a6b43a85",
+  "bytes": 6355,
+  "files": {
+    "Collect-DataCodec.ps1": "f12e77ff73fc71af57cf1929549e4406a9e4da42f18ad3e07990b72bb1bf3201",
+    "Palaist-Komplektaciju.cmd": "e68fad797540d2bcfadf9ba10f71d36435221d415e8c625eb08de1113503c690",
+    "README.txt": "2308648de1413b27bdae7f3bbe1a2ca655f02960a01d0dfdba8fca5a6afbbada"
+  },
+  "actual_client_files_changed": false,
+  "login_requested": false,
+  "selected_files": [
+    "Data/cabal.enc",
+    "Data/Language/English/cabal_msg.enc",
+    "Data/Language/Korean/cabal_msg.enc"
+  ],
+  "SDK_main_entry_targets": [
+    "0x1402b5550",
+    "0x14040e184"
+  ],
+  "maximum_code_capture_bytes": 6144,
+  "readonly_constant_capture_maximum": {
+    "count": 32,
+    "bytes_each": 64,
+    "references_heuristic": true,
+    "mutable_or_heap_data": false,
+    "pointer_dereference": false
+  },
+  "validation": [
+    "PowerShell parser",
+    "embedded CSharp compile",
+    "ZIP CRC/extracted byte identity"
+  ],
+  "Windows_execution_verified": false,
+  "public_package_has_client_data_or_runtime_capture": false
+}
