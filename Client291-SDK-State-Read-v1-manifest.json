@@ -1,0 +1,29 @@
+{
+  "status": "TWO_FIELD_READ_ONLY_SDK_STATE_CAPTURE_PREPARED; WINDOWS_PENDING",
+  "archive_sha256": "eeabb026c80d53450f5defd97a00111e96ffc62f75ed2d82bb9aede1eef4a04a",
+  "bytes": 5267,
+  "files": {
+    "Read-SDK-State.ps1": "60820e4e330a453559504f1739099da51b5e9ea37a5a34e836d5e2ea8aabef72",
+    "Palaist-Nolasisanu.cmd": "6729aa9928d1152b3a3878c78c4f8b417ff3ff802a1da69da6c9a5b6f8cc107f",
+    "README.txt": "5398571821445ea8daa2a40facbeb44e3d1a2c6bc5f288243e898b3ecf710592"
+  },
+  "target_object_rva": "0x9cc320",
+  "fields_offsets": [
+    0,
+    8
+  ],
+  "native_width_bits": 32,
+  "offset0_reread_for_consistency": true,
+  "predicate_and_accessor_code_hash_guard": true,
+  "client_disk_or_memory_writes": false,
+  "server_changes": false,
+  "sdk_preserved": true,
+  "validation": [
+    "PowerShell parser",
+    "embedded CSharp compile",
+    "guard-hash computation against actual capture",
+    "ZIP CRC/extracted byte identity"
+  ],
+  "windows_execution_verified": false,
+  "scope": "No new SDK helper code graph, just values consumed by already decoded equality check. Do not assign mode/auth semantics or bypass the check based on raw numbers."
+}
