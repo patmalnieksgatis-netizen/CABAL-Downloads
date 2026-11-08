@@ -1,0 +1,23 @@
+{
+  "status": "TARGETED_READ_ONLY_CAPTURE_PREPARED; WINDOWS_PENDING",
+  "source_file": "tools/Read-Client291-EndpointCode.ps1",
+  "archive_sha256": "38009b7404d6b264cda899496b0b1526a838fc57c7f44f51bca67e8cf1b76070",
+  "bytes": 4385,
+  "files": {
+    "Read-Endpoint-Code.ps1": "443b503521e0fe24e67be9b87216e9352f9bc3fab0d121db5f4f1961aba03e5b",
+    "Palaist-Nolasisanu.cmd": "3fbb2937c0c9f79955e7099db5f0615c51e9be6d773eeacc70a963a7b1424ee4",
+    "README.txt": "e532096c1f0f7fea87fd0ca39a10ba51f73d84a1ea08d4f90e413f4055b6aa0f"
+  },
+  "captures_executable_bytes": 1024,
+  "target_sdk_rva": "0xacf83c",
+  "context": "earlier code capture stopped at wrapper; body not present in static file raw sections",
+  "changes_client_disk_files": false,
+  "process_writes_or_hooks": false,
+  "server_changes": false,
+  "validation": [
+    "PowerShell parser",
+    "embedded CSharp compilation",
+    "ZIP CRC and extracted byte identity"
+  ],
+  "windows_execution_verified": false
+}
