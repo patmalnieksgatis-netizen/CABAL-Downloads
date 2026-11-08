@@ -1,0 +1,27 @@
+{
+  "status": "ORIGINAL_SDK_FIXED_HELPER_CAPTURE_PREPARED; WINDOWS_PENDING",
+  "archive_sha256": "f683f1580dcc8f941e887eb6cd7f7b1661fb1c5e17d7aea2572f7f4a6d65d374",
+  "bytes": 5036,
+  "files": {
+    "Read-SDK-Route.ps1": "4e7bda0886f2d96bdac15efb2fb475755a2d1bdb7b9ac4851da763c49731be8c",
+    "Palaist-Nolasisanu.cmd": "88464cdb8e88e3ae4e2922fc7a45a547419bbc9adce44e04863befe448068568",
+    "README.txt": "98d634bcd1cbca0498ccfab9cee156fb5fef045af8f50c7a3813f35620a1427f"
+  },
+  "sdk_preserved": true,
+  "client_disk_or_process_writes": false,
+  "server_changes": false,
+  "capture_total_executable_bytes": 2560,
+  "fixed_extra_rvas": [
+    "0x5e3300",
+    "0xad14e2",
+    "0x5c3450"
+  ],
+  "additional_data_read": "known endpoint branch flag4bytes at SDK+0x9c4348",
+  "validation": [
+    "PowerShell parser",
+    "embedded CSharp compile",
+    "ZIP CRC and byte identity"
+  ],
+  "windows_execution_verified": false,
+  "stop_boundary": "No automatic recursive expansion. If helper bodies require unavailable publisher initialization/configuration, state the blocker rather than another speculative DLL or SDK removal."
+}
