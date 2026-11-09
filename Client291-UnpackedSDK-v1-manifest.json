@@ -1,0 +1,29 @@
+{
+  "file": "Client291-UnpackedSDK-v1.zip",
+  "bytes": 6845,
+  "sha256": "250c5c16cafd75f976564a7d76f04bd8edf025dea0628692a4f0f80136e81d59",
+  "members": {
+    "Read-Client291-UnpackedSDK.ps1": {
+      "bytes": 5546,
+      "sha256": "5e77e52f276239a25a4e479110f69311d358ee751bdbedaa743ca6d595cb028d"
+    },
+    "Client291-SDKImageRead.cs": {
+      "bytes": 10173,
+      "sha256": "c60216c700bd25d46e39fe1a812a890380cb9be3529a2f24c7434d5cd455ecbd"
+    },
+    "Nolasit-SDK.cmd": {
+      "bytes": 190,
+      "sha256": "82b3d70935a8705b79f2b66a468462d01f8c902aefce21c8348e9f56da11bfbc"
+    },
+    "README.txt": {
+      "bytes": 1000,
+      "sha256": "06f4043b9a65661bcb2f41896037431fcda0c7adfa85b4814cfb837170b8a3c7"
+    }
+  },
+  "only_own_reader_sources": true,
+  "client_binaries_in_package": false,
+  "client_disk_writes": false,
+  "process_memory_writes": false,
+  "login_requested": false,
+  "windows_capture_verified": false
+}
