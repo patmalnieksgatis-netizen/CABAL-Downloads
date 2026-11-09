@@ -1,0 +1,26 @@
+{
+  "file": "Client291-LoginBootstrap-v3.zip",
+  "bytes": 16196,
+  "sha256": "dc367c83d7b488f929fbec10f08a2d992281765460e870523f2a444b8f544e7b",
+  "members": {
+    "Client291-LoginBootstrap.cs": "ce848668948985531403b3808edc357d2eaf22e82d99908cc2090f8f1261da2d",
+    "Start-Client291-LoginBootstrap.ps1": "62ca39dd540a7e08e3aceed89e2e6c91ccea8a53e4d2e116c60088c7b71baa16",
+    "client291-login-bootstrap-v3.json": "e907d8634f4aa4eeab8e83fa2ddec5cabcf86074739367c59f32ea0e37f6409c",
+    "Palaist-Labojumu.cmd": "99fb0c2739c3fe9b7d3052839a3a7b5747713017871e6c0b37e2ec776918ea19",
+    "README.txt": "3fd0d1850458039bde9776b7b927f26bc65169268f148a8e8616bf9dcfe4426f"
+  },
+  "only_own_sources_and_metadata": true,
+  "windows_execution_verified": false,
+  "login_verified": false,
+  "checks": [
+    "C# compilation",
+    "PowerShell syntax and Inspect",
+    "12 original Main windows",
+    "2 original version functions",
+    "12 actual SDK registrar bodies/targets/success paths",
+    "3 actual SDK patch inputs",
+    "actual captured pointer decoder",
+    "FNV64 reference",
+    "ZIP CRC and member equality"
+  ]
+}
