@@ -22,5 +22,8 @@
     "actual captured pointer decoder",
     "FNV64 reference",
     "ZIP CRC and member equality"
-  ]
+  ],
+  "status": "WITHDRAWN_AFTER_WINDOWS_STARTUP_FAILURE",
+  "do_not_retry": true,
+  "reason": "Actual PID17204 stops before Login. Early software barrier changes Main code inside SDK integrity range; initialization ordering not established. No replacement ready."
 }

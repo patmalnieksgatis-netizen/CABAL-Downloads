@@ -1,0 +1,5 @@
+Client291 LoginBootstrap v1, v2 and v3 are WITHDRAWN.
+Do not retry saved ZIPs. V3 source artifact: commit682da70, SHA256dc367c83d7b488f929fbec10f08a2d992281765460e870523f2a444b8f544e7b.
+Actual v3 PID17204 stopped before Login: SDK status comparison failed; constructor/settings/endpoint still native at gate.
+The early software barrier changes Main code inside the SDK checked range. SDK initialization ordering was not established.
+No replacement launcher or verified Login fix is ready. Original game files were not changed by this controller.
