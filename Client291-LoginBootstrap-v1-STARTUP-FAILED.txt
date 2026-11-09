@@ -1,0 +1,2 @@
+User Windows PID13304: STAGE=WAIT_LOADER; SDK_NOT_INITIALIZED_AT_ENTRY_GATE.
+V1 stopped before Login. Do not repeat v1. V2 moves the barrier after CRT startup and waits for SDK readiness; Windows/Login remain unverified.
