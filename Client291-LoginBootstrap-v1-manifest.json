@@ -1,0 +1,24 @@
+{
+  "file": "Client291-LoginBootstrap-v1.zip",
+  "bytes": 13390,
+  "sha256": "070358e791f2883ffcc3d40c6564f6af559d228ebc55e20b7ab43c30546a5654",
+  "members": {
+    "Client291-LoginBootstrap.cs": "3848df5d7534d39868536414ab31dec9f2656e94d432280badc35a8c1b0e9576",
+    "Start-Client291-LoginBootstrap.ps1": "e991fedb8a5d45e29e85b2e5c89e7b7191d6e8024ff07ef070fa16058328c21a",
+    "client291-login-bootstrap-v1.json": "06c8f0404131a97877c718ddc0abb6be2bbb72e70dbbb38de31e084253aff192",
+    "Palaist-Labojumu.cmd": "99fb0c2739c3fe9b7d3052839a3a7b5747713017871e6c0b37e2ec776918ea19",
+    "README.txt": "728fd8faa75544a42499aae650d4f6c3b6586f3f563393c15d7d334afe1c2be8"
+  },
+  "only_own_sources_and_metadata": true,
+  "windows_execution_verified": false,
+  "login_verified": false,
+  "checks": [
+    "C# compilation",
+    "PowerShell syntax and Inspect",
+    "12 original Main windows",
+    "2 original version functions",
+    "actual captured pointer decoder",
+    "FNV64 reference",
+    "ZIP CRC and member equality"
+  ]
+}
