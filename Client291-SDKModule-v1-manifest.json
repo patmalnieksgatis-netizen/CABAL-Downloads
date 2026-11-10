@@ -1,13 +1,13 @@
 {
   "file": "Client291-SDKModule-v1.zip",
-  "bytes": 8955,
-  "sha256": "b0263eb62ae8ec00349a0f2a8db98beb703534a4f7b5793a0df2000909ff5e3e",
+  "bytes": 9994,
+  "sha256": "5b1b3ce028b313f6ae0d6174ee2ba5f2a3624b440f49848c88e4acf873fcbd96",
   "members": {
-    "Client291-SDKImageRead.cs": "d0c1e56b0a8ffdcb29ba0b57339c26988406f4bd91c411b2a3bc7fb51801f6db",
+    "Client291-SDKImageRead.cs": "1c17b5f5eafa1c578b981e2194e88088bc56b13c22e5200d5c095242b88cc030",
     "Read-Client291-SDKModule.ps1": "7cfb0baf0e8fafeacfc31119104e973ee154f5753d93007d4e5690791a54d5a1",
     "client291-sdk-module-reader-v1.json": "8848cbed3b37110d6d624b1e3735c4992ad0efc21613f211a7f126359be787ca",
     "Nolasit-Pilnu-SDK.cmd": "cc4099a2284dce786c4179b6df52d30382424ac8cd6aa38b4f8d364e3805d444",
-    "README.txt": "3ef00d5e2bb3ffb6c01420f401e4b45165c2a71073adeb01124b096d33d8da4b"
+    "README.txt": "20bffbd78d6c9912c0fc91b3121ab65f290540a82c42d055c54e3a30696c5e31"
   },
   "status": "READ_ONLY_DIAGNOSTIC_PREPARED_WINDOWS_PENDING",
   "only_own_sources_and_metadata": true,
@@ -23,6 +23,7 @@
     "7 actual captured SDK code anchors match",
     "No write/protect/context/injection/debugger APIs",
     "Process resumed before image hashing or disk IO",
-    "ZIP CRC and member equality"
+    "ZIP CRC and member equality",
+    "Actual original Main digest and captured embedded constant match reader private hash/decoder helpers"
   ]
 }
