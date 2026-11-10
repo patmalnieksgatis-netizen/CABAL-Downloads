@@ -1,0 +1,32 @@
+{
+  "file": "Client291-LoginStart-v4_2.zip",
+  "bytes": 19188,
+  "sha256": "d0becf14161ffa7e33f1f83769aa7ee9e9dd53efb4154ffe7a572580473d1727",
+  "members": {
+    "Client291-LoginStart-v4_2.cs": "35059a6999d8c85938f952a699e9f20353644a0ee1068847c37c938a7cc5823b",
+    "Start-Client291-LoginStart-v4_2.ps1": "78339c8cb326915790e2ff0f64a372b869e7b5bef1d9ef79cf50cb8b2d1270a6",
+    "client291-login-start-v4_2.json": "f387d24db1a7f9dddc78b3478d9470784dc11adbfef54b07335854fa78b02605",
+    "Palaist-291-v4_2.cmd": "599465dd84fd30f18ceebb46c133c89c92a5a15e27b6889a9b2fc023b00b5b1d",
+    "README.txt": "6d3aa15bae914d0c42a7f332f701cdfa3f38311e8d4cf716372f008441668487"
+  },
+  "only_own_sources_and_metadata": true,
+  "status": "PREPARED_WINDOWS_UNVERIFIED",
+  "v4_1_startup_preserved": true,
+  "v4_2_windows_execution_verified": false,
+  "login_verified": false,
+  "world_entry_verified": false,
+  "client_disk_writes": false,
+  "server_changes": false,
+  "required_live_preedit_digest_matches": 5,
+  "integrity_markers_written": false,
+  "new_login_opcode_edits": 2,
+  "checks": [
+    "Actual original Main hash and two guarded spans",
+    "C# compile and PowerShell parse/Inspect",
+    "110 changed live-context bytes rejected; short/unknown windows rejected",
+    "Actual x64 request builder executed before/after: only packet opcode changes; one send each",
+    "Actual unchanged x64 reply leaf executed with synthetic8-byte field",
+    "V4.1 lifecycle source exact equality after removing class/comment and two pure helpers plus one Plan call",
+    "ZIP CRC and exact5 member bytes"
+  ]
+}
