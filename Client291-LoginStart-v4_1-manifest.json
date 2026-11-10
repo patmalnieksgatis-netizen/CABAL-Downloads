@@ -1,0 +1,32 @@
+{
+  "file": "Client291-LoginStart-v4_1.zip",
+  "bytes": 18182,
+  "sha256": "6c3a2b1628fb44dbdad647e5757e8f6aa312798d553dfdf40a76d0c0ac682e53",
+  "members": {
+    "Client291-LoginStart.cs": "ee8d3d4de52b334bd55d88fa5322d137473974cbcd420cecdbb7ce5413ee8b93",
+    "Start-Client291-LoginStart.ps1": "875e18d2fd369e8eed8d8d9d31dd0591ecfb687c7cb0ca345ec2e614390e71bc",
+    "client291-login-start-v4_1.json": "f88d9714591120533c6233ca35c9ea4b0738b8598ddbe78d93a461a63b4fd335",
+    "Palaist-291-v4_1.cmd": "71c3acc423a80ea2b0b6d699e36d39e6b5da9379397d7ac78702cbe6990fcb56",
+    "README.txt": "d3b8e834b18483a679bbc45d45b5d5af659cb474c576326adc127f4eadb9cff6"
+  },
+  "only_own_sources_and_metadata": true,
+  "status": "PREPARED_WINDOWS_UNVERIFIED",
+  "private_gate_verified_in_prior_v4_windows_run": true,
+  "v4_1_windows_execution_verified": false,
+  "login_verified": false,
+  "world_entry_verified": false,
+  "client_disk_writes": false,
+  "server_changes": false,
+  "required_live_preedit_digest_matches": 5,
+  "integrity_markers_written": false,
+  "checks": [
+    "Actual full SDK constructor-to-checker call-chain transfers",
+    "C# compilation, PS parse/Inspect",
+    "Actual SDK/EXE guarded code windows",
+    "Adjacent recorded hook-pair regression and unknown mutation rejection",
+    "GOOD/BAD/PENDING/uninitialized classification",
+    "Actual captured four descriptor shapes",
+    "Source all five code digests required before writes; only affected digests updated",
+    "ZIP CRC/member equality"
+  ]
+}

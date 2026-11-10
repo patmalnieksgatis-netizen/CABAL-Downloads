@@ -1,0 +1,3 @@
+LoginStart v4.0 is withdrawn. Do not retry it.
+Actual Windows run reached its private start gate with SDK hooks active; its post-constructor readiness requirement cannot complete before Main starts. No runtime code-edit commit reached.
+Revision4.1 checks all five actual code digests and never writes the native status markers; Login/world still unverified.

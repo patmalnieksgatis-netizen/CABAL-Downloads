@@ -10,7 +10,7 @@
     "README.txt": "2cff1c8917de6d657d069fc2c9f0836a74b96cddf4fed252e835b74116af3e0e"
   },
   "only_own_sources_and_metadata": true,
-  "status": "PREPARED_WINDOWS_UNVERIFIED",
+  "status": "WITHDRAWN_CONSTRUCTOR_CHECKER_DEPENDENCY",
   "actual_sdk_input_pid": 9604,
   "windows_execution_verified": false,
   "login_verified": false,
@@ -26,5 +26,8 @@
     "Adjacent captured hook-pair regression; unknown tail mutation rejection",
     "Source no image write before SDK initialization; initial RCX guard; release RIP only",
     "ZIP CRC and member equality"
-  ]
+  ],
+  "actual_private_gate_verified": true,
+  "runtime_edits_reached": false,
+  "reason": "Actual PID20368 reached private entry with SDK hooks active, but waited for a status from a constructor-started worker before allowing Main to run."
 }
