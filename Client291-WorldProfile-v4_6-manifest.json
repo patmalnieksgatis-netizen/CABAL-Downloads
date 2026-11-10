@@ -2,12 +2,12 @@
   "status": "PREPARED_WINDOWS_UNVERIFIED_WORLD_METADATA_GATE",
   "world_entry_enabled": false,
   "client_server_files_changed": false,
-  "zip_bytes": 37986,
-  "zip_sha256": "cf1f41de1e95be660f6318374878531a554f55a8fbd70589e0b15027f6dbda26",
+  "zip_bytes": 38316,
+  "zip_sha256": "04efbd970e93b0a15006a793f04547efb5c5805d4b856a62a4fad4df96b03981",
   "members": {
     "README_LV.txt": {
-      "bytes": 2295,
-      "sha256": "ab9e81ab1a753363c7d95451d0805ba0c44d0e3383ec2e5b6f64bc2cb23ef6a3"
+      "bytes": 2365,
+      "sha256": "b6e8ccdec59bd88cfe623725328ccab490b383940a4388a801bb1046117b09e1"
     },
     "Palaist-291-WorldProfile-v4_6.cmd": {
       "bytes": 153,
@@ -15,15 +15,15 @@
     },
     "client291-worldgate-build.json": {
       "bytes": 775,
-      "sha256": "e640b3b3f3f78ea3badbabc75be2fda30ac04b186473a305dfd2ee50485b2a1b"
+      "sha256": "e68dfdeb18c4334e7595e9116ad2863de27973783bb4523c764c744fc773b33a"
     },
     "build_client291_worldgate.py": {
       "bytes": 4526,
-      "sha256": "9e9daedec7d8875dfb321f93aed4dcb7910138d13c33a2a58d63cd5ff112e8c2"
+      "sha256": "fc8acad00593350136121ec492d8498beaf7bce8478573581941a71ef3a11c72"
     },
     "client291_worldgate.c": {
-      "bytes": 5554,
-      "sha256": "d450b67ec86287437221ac8ef4ec0c0dc20f400213d9288a6add1f5e03c18aad"
+      "bytes": 5807,
+      "sha256": "15d359ff6771de97fb6e06db824d8dbc67bffcafe8138db81d3c8bbb0d04bd2f"
     },
     "client291-characterlist-bridge-build.json": {
       "bytes": 909,
@@ -39,33 +39,33 @@
     },
     "Client291-WorldGate.bin": {
       "bytes": 16372,
-      "sha256": "a6286aad612ecb4197a940e8ed797eec4a7e9be210143abcd61bb05239789dfb"
+      "sha256": "65288542dff8822049b1d30adf7ad56cbd40f50bc32809bd99e27d317c25e0f5"
     },
     "Client291-CharacterListBridge.bin": {
       "bytes": 16372,
       "sha256": "2118548e4ef63c09581926367a18f29bf27d487d0fd9f7e09a11bd205999387e"
     },
     "client291-login-start-v4_6.json": {
-      "bytes": 15560,
-      "sha256": "d16567868c015aa64537af5d7d41290430e417944f2a45a8c0ba60638dd8b16f"
+      "bytes": 15614,
+      "sha256": "9388702af03df058eb57dd08a33127553821fc7250fde7e051d437d0aa70a335"
     },
     "Start-Client291-LoginStart-v4_6.ps1": {
-      "bytes": 8781,
-      "sha256": "a050f07a9c91bd331ac63414dbd3542dc79f06d1fce4d185c1567ba344a287d5"
+      "bytes": 8888,
+      "sha256": "4445eb4425af9817c13b42de3514e7e069078bcc7f22d687af47adaaae5c73cb"
     },
     "Client291-LoginStart-v4_6.cs": {
-      "bytes": 46495,
-      "sha256": "9c72f2af483c07bfdf51aaa6eeda486de95c3df5155b356ef4d2f599b9800535"
+      "bytes": 47065,
+      "sha256": "1539f2d354b52f6992f1e486af3c30441b9489a96a294a21534bbdceb96c4953"
     }
   },
   "world_blob": {
     "status": "OWN_FREESTANDING_CODE_WINDOWS_UNVERIFIED",
-    "source_sha256": "d450b67ec86287437221ac8ef4ec0c0dc20f400213d9288a6add1f5e03c18aad",
+    "source_sha256": "15d359ff6771de97fb6e06db824d8dbc67bffcafe8138db81d3c8bbb0d04bd2f",
     "bytes": 16372,
-    "sha256": "a6286aad612ecb4197a940e8ed797eec4a7e9be210143abcd61bb05239789dfb",
+    "sha256": "65288542dff8822049b1d30adf7ad56cbd40f50bc32809bd99e27d317c25e0f5",
     "entry_rva": 0,
     "context_rva": 16384,
-    "context_bytes": 192,
+    "context_bytes": 200,
     "buffers_rva": 20480,
     "allocation_bytes": 20480,
     "code_protect_bytes": 16384,
@@ -76,7 +76,7 @@
       {
         "name": "client291_worldgate",
         "start": 0,
-        "end": 1543,
+        "end": 1556,
         "unwind_rva": 12544,
         "unwind_hex": "0113090013620c300b600a70095008c006d004e002f00000"
       }
@@ -86,7 +86,7 @@
     "runtime_relocations": []
   },
   "validation": [
-    "actual own Win64 gate blob:10235 bounded metadata and source-immutability checks",
+    "actual own Win64 gate blob:10241 bounded metadata and source-immutability checks",
     "actual Main character and World registration guards",
     "C# compilation, PowerShell parsing and Inspect"
   ],
