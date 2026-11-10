@@ -1,0 +1,42 @@
+{
+  "file": "Client291-LoginStart-v4_5.zip",
+  "bytes": 29542,
+  "sha256": "5a33c5ef83ce379ab99733d88c75261d8ca89d2541f87bb197470d7d23f84bca",
+  "members": {
+    "Client291-LoginStart-v4_5.cs": "b384c64944d56537bf58a0c3572c78105b695d9f05fe7af548ff5b35fe85b87f",
+    "Start-Client291-LoginStart-v4_5.ps1": "ee07a1885bfea2bdbe57162fe515aacba88830782bdf0f883a55b784b3663a34",
+    "client291_characterlist_bridge.c": "9602165763d309e077d1ab26d130722615cea9e51687049873da92a46f5b56cf",
+    "build_client291_characterlist_bridge.py": "9c8e76a21941e5d904a1e838b1c562010891fbf7eb0436d1090cef16aef3c479",
+    "client291-login-start-v4_5.json": "6c2f4cbeaba7c24d929c376f2e523c5eb78e55cb1aae608055bbc330ddc6020b",
+    "Client291-CharacterListBridge.bin": "2118548e4ef63c09581926367a18f29bf27d487d0fd9f7e09a11bd205999387e",
+    "client291-characterlist-bridge.json": "d5af07b5edc7c6e36b14705a177b32c24dbb1b0c8424ba9697ec981a84f09189",
+    "Palaist-291-v4_5.cmd": "590cf63ce617deda42bf7ce48eab8bcd049b9218092ea3f4a47156ed10aee1e6",
+    "README.txt": "937ef2f66f9719d77d9fdc6f3b7435b95318daa84316c396efa2e86ae3fdd49d"
+  },
+  "only_own_code_sources_and_metadata": true,
+  "supplied_game_code_or_assets_included": false,
+  "status": "PREPARED_WINDOWS_UNVERIFIED",
+  "v45_windows_execution_verified": false,
+  "character_selection_verified": false,
+  "world_entry_verified": false,
+  "client_game_file_writes": false,
+  "server_changes": false,
+  "sql_changes": false,
+  "original_reader_modified": false,
+  "registration_changes": 1,
+  "new_code_own_freestanding_bytes": 16372,
+  "native_thread_used": true,
+  "injected_thread": false,
+  "replacement_dll": false,
+  "source_input_and_global_model_integrity_preserved_until_validation": true,
+  "raw_packet_or_account_export": false,
+  "checks": [
+    "Current native RPT time19:33:45 and fault14072B754",
+    "Original registration133 and actual291 reader51 slots/stride86F",
+    "Exact indexed-store72B754 SIGSEGV reproduced with native-layout fixture",
+    "Actual own machine code plus original291 reader:9963 checks including two native profiles,0/1/16 characters,0/2/47 items,all copied fields,malformed/duplicate/ownership rejection,already291 and4-buffer concurrency",
+    "Win64 ABI and generated prologue unwind metadata checked against compiled machine code; actual RtlAddFunctionTable Windows call remains pending",
+    "C# compile/PS parse/Inspect;63 changed registration bytes and invalid targets refused",
+    "ZIP CRC and all9 members"
+  ]
+}
