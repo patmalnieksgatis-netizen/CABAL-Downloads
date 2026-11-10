@@ -1,0 +1,32 @@
+{
+  "file": "Client291-LoginStart-v4_3.zip",
+  "bytes": 20007,
+  "sha256": "7e7178e4d1678adb43a6f0071a2affe13b6c7c4ea65736ea4d8d393457086f17",
+  "members": {
+    "Client291-LoginStart-v4_3.cs": "c36211fab834f116ac79be0ad179de5cf1921122d198599769af5062106b768c",
+    "Start-Client291-LoginStart-v4_3.ps1": "4cd35d04e140d39cce38e820ca0433b0b56aa5e34c8daf8a586bc9dda5e58930",
+    "client291-login-start-v4_3.json": "6993532a8dad26b96c3f6cf8f1cc98c5f42e4cbdb2c881a4fa0bd05ead3f8efa",
+    "Palaist-291-v4_3.cmd": "791f14593a05cb08406923ee2c516f8b7d77d029513b800a2d170de4929ad22d",
+    "README.txt": "2e3a6c4a69ce102654c9234c44ae7415d3eb60a5b569fcb784414ed1b41062ca"
+  },
+  "only_own_sources_and_metadata": true,
+  "status": "PREPARED_WINDOWS_UNVERIFIED",
+  "v4_2_startup_and_iwar_preserved": true,
+  "v4_3_windows_execution_verified": false,
+  "login_verified": false,
+  "world_entry_verified": false,
+  "client_disk_writes": false,
+  "server_changes": false,
+  "required_live_preedit_digest_matches": 5,
+  "integrity_markers_written": false,
+  "new_auth_compare_instructions": 1,
+  "actual_changed_compare_bytes": 1,
+  "checks": [
+    "Actual original Main hash and32-byte comparison context",
+    "C# compile/PS parse/Inspect",
+    "32 changed live context bytes and short window rejected",
+    "12 actual x64 S2C2006 fixture executions: result32/33/113 and packet input unchanged, original13 and native17 profiles",
+    "Exact V4.2 lifecycle/IWar source comparison after two pure helper additions/one Plan call/class/comment rename",
+    "ZIP CRC and exact5 member equality"
+  ]
+}
