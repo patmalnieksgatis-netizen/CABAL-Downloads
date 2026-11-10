@@ -1,0 +1,30 @@
+{
+  "file": "Client291-LoginStart-v4.zip",
+  "bytes": 17384,
+  "sha256": "d7267890d5754d612a2e8216b50e5277e3266a02c03096f99f7b3e37a47d3051",
+  "members": {
+    "Client291-LoginStart.cs": "b43de238cd4a139aed190cb43fde0568691aa025e37e72947147e26d9eadd6ec",
+    "Start-Client291-LoginStart.ps1": "43e3af6f904eabde9d7eb3ac97af5e85ac8faa8bfd1524a96123a6e06b759503",
+    "client291-login-start-v4.json": "25da17dde64f6ce0a30a6f5816cecce71f20a5303499b31e3137d7820ae9ee9e",
+    "Palaist-291-v4.cmd": "71c3acc423a80ea2b0b6d699e36d39e6b5da9379397d7ac78702cbe6990fcb56",
+    "README.txt": "2cff1c8917de6d657d069fc2c9f0836a74b96cddf4fed252e835b74116af3e0e"
+  },
+  "only_own_sources_and_metadata": true,
+  "status": "PREPARED_WINDOWS_UNVERIFIED",
+  "actual_sdk_input_pid": 9604,
+  "windows_execution_verified": false,
+  "login_verified": false,
+  "world_entry_verified": false,
+  "client_disk_writes": false,
+  "server_changes": false,
+  "checks": [
+    "C# compilation",
+    "PS parse and Inspect",
+    "Actual original Main12windows/2version functions",
+    "Actual SDK12handlers/12full registrars/3patch inputs",
+    "Actual SDK3independent stored range digests",
+    "Adjacent captured hook-pair regression; unknown tail mutation rejection",
+    "Source no image write before SDK initialization; initial RCX guard; release RIP only",
+    "ZIP CRC and member equality"
+  ]
+}
