@@ -1,0 +1,37 @@
+{
+  "file": "Client291-LoginStart-v4_4.zip",
+  "bytes": 20601,
+  "sha256": "b27939c6af61c0e0a814c92a615b0f65cabfcab9c75a343e055fd1b8c56a0ef4",
+  "members": {
+    "Client291-LoginStart-v4_4.cs": "d06dfd009083820fd770c2d1088f59cf4946a8bb5d7a3eb099416fca80aa2582",
+    "Start-Client291-LoginStart-v4_4.ps1": "e589264c58543775b85afbb15f1d9fddab49d23ce2ac0126630ac11ae2c89d43",
+    "client291-login-start-v4_4.json": "6227428caa5949129c3b1196628eb020c21c7c470204a0232ecc60d0796ee06b",
+    "Palaist-291-v4_4.cmd": "c0396411dbaa23b92190522e17c8dc2089b7c0d9cdfc04d6e0e54336e6272c68",
+    "README.txt": "f2372c6be96a1f455d77cb125ec56a8441d5f5b26dd8fb02785f248a92479ff6"
+  },
+  "only_own_sources_and_metadata": true,
+  "status": "PREPARED_WINDOWS_UNVERIFIED",
+  "v43_startup_auth_iwar_preserved": true,
+  "v44_windows_execution_verified": false,
+  "login_to_channel_selection_inherited_user_verified": true,
+  "channel_join_verified": false,
+  "character_selection_verified": false,
+  "world_entry_verified": false,
+  "client_disk_writes": false,
+  "server_changes": false,
+  "sql_changes": false,
+  "public_build_marker_profile": 620313112,
+  "profile_current_user_read_verified": true,
+  "cloud_live_profile_read": false,
+  "required_live_preedit_digest_matches": 5,
+  "integrity_markers_written": false,
+  "new_guarded_instruction_edits": 1,
+  "checks": [
+    "Actual original Main hash and49-byte CALL/store/send context",
+    "C# compile/PS parse/Inspect",
+    "49 changed live context bytes and short window rejected",
+    "8 actual x64 original C2S102 builder/getter executions: only public marker+18 changes, first18 packet bytes and global state unchanged",
+    "Exact V4.3 lifecycle/auth/IWar source equality after new pure helpers/Plan call/class/comment rename",
+    "ZIP CRC and all5 source/member bytes"
+  ]
+}
