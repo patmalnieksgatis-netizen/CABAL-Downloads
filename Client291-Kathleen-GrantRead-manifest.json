@@ -1,0 +1,16 @@
+{
+  "Schema": 1,
+  "Package": "Client291-Kathleen-GrantRead.zip",
+  "Bytes": 7831,
+  "SHA256": "b4bb7b9819826430e5901554fec8a3345f05e7b10c750fa4c2f05db99e31279a",
+  "Changes": false,
+  "Purpose": "Read-only current test VM native contracts and definitions for explicitly requested Kathleen equipment/funds; no grants yet",
+  "LocalValidation": [
+    "PowerShell AST parse",
+    "embedded Python byte identity and syntax",
+    "ZIP CRC and extracted source identity",
+    "wrong-VM/root refusal",
+    "UTF16LE JSON hex transport roundtrip"
+  ],
+  "ActualTargetReadVerified": false
+}
