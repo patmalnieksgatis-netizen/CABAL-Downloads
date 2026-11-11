@@ -1,0 +1,32 @@
+{
+  "status": "READ_ONLY_DEFINITION_COLLECTOR",
+  "file": "Client291-WorldDefinitions-Collector.zip",
+  "bytes": 5081,
+  "sha256": "761b1a77a547e402dce39913051ae9dade27545960a3fc03ab883b3a75410f2f",
+  "members": {
+    "README.txt": {
+      "bytes": 929,
+      "sha256": "7c85fe3725d664af216b405f329e9b4feeb42f05d22a23f56ddd9b0b8ba731a7"
+    },
+    "Savakt-Definicijas.cmd": {
+      "bytes": 160,
+      "sha256": "e2cb9313b5468d1000d73693549df06cd4b0b61dc0d0a0afdfd2547a083169db"
+    },
+    "Collect-Client291-WorldDefinitions.ps1": {
+      "bytes": 4271,
+      "sha256": "85b0ae3ca8173e9ed4ed7496a3d554097a9d22d8b72d106a28a483be3c1215a0"
+    },
+    "Read-Client291-WorldDefinitions.py": {
+      "bytes": 4420,
+      "sha256": "1ab78664101a252c1f6d7857ffc55027b25a5f9306781344c89d1e0fce68ee18"
+    }
+  },
+  "game_started": false,
+  "server_changes": false,
+  "sql": false,
+  "game_file_writes": false,
+  "private_game_data_in_public_package": false,
+  "actual_windows_ssh_execution_verified": false,
+  "native_memory_reads": "Only three public definition counts per Quest.scp ID; hash-pinned original World, mapped read ranges, two equal snapshots",
+  "account_or_session_memory_read": false
+}
