@@ -1,0 +1,117 @@
+{
+  "status": "WORLD_RELEASE_SUSPEND_FIX_WINDOWS_UNVERIFIED",
+  "file": "Client291-LoginStart-v4_9_1.zip",
+  "bytes": 49969,
+  "sha256": "fb992254f5f496932c725c57d156ba709e738bda506c7374c6d8b252d3405a9e",
+  "members": {
+    "README.txt": {
+      "bytes": 2888,
+      "sha256": "e0cb2b5ec181044476b0d3329ab22dad55bef239336ff984100a6f838a403199"
+    },
+    "Palaist-291-v4_9_1.cmd": {
+      "bytes": 155,
+      "sha256": "373a1b978d17f9dafebd53138b65b81e1dec82c9be29ace4ae3ed849d1641f21"
+    },
+    "Client291-LoginStart-v4_9_1.cs": {
+      "bytes": 49473,
+      "sha256": "00ee88391d3287ac0423f17399b6eb19e62d33166a6bed422f81d067d3255689"
+    },
+    "Start-Client291-LoginStart-v4_9_1.ps1": {
+      "bytes": 10799,
+      "sha256": "23543f8597773eafb58614f6fdef777026a993392d70235305cc77c59f381e2a"
+    },
+    "client291-login-start-v4_9_1.json": {
+      "bytes": 17044,
+      "sha256": "f0d096274c84096010d433afc2bbb14196f85d034f978d2f0c0d0ddf84155d4d"
+    },
+    "Client291-WorldBridge.bin": {
+      "bytes": 16372,
+      "sha256": "09c12d5e6e7a40beb491a5e53864faaea0a2cf0fb25bc6663eae5f81d46c3e6d"
+    },
+    "client291_world_bridge_v4_9.c": {
+      "bytes": 13784,
+      "sha256": "851ced9531aeb2fd06d9a8d3eff170f3344b6e759aabb9b1b2c97a685ff61a1f"
+    },
+    "generated_client291_quest_frame_profile.h": {
+      "bytes": 14822,
+      "sha256": "1c6359047c942301e20017a27e59f8580ed8e3f3cb9e5ea4a424182cb7e6ab1b"
+    },
+    "build_client291_world_bridge_v4_9.py": {
+      "bytes": 4890,
+      "sha256": "d1fa806493a003676ef44b78ce17653b1a997d2c43e3bce00997cc4ab8b51d0b"
+    },
+    "client291-world-bridge-build.json": {
+      "bytes": 1277,
+      "sha256": "a185d26f0d5e085529fb64d17fe45e3859887cf73c9bd3ddc80509291aad5dbb"
+    },
+    "Client291-CharacterListBridge.bin": {
+      "bytes": 16372,
+      "sha256": "2118548e4ef63c09581926367a18f29bf27d487d0fd9f7e09a11bd205999387e"
+    },
+    "client291_characterlist_bridge.c": {
+      "bytes": 6665,
+      "sha256": "9602165763d309e077d1ab26d130722615cea9e51687049873da92a46f5b56cf"
+    },
+    "build_client291_characterlist_bridge.py": {
+      "bytes": 4568,
+      "sha256": "9c8e76a21941e5d904a1e838b1c562010891fbf7eb0436d1090cef16aef3c479"
+    },
+    "client291-characterlist-bridge-build.json": {
+      "bytes": 909,
+      "sha256": "d5af07b5edc7c6e36b14705a177b32c24dbb1b0c8424ba9697ec981a84f09189"
+    }
+  },
+  "world_entry_verified": false,
+  "supplied_game_binaries_included": false,
+  "client_game_file_writes": false,
+  "server_changes": false,
+  "sql_changes": false,
+  "raw_packet_export": false,
+  "native_tail_abi_checks": 298,
+  "critical_v45_method_bodies_preserved": 9,
+  "world_blob": {
+    "status": "OWN_FREESTANDING_CODE_WINDOWS_UNVERIFIED",
+    "source_sha256": "851ced9531aeb2fd06d9a8d3eff170f3344b6e759aabb9b1b2c97a685ff61a1f",
+    "quest_profile_header_sha256": "1c6359047c942301e20017a27e59f8580ed8e3f3cb9e5ea4a424182cb7e6ab1b",
+    "bytes": 16372,
+    "sha256": "09c12d5e6e7a40beb491a5e53864faaea0a2cf0fb25bc6663eae5f81d46c3e6d",
+    "entry_rva": 0,
+    "context_rva": 16384,
+    "context_bytes": 136,
+    "buffers_rva": 20480,
+    "allocation_bytes": 8454144,
+    "code_protect_bytes": 16384,
+    "workspace_bytes": 131072,
+    "workspace_count": 64,
+    "blocks_world_application": false,
+    "source_profile": "Core2F9B",
+    "target_profile": "2912FB1",
+    "tail_preserves_native_return_address": true,
+    "unwind_functions": [
+      {
+        "name": "client291_world",
+        "start": 0,
+        "end": 58,
+        "unwind_rva": 12544,
+        "unwind_hex": "0104010004620000"
+      },
+      {
+        "name": "copy",
+        "start": 58,
+        "end": 79,
+        "unwind_rva": 12552,
+        "unwind_hex": "01000000"
+      },
+      {
+        "name": "client291_world_prepare",
+        "start": 79,
+        "end": 2631,
+        "unwind_rva": 12556,
+        "unwind_hex": "01160a00160113000f300b600a70095008c006d004e002f0"
+      }
+    ],
+    "original_game_code_linked": false,
+    "imports": [],
+    "runtime_relocations": []
+  }
+}
