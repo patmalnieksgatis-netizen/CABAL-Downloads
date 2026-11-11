@@ -1,0 +1,33 @@
+{
+  "status": "READ_ONLY_TWO_DECODED_GAME_RESOURCES_WINDOWS_UNVERIFIED",
+  "file": "Client291-DecodedDefinitions-Collector.zip",
+  "bytes": 5792,
+  "sha256": "99e8612e29848ae396fd2f3c504939b7dcac1e5b2c64e715441372bb47317f6e",
+  "members": {
+    "README.txt": {
+      "bytes": 1346,
+      "sha256": "50d62e92558e5e7265e6674aeb1d0c84b9ef6282059f2e42106ecd03f644ee09"
+    },
+    "Savakt-Atkodetas-Definicijas.cmd": {
+      "bytes": 162,
+      "sha256": "70013259c3115ff735dc8f7682cd5196a78ec66c8e9c3af19cbc0aacbf154fd6"
+    },
+    "Collect-Client291-DecodedDefinitions.ps1": {
+      "bytes": 4369,
+      "sha256": "95565c33969f24fc07da70ec4c7f52fb37f19a3d3df133ad14cdb3b67a6dd0ab"
+    },
+    "Client291-ResourceCacheRead.cs": {
+      "bytes": 4798,
+      "sha256": "8e84a696603b16bbe1cd42ba79f27572af412907854a05af42185c6d26e5da1a"
+    }
+  },
+  "game_started": "Original client only; breaklee argument",
+  "process_writes": false,
+  "new_hooks": false,
+  "sdk_changes": false,
+  "client_game_file_writes": false,
+  "server_changes": false,
+  "login_requested": false,
+  "supplied_game_code_or_assets_in_package": false,
+  "windows_execution_verified": false
+}
