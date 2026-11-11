@@ -54,6 +54,9 @@ BEGIN TRY
   @IP='127.0.0.1',@Extra=NULL,@UserNum=@verified OUTPUT,@AuthResult=@result OUTPUT;
  IF @result IS NULL OR @result<>32 OR @verified IS NULL OR @verified<>@number
   THROW 51000,'NATIVE_PASSWORD_CHECK_FAILED',1;
+ -- Password verification must not leave the newly created account logged in.
+ UPDATE dbo.cabal_auth_table SET [Login]=0 WHERE UserNum=@number;
+ IF @@ROWCOUNT<>1 THROW 51000,'NEW_ACCOUNT_LOGIN_STATE_FAILED',1;
  IF NOT EXISTS(SELECT 1 FROM dbo.cabal_charge_auth WHERE usernum=@number AND expiredate>GETDATE())
   THROW 51000,'NEW_ACCOUNT_ACCESS_MISSING',1;
  IF EXISTS(SELECT 1 FROM Server01.dbo.cabal_character_table WHERE CharacterIdx/16=@number)
