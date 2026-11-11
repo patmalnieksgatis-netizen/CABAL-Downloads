@@ -1,8 +1,8 @@
 {
   "status": "INACTIVE_WORLD_ROW_CORRECTION_WINDOWS_UNVERIFIED",
   "file": "Client291-LoginStart-v4_9.zip",
-  "bytes": 49490,
-  "sha256": "3795e288f78bf30b753a140e757de8bcc1bc3f2f6cdc84073cddcde128875b6d",
+  "bytes": 49680,
+  "sha256": "62be2750d4a199987dc62ccbb6ce199240d62068307a81fbc124ee7c0a3e7b2d",
   "members": {
     "README.txt": {
       "bytes": 2573,
@@ -13,12 +13,12 @@
       "sha256": "fcc7e29dafb9131b7eeb3ee1271587d7a4c977c277073dbbdfeda971a700a192"
     },
     "Client291-LoginStart-v4_9.cs": {
-      "bytes": 48713,
-      "sha256": "aa35eeee009ed3fe26fb255cc7036e1c59147252f3fe47d90fa56a08fe8f89ac"
+      "bytes": 49120,
+      "sha256": "0bdc164a8df0c0eaae7a4c76face05567ce50b37421a251acd16688d840c961d"
     },
     "Start-Client291-LoginStart-v4_9.ps1": {
-      "bytes": 10168,
-      "sha256": "e1d4f308045ae105b97771683e9262195170224735c9e3c61117d4de1a96ab7a"
+      "bytes": 10779,
+      "sha256": "ed3f1e1849903a3122d31845962156d0c87a9dbadba4b7e24c113f69863fae1a"
     },
     "client291-login-start-v4_9.json": {
       "bytes": 17044,
