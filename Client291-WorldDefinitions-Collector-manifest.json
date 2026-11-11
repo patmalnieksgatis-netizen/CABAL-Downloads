@@ -1,8 +1,8 @@
 {
   "status": "READ_ONLY_DEFINITION_COLLECTOR",
   "file": "Client291-WorldDefinitions-Collector.zip",
-  "bytes": 5081,
-  "sha256": "761b1a77a547e402dce39913051ae9dade27545960a3fc03ab883b3a75410f2f",
+  "bytes": 5072,
+  "sha256": "5c1a4b6e4fdee0abae0235c5c023130d03668088ecea8d86150657e11a171f1a",
   "members": {
     "README.txt": {
       "bytes": 929,
@@ -13,8 +13,8 @@
       "sha256": "e2cb9313b5468d1000d73693549df06cd4b0b61dc0d0a0afdfd2547a083169db"
     },
     "Collect-Client291-WorldDefinitions.ps1": {
-      "bytes": 4271,
-      "sha256": "85b0ae3ca8173e9ed4ed7496a3d554097a9d22d8b72d106a28a483be3c1215a0"
+      "bytes": 4307,
+      "sha256": "34cd19b08c48d62691230f6c493298d7ba7ee04170a926edc292c7bbd3978db1"
     },
     "Read-Client291-WorldDefinitions.py": {
       "bytes": 4420,
