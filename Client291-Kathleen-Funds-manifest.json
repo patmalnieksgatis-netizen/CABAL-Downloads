@@ -1,0 +1,10 @@
+{
+  "Package": "Client291-Kathleen-Funds.zip",
+  "Bytes": 12666,
+  "SHA256": "e376f8870b1687bcf19a8aeac422e2fbcae76a5775c3c43341c1f1f1fdcb96df",
+  "FundsOnly": true,
+  "EquipmentGranted": false,
+  "ActualTargetExecution": false,
+  "LocalValidation": "SQL Server 2022 ScriptDom parse; existing transaction template previously exercised on synthetic SQL engine; current target native functions checked at runtime",
+  "Limit": "Fresh SQL engine test unavailable: Docker image pull Forbidden"
+}
