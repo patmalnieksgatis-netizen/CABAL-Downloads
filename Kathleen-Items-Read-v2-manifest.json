@@ -1,0 +1,8 @@
+{
+  "Package": "Kathleen-Items-Read-v2.zip",
+  "Bytes": 4450,
+  "SHA256": "c1afb4a4bc734d4ae113df412d063aadb888c298ecc3dce0720bf5be55cd329e",
+  "Changes": false,
+  "Fix": "Preserve SQL/file error stage and partial results instead of discarding every collected result",
+  "TargetExecution": false
+}
