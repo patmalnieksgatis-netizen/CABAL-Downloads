@@ -1,0 +1,159 @@
+{
+  "status": "ACHIEVEMENT_COUNT_FIX_WINDOWS_UNVERIFIED",
+  "file": "Client291-LoginStart-v4_9_5.zip",
+  "bytes": 59179,
+  "sha256": "acffd2a7907b2fdb214ab29ec3afbf356fbd6251498e816835029638b22c9b18",
+  "members": {
+    "README.txt": {
+      "bytes": 1828,
+      "sha256": "87d670ff4d2f4724331b301bced4a57b9dcac816f7c3461f54b2bbb86bdcc2dc"
+    },
+    "Palaist-291-v4_9_5.cmd": {
+      "bytes": 173,
+      "sha256": "094978da94ec51ecb99a944a53f4e78553d9a348fa78f20dae7089dcf09c4a34"
+    },
+    "Client291-LauncherHost-v4_9_5.cs": {
+      "bytes": 3637,
+      "sha256": "5c3c549559d67f69ee67598067573d99b49ddea59282c6a2c34c6f4e610d3451"
+    },
+    "Build-Run-Client291-Launcher-v4_9_5.ps1": {
+      "bytes": 2083,
+      "sha256": "dd5354662555b31ea0292c4092a26c9552751b8cc392a87b2d3cb9a30187afda"
+    },
+    "Client291-LoginStart-v4_9_5.cs": {
+      "bytes": 61024,
+      "sha256": "0df8eb130bc5567f12efafc3c9d357d2a696a52a1267880f6da6a78db19d2c2b"
+    },
+    "Start-Client291-LoginStart-v4_9_5.ps1": {
+      "bytes": 12586,
+      "sha256": "0a8e7f5fb3c0d25cceff4a7b21db25075a7c61c9e316096ee7299506bb86eefd"
+    },
+    "client291-login-start-v4_9_5.json": {
+      "bytes": 17936,
+      "sha256": "e0eb2ef566cc0fa1b1d4bee81959eca4173ca88f1a390431f3c38d040d322edc"
+    },
+    "Client291-WorldBridge.bin": {
+      "bytes": 16372,
+      "sha256": "c03c2f823147dffcdbd51b6941f759b04563df518a6fa1822d28f7552d8b9180"
+    },
+    "client291_world_bridge_v4_9_5.c": {
+      "bytes": 14095,
+      "sha256": "28a3dfc6fccc02740350fac10e9708509351e3fd8318fd2477e29e2823d371bf"
+    },
+    "generated_client291_quest_frame_profile.h": {
+      "bytes": 14822,
+      "sha256": "1c6359047c942301e20017a27e59f8580ed8e3f3cb9e5ea4a424182cb7e6ab1b"
+    },
+    "build_client291_world_bridge_v4_9_5.py": {
+      "bytes": 4896,
+      "sha256": "1697f26d42ec5cd97f25fff7926e2f38efedaeea1f9dd3bd4305a543a0a09929"
+    },
+    "client291-world-bridge-build.json": {
+      "bytes": 1277,
+      "sha256": "663157a0404c8c5a85ae0e42b8896b336b6c8ed2f38bd6f4f8197f8aefcab7ae"
+    },
+    "Client291-CloseObserver.bin": {
+      "bytes": 833,
+      "sha256": "d009882b2c7fa7af5b2b7946dd5685e62a2d46259612511675ddcf12ab324272"
+    },
+    "client291_close_observer_v4_9_3.S": {
+      "bytes": 1494,
+      "sha256": "8f17b171ba466536a2e94207c7a831b8c4bfbdeabe903a13efa86eb4140bddc0"
+    },
+    "build_client291_close_observer_v4_9_3.py": {
+      "bytes": 2041,
+      "sha256": "e9a608e517ebeb303512d6908cfef9617b159b3e3f4685672afd0721f4971013"
+    },
+    "client291-close-observer-build.json": {
+      "bytes": 746,
+      "sha256": "5cb515fb05ebdcf75b22729bfc08165833d8aba8cbc4481aee8d2628f812eff5"
+    },
+    "Client291-CharacterListBridge.bin": {
+      "bytes": 16372,
+      "sha256": "2118548e4ef63c09581926367a18f29bf27d487d0fd9f7e09a11bd205999387e"
+    },
+    "client291_characterlist_bridge.c": {
+      "bytes": 6665,
+      "sha256": "9602165763d309e077d1ab26d130722615cea9e51687049873da92a46f5b56cf"
+    },
+    "build_client291_characterlist_bridge.py": {
+      "bytes": 4568,
+      "sha256": "9c8e76a21941e5d904a1e838b1c562010891fbf7eb0436d1090cef16aef3c479"
+    },
+    "client291-characterlist-bridge-build.json": {
+      "bytes": 909,
+      "sha256": "d5af07b5edc7c6e36b14705a177b32c24dbb1b0c8424ba9697ec981a84f09189"
+    }
+  },
+  "world_entry_verified": false,
+  "post_world_stability_verified": false,
+  "close_observer_enabled": true,
+  "close_observer_checks": 3356,
+  "close_decision_blocked": false,
+  "optional_3046_query_suppressed": true,
+  "costume_rename_supported": false,
+  "world_observation_seconds": 90,
+  "costume_name_builder_emulation_checks": 1028,
+  "supplied_game_binaries_included": false,
+  "client_game_file_writes": false,
+  "server_changes": false,
+  "sql_changes": false,
+  "raw_packet_export": false,
+  "native_tail_abi_checks": 579,
+  "critical_v45_method_bodies_preserved": 8,
+  "native_launch_contract_added": true,
+  "real_launcher_host": true,
+  "parent_spoofed": false,
+  "native_launch_contract_emulation_checks": 44,
+  "existing_hkcu_launch_dword_zero_temporarily_armed": true,
+  "installation_key_or_absent_value_created": false,
+  "shutdown_guard_bypassed": false,
+  "achievement_native_decoder_checks": 45,
+  "achievement_old_refusal_reproduced": true,
+  "world_blob_only_two_data_bytes_changed": true,
+  "world_blob": {
+    "status": "OWN_FREESTANDING_CODE_WINDOWS_UNVERIFIED",
+    "source_sha256": "28a3dfc6fccc02740350fac10e9708509351e3fd8318fd2477e29e2823d371bf",
+    "quest_profile_header_sha256": "1c6359047c942301e20017a27e59f8580ed8e3f3cb9e5ea4a424182cb7e6ab1b",
+    "bytes": 16372,
+    "sha256": "c03c2f823147dffcdbd51b6941f759b04563df518a6fa1822d28f7552d8b9180",
+    "entry_rva": 0,
+    "context_rva": 16384,
+    "context_bytes": 136,
+    "buffers_rva": 20480,
+    "allocation_bytes": 8454144,
+    "code_protect_bytes": 16384,
+    "workspace_bytes": 131072,
+    "workspace_count": 64,
+    "blocks_world_application": false,
+    "source_profile": "Core2F9B",
+    "target_profile": "2912FB1",
+    "tail_preserves_native_return_address": true,
+    "unwind_functions": [
+      {
+        "name": "client291_world",
+        "start": 0,
+        "end": 58,
+        "unwind_rva": 12544,
+        "unwind_hex": "0104010004620000"
+      },
+      {
+        "name": "copy",
+        "start": 58,
+        "end": 79,
+        "unwind_rva": 12552,
+        "unwind_hex": "01000000"
+      },
+      {
+        "name": "client291_world_prepare",
+        "start": 79,
+        "end": 2631,
+        "unwind_rva": 12556,
+        "unwind_hex": "01160a00160113000f300b600a70095008c006d004e002f0"
+      }
+    ],
+    "original_game_code_linked": false,
+    "imports": [],
+    "runtime_relocations": []
+  }
+}
