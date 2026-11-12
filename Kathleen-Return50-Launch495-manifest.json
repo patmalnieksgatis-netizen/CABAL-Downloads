@@ -1,0 +1,32 @@
+{
+  "Schema": 1,
+  "Package": "Kathleen-Return50-Launch495.zip",
+  "Bytes": 7605,
+  "SHA256": "89a03998ef4edc3011ed7a69500be867e45d27a6d1f69beda248331b7730d56b",
+  "Target": "wolverine/Kathleen",
+  "ReturnStone": {
+    "Item": 12,
+    "NativeType": 13,
+    "Quantity": 50,
+    "MailAttachments": 1,
+    "ItemOption": 50,
+    "MaxStack": 50,
+    "NativeStackCountGetter": "0x5e2770",
+    "NativeStackCountVerified": true
+  },
+  "Launch": {
+    "Version": "4.9.5",
+    "PublicCommit": "e76536b",
+    "SHA256": "acffd2a7907b2fdb214ab29ec3afbf356fbd6251498e816835029638b22c9b18",
+    "FreshFolder": true,
+    "Reason": "User cannot recall which launcher failed; no current V495 report provided"
+  },
+  "ActionsIndependent": true,
+  "Status": "PREPARED_TARGET_EXECUTION_PENDING",
+  "Diagnostics": "After successful grant, read existing800 World log lines and bundle with latest client JSON; read failure does not cancel grant confirmation",
+  "UserSymptoms": {
+    "NPCPurchase": "Click has no effect; no items",
+    "ThirdArcana": "Slot visible, cannot equip",
+    "LastEntryLauncherVersion": "User cannot recall"
+  }
+}
