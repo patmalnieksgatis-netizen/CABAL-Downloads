@@ -81,9 +81,46 @@ def main():
             row=dict(Hook=name,ExpectedDirectRoute=target==wanted,Chain=chain)
             if error:row['ReadError']=error
             results.append(row)
+        # Registered process descriptors can point to another implementation
+        # even when the original World entry itself still has our detour.
+        for opcode in (0x875,0x876):
+            row=dict(DispatchOpcode=opcode,CodeCandidates=[])
+            try:
+                descriptor=struct.unpack('<Q',code(0x235f8c0+opcode*8,8))[0]
+                data=code(descriptor,64)
+                for off in range(0,64,8):
+                    target=struct.unpack_from('<Q',data,off)[0]
+                    if any(a<=target<b and 'x' in perm for a,b,perm,_,_ in regions):
+                        row['CodeCandidates'].append(dict(Offset=off,Address=hex(target),Owner=owner(target)))
+            except (RuntimeError,OSError) as e:row['ReadError']=str(e)
+            print(json.dumps(row,separators=(',',':')))
     for row in results:print(json.dumps(row,separators=(',',':')))
     print('GUARDIAN_LIVE_DIRECT_ROUTES='+str(sum(r['ExpectedDirectRoute'] for r in results))+'/12; READ_ONLY_COMPLETE')
     print('NOTE=OTHER_ENTRY_CAN_CHAIN_INDIRECTLY; NO_AUTOMATIC_REPATCH_OR_RESTART')
+    # Relevant own item kinds only, no message text, serials or inventory dump.
+    # This is history, not an assertion about the item currently being dragged.
+    sql="""SET NOCOUNT ON; SET LOCK_TIMEOUT 3000;
+SELECT DISTINCT CONCAT('OWN_ARCANA_MAIL_HISTORY; CHAR=',c.Name,'; KIND=',m.ItemKindIdx,
+ '; LEVEL=',((CONVERT(bigint,m.ItemKindIdx)&253952)/8192))
+FROM dbo.cabal_mail_received_table m JOIN dbo.cabal_character_table c ON c.CharacterIdx=m.ReceiverCharIdx
+WHERE c.Name COLLATE Latin1_General_100_BIN2 IN ('BumbleBee','Kathleen')
+AND (CONVERT(bigint,m.ItemKindIdx)&100667391) IN (33556103,33555715,33555716);
+"""
+    shell='''set +x
+export SQLCMDPASSWORD="${MSSQL_SA_PASSWORD:-${SA_PASSWORD:-}}"
+[ -n "$SQLCMDPASSWORD" ] || exit 2
+tool=/opt/mssql-tools18/bin/sqlcmd
+[ -x "$tool" ] || tool=/opt/mssql-tools/bin/sqlcmd
+exec "$tool" -S localhost -U sa -N -C -d Server01 -b -l 5 -t 10 -h -1 -W -i /dev/stdin
+'''
+    try:
+        r=subprocess.run(['docker','exec','-i','sql_main','sh','-ec',shell],input=sql.encode(),capture_output=True,timeout=15)
+        raw=r.stdout
+        encoding='utf-16' if raw.startswith((b'\xff\xfe',b'\xfe\xff')) else 'utf-16-le' if b'\0' in raw[:100] else 'utf-8-sig'
+        for line in raw.decode(encoding,errors='replace').splitlines():
+            if line.startswith('OWN_ARCANA_MAIL_HISTORY;'):print(line)
+        if r.returncode:print('OWN_ARCANA_MAIL_HISTORY=UNAVAILABLE; CODE_ROUTES_READ_RETAINED')
+    except (OSError,subprocess.SubprocessError):print('OWN_ARCANA_MAIL_HISTORY=UNAVAILABLE; CODE_ROUTES_READ_RETAINED')
 
 
 if __name__=='__main__':
