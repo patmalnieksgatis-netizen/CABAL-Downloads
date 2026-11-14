@@ -1,0 +1,20 @@
+{
+  "character": "BumbleBee",
+  "character_idx": 16065,
+  "account": 1004,
+  "test_vm": "192.168.56.101",
+  "plan_sha256": "9aae323d80d99e311d03504041929a908565d0a2e3d7a2e56fa8564daeec3c94",
+  "script_sha256": "75b270122fbdacddb5de44031d166fe8db9275d2017eee4720bb02859bdd59e0",
+  "myth_level": 100,
+  "myth_score": 27720,
+  "honor_grade": 50,
+  "wings_grade": 3,
+  "wings_level": 100,
+  "runes": [
+    58,
+    30,
+    6
+  ],
+  "no_service_restart": true,
+  "actual_database_execution": "Pending user apply; syntax, format, transport and failure tests passed."
+}
