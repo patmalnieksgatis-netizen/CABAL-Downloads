@@ -1,0 +1,10 @@
+{
+  "reader_sha256": "d35c8c890f10907afbbe207afd998449f4ba592278075f3f92fdc526dc49ef45",
+  "collector_sha256": "0348f07ff8ca18c02425ebb7414bbce28256865bd88f9532524e442a92682e68",
+  "bytes": 8775,
+  "type": "READ_ONLY_GLOBAL_NATIVE_CATALOGUE",
+  "installation": false,
+  "sql": false,
+  "player_data": false,
+  "live_execution": "PENDING"
+}
