@@ -1,0 +1,11 @@
+{
+  "mileage_sha256": "5d50a5b0f8c7b7d522631138750ef134c19c9ce909339e673a6d1bec8d0e2007",
+  "guardian_sha256": "6f01a9cb0e30c2898c448afb8c284585db399839265da81badc1b1d24e4b1bc1",
+  "source_sha256": "890561e6ea86aa2e5efd64faf956a78bf138fd978b1d78d8bb988a8e928fba8e",
+  "host_sha256": "504c2ba5c3041d2dfb0299fce3853891f5b4eadc1ab256301aa1a1f8665c7919",
+  "host_bytes": 450680,
+  "player_sql_changes_in_installer": false,
+  "legacy_account": 1002,
+  "client291_account": 1004,
+  "live_run": "PENDING"
+}

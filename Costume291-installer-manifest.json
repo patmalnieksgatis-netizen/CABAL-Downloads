@@ -1,9 +1,9 @@
 {
   "file": "Install-Costume291.ps1",
-  "sha256": "28df5b76107b2af567232876edcc7203255dac86da1f5fec8037c5bad66d046e",
-  "bytes": 654358,
+  "sha256": "00821bcea655a03abd7d80fa0fc6e1e353b7093a7f4153e6573a91793ae500dc",
+  "bytes": 659066,
   "client_sha256": "052d41e8653c93f8f6a28a2f54108158986e408ff24df5b06c50d3a9fe57c409",
-  "server_sha256": "2be05c9d2aa76a71db47ad30cae01266c990c419ba8209bf705f644a9e131726",
+  "server_sha256": "504c2ba5c3041d2dfb0299fce3853891f5b4eadc1ab256301aa1a1f8665c7919",
   "target_root": "F:\\CABAL_291_TEST",
   "entry": "Start.bat",
   "test_vm": "192.168.56.101",
