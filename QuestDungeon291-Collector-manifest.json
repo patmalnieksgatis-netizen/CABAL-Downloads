@@ -24,7 +24,7 @@
   "client_only": 1,
   "converter": "tools/quest_dungeon_bulk.py",
   "collector": "Collect-QuestDungeon291.ps1",
-  "collector_sha256": "682f7735ac38ad795462e119ef47bbfd72c5ad3e9ca3ec84111460540372b55a",
+  "collector_sha256": "1e9323386cb11ea748e283ace7e3145d5ff7c9a630027d2fb005966d683d8278",
   "installation_performed": false,
   "gameplay_verified": false,
   "verification": {
@@ -32,7 +32,8 @@
     "powershell_syntax": "PASS",
     "csharp_compile": "PASS",
     "whole_collector_complete_and_partial_fixtures": "PASS, fake SSH/resource API",
-    "all_20_cache_indices": "PASS, actual pinned native filename switch in Unicorn"
+    "all_20_cache_indices": "Superseded by22 verified indices",
+    "all_22_cache_indices": "PASS, actual pinned native switch"
   },
   "next_input": "Downloads/QuestDungeon291-TIMESTAMP-ID.zip, from one running original v291 client and test VM",
   "blocked_on": [
@@ -42,5 +43,11 @@
     "Client goals referring to changed entities require real locations/icons, not retained stale annotations.",
     "Original v291 resource encoding is SDK-dependent: do not run the legacy EP45 encoder.",
     "Updated decoded catalogue and World quest framing must be staged as one profile; current bridge remains unchanged."
-  ]
+  ],
+  "client_resources": 22,
+  "includes_wings": {
+    "78": "forcewing.enc",
+    "79": "forcewing_msg.enc"
+  },
+  "wing_target": "BumbleBee Legend/grade6 level100; old grade3 is not the requested maximum"
 }
