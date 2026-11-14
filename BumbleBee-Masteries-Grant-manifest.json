@@ -4,7 +4,7 @@
   "account": 1004,
   "test_vm": "192.168.56.101",
   "plan_sha256": "9aae323d80d99e311d03504041929a908565d0a2e3d7a2e56fa8564daeec3c94",
-  "script_sha256": "75b270122fbdacddb5de44031d166fe8db9275d2017eee4720bb02859bdd59e0",
+  "script_sha256": "1e76028e3ff3056f25e308d19f66ee8ad0e3ce959c9b55742c30ead1762a02d0",
   "myth_level": 100,
   "myth_score": 27720,
   "honor_grade": 50,
@@ -16,5 +16,12 @@
     6
   ],
   "no_service_restart": true,
-  "actual_database_execution": "Pending user apply; syntax, format, transport and failure tests passed."
+  "actual_database_execution": "No apply receipt received; no corrective write performed",
+  "status": "WITHDRAWN_SUPERSEDED_MAXIMUM_AND_INCORRECT_BADGE_SPLIT",
+  "ready_to_apply": false,
+  "reason": "User maximum means Legend100 and Diamond; old grant split Gold/Platinum by Mastery_Type instead of Badge_Grade.",
+  "correct_native_badge_counts": {
+    "Gold": 64,
+    "Platinum": 94
+  }
 }
