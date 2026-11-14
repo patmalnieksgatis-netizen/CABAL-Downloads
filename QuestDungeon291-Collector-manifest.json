@@ -1,0 +1,46 @@
+{
+  "status": "BULK_CONVERTER_PREPARED_CURRENT_CORPUS_REQUIRED",
+  "client_version": 291,
+  "input_sha256": {
+    "native_quest": "d3589d7727c25e99bed1beb891c11b2e3ba7951844ff94be62d24226fe48b94a",
+    "decoded_client_quest": "b00679f329073e4718ae9f7f3fdee50a4db2033a7ab40b22c9facba950c629a6"
+  },
+  "counts": {
+    "native_quests": 1186,
+    "client_quests": 1173,
+    "shared": 1172,
+    "objective_exact": 1141,
+    "condition_mismatches": 1148,
+    "quests_with_client_dungeon_entry": 474,
+    "objective_mismatches": 31,
+    "mode_mismatches": 6
+  },
+  "condition_field_mismatches": {
+    "max_reputation_class": 1148,
+    "class": 166
+  },
+  "entity_metadata_required_quests": 27,
+  "native_only": 14,
+  "client_only": 1,
+  "converter": "tools/quest_dungeon_bulk.py",
+  "collector": "Collect-QuestDungeon291.ps1",
+  "collector_sha256": "682f7735ac38ad795462e119ef47bbfd72c5ad3e9ca3ec84111460540372b55a",
+  "installation_performed": false,
+  "gameplay_verified": false,
+  "verification": {
+    "bulk_catalogue_and_snapshot_tests": 7,
+    "powershell_syntax": "PASS",
+    "csharp_compile": "PASS",
+    "whole_collector_complete_and_partial_fixtures": "PASS, fake SSH/resource API",
+    "all_20_cache_indices": "PASS, actual pinned native filename switch in Unicorn"
+  },
+  "next_input": "Downloads/QuestDungeon291-TIMESTAMP-ID.zip, from one running original v291 client and test VM",
+  "blocked_on": [
+    "Native dungeon entry/pattern/world/NPC/item definitions need a single current corpus.",
+    "Native UseDungeon entry key must be joined via its actual table; never equated to client dungeon ID.",
+    "Target dungeon/NPC/entry resource schema and quest reward tuple consumer must be verified.",
+    "Client goals referring to changed entities require real locations/icons, not retained stale annotations.",
+    "Original v291 resource encoding is SDK-dependent: do not run the legacy EP45 encoder.",
+    "Updated decoded catalogue and World quest framing must be staged as one profile; current bridge remains unchanged."
+  ]
+}
