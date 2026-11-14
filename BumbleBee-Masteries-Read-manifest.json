@@ -14,9 +14,9 @@
     "Attack",
     "Critical Damage"
   ],
-  "reader_sha256": "b188279c161da7559418dccc5bac1e3365483f2e30a1dd9190b3bf73458267ce",
-  "powershell_sha256": "f671a5a10093d77388bc538b0f9f731a7f7b7385eedfffd6e7243f3f5d84bd8c",
-  "sql_sha256": "00b2716aaaa01dc5392a05a12a252e593abe193fe8c5e096f287b285dfe5cd9b",
+  "reader_sha256": "27eafe422b726e66d65cc2a09d3981a3750b9c2502bb2c39ac5736e1c4e76c89",
+  "powershell_sha256": "4b8543b3b86fc9828acfcaa6128048717df9608145d8d6ad5edf12112dafcd25",
+  "sql_sha256": "cb6f9174f55ded5b01c1413b8be7d5c7aacf4b47c54d0df796b4284337a41dfa",
   "player_changes": false,
   "restart": false,
   "live_profile": "PENDING"
