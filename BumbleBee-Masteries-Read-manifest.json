@@ -14,10 +14,13 @@
     "Attack",
     "Critical Damage"
   ],
-  "reader_sha256": "27eafe422b726e66d65cc2a09d3981a3750b9c2502bb2c39ac5736e1c4e76c89",
-  "powershell_sha256": "4b8543b3b86fc9828acfcaa6128048717df9608145d8d6ad5edf12112dafcd25",
-  "sql_sha256": "cb6f9174f55ded5b01c1413b8be7d5c7aacf4b47c54d0df796b4284337a41dfa",
+  "reader_sha256": "a903af0863bce2dc62e695005907f5885f92b71b46df22e2eb584bbc0c7a9dbe",
+  "powershell_sha256": "00db8bbf29463f3c4208044a42324982188198fcec8534b8b8a41529ca733118",
+  "sql_sha256": "1aeaf508e49e8d2fe94b0691cba83d7ec6dcf968279431866869c4a9a2a80f10",
   "player_changes": false,
   "restart": false,
-  "live_profile": "PENDING"
+  "live_profile": "PENDING",
+  "transport": "Numbered binary HEX chunks, exact byte count and SHA256; explicit sqlcmd Unicode output",
+  "raw_sql_streams_preserved_on_error": true,
+  "partial_zip_saved": true
 }
