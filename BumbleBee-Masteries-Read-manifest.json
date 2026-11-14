@@ -1,0 +1,23 @@
+{
+  "character": "BumbleBee",
+  "character_idx": 16065,
+  "account": 1004,
+  "requested": [
+    "Myth Mastery max",
+    "Honor Medal max",
+    "Merit Mastery max",
+    "Wings max",
+    "All supported rune slots filled/max"
+  ],
+  "priorities": [
+    "Penetration",
+    "Attack",
+    "Critical Damage"
+  ],
+  "reader_sha256": "b188279c161da7559418dccc5bac1e3365483f2e30a1dd9190b3bf73458267ce",
+  "powershell_sha256": "f671a5a10093d77388bc538b0f9f731a7f7b7385eedfffd6e7243f3f5d84bd8c",
+  "sql_sha256": "00b2716aaaa01dc5392a05a12a252e593abe193fe8c5e096f287b285dfe5cd9b",
+  "player_changes": false,
+  "restart": false,
+  "live_profile": "PENDING"
+}
