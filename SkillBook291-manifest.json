@@ -1,0 +1,12 @@
+{
+  "module_sha256": "d6611e1637c890d289d6e3723a894c9994ab7369a9c6dbbdcf959de3f493ddb0",
+  "installer_sha256": "f8955194ef8d85e4fb7f5efe12fa9da483ce935c6850b06dad5d24c7bcdfd71e",
+  "installer_bytes": 72924,
+  "native_world_site": "0x83edb4",
+  "code_bytes_replaced": 5,
+  "continuation": "0x83edb9",
+  "client_changes": false,
+  "sql_changes": false,
+  "stock_or_price_changes": false,
+  "live_install": "PENDING"
+}
