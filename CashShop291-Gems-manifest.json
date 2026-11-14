@@ -1,0 +1,17 @@
+{
+  "status": "PREPARED_FOR_LIVE_TEST",
+  "fault": "0x14022944c",
+  "callsite": "0x14022d5e8",
+  "callsite_original_hex": "498b0c24e85bbeffff",
+  "helper_hex": "ba80000000488b014885c0750b4883c108ffca75f031c0c36683b896010000000f95c00fb6c0c3",
+  "helper_bytes": 39,
+  "helper_sha256": "12f1a12241808038c2f531580d907c449a74bd14f228e20e4ce3aa8f078ea8e0",
+  "old_runtime_sha256": "67efc35781d513a0a068ab8339538cc405bf35a4e6c75708c020cb28da17e240",
+  "new_runtime_sha256": "b79cbcf427ee794c3e3c052cd2f4ca3b065af4099e2d3b2284d9ca9974470839",
+  "installer_sha256": "48ecdf05d4949a93697fdf04497b25cff03d9544f4a5db7e2307d74fd5ebee28",
+  "client_main_changes": false,
+  "server_changes": false,
+  "catalogue_or_slot_changes": false,
+  "entry": "F:\\CABAL_291_TEST\\Start.bat",
+  "live_test": "PENDING"
+}
