@@ -1,6 +1,6 @@
 {
   "status": "PREPARED_FOR_USER_GAMEPLAY_TEST",
-  "installer_sha256": "bd03c7dbf795ce985f4e4b4be09a71dbe41a8af83ae66740e1b763e7dbf3a008",
+  "installer_sha256": "01f00af31df14ef7f77d74de322911fa8949e86c837ecb71f80f56417247d78c",
   "world_sha256": "fb7eb7cdd7f854e80ca8c4042be192f2040acae187a939db32b7ec35a31b05d3",
   "corrected_scalar_dungeon_profiles": 54,
   "copy_profiles": 1141,

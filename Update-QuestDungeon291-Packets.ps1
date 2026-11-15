@@ -67,7 +67,7 @@ $manifest.WorldBridge=$newMetadata
 $manifest|Add-Member -NotePropertyName QuestDungeonPackets -NotePropertyValue ([ordered]@{Version=1;Type2ProgressBytes=0;ExactProfiles=1141;CorrectedScalarDungeonProfiles=54;FullCatalogueAlignment=$false;WindowsGameplay='PENDING'}) -Force
 [IO.File]::WriteAllText((Join-Path $profile 'client291-profile.json'),($manifest|ConvertTo-Json -Depth 32),[Text.Encoding]::UTF8)
 $launchPath=Join-Path $profile 'Launch-Client.ps1'
-$launch=[IO.File]::ReadAllText($launchPath).Replace('QuestNativeZeroProgressProfiles=46','QuestNativeZeroProgressProfiles=0').Replace('Client291-LoginStart-v4_9_8-','Client291-QuestPacket-v1-')
+$launch=[IO.File]::ReadAllText($launchPath).Replace('QuestNativeZeroProgressProfiles=46','QuestSyntheticProgressProfiles=0').Replace('Client291-LoginStart-v4_9_8-','Client291-QuestPacket-v1-')
 [IO.File]::WriteAllText($launchPath,$launch,[Text.Encoding]::UTF8)
 'PARBAUDU_MUSU_RUNTIME_KOMPILACIJU; SPELE_NETIKS_PALAISTA'
 & $compiler /nologo /target:library /platform:x64 /optimize+ ("/out:"+(Join-Path $profile 'Runtime-CompileCheck.dll')) (Join-Path $profile 'Client291-Runtime.cs')
