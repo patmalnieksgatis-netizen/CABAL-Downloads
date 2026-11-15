@@ -1,0 +1,115 @@
+{
+  "status": "PREPARED_NOT_APPLIED",
+  "character": "Storm",
+  "class": "Force Archer",
+  "plan_sha256": "06f2d41dec3dacfa4d03879759250f7a645aa336a73e4a12ead3944af0e23d57",
+  "items": [
+    {
+      "kind": 1060890643436,
+      "option": 536871033,
+      "label": "Dragonium Suit Outrageous",
+      "extreme": 7,
+      "divine": 15,
+      "slots": 2,
+      "normal": 20,
+      "base": 33557484
+    },
+    {
+      "kind": 1060890643445,
+      "option": 536871033,
+      "label": "Dragonium Gloves Outrageous",
+      "extreme": 7,
+      "divine": 15,
+      "slots": 2,
+      "normal": 20,
+      "base": 33557493
+    },
+    {
+      "kind": 1060890643454,
+      "option": 536871033,
+      "label": "Dragonium Boots Outrageous",
+      "extreme": 7,
+      "divine": 15,
+      "slots": 2,
+      "normal": 20,
+      "base": 33557502
+    },
+    {
+      "kind": 1060890643463,
+      "option": 536871033,
+      "label": "Dragonium Headpiece Outrageous",
+      "extreme": 7,
+      "divine": 15,
+      "slots": 2,
+      "normal": 20,
+      "base": 33557511
+    },
+    {
+      "kind": 1060890643425,
+      "option": 536871033,
+      "label": "Dragonium Orb Outrageous",
+      "extreme": 7,
+      "divine": 15,
+      "slots": 2,
+      "normal": 20,
+      "base": 33557473
+    },
+    {
+      "kind": 1060890643425,
+      "option": 536871033,
+      "label": "Dragonium Orb Outrageous",
+      "extreme": 7,
+      "divine": 15,
+      "slots": 2,
+      "normal": 20,
+      "base": 33557473
+    },
+    {
+      "kind": 1056595675235,
+      "option": 536870912,
+      "label": "QW7",
+      "extreme": 6,
+      "divine": 15,
+      "slots": 2,
+      "normal": 20,
+      "base": 33556579
+    }
+  ],
+  "stats_minimum": [
+    140,
+    280,
+    921
+  ],
+  "limitations": [
+    "Legend Wings and Diamond Insignia support is still pending; Wing grant follows active3/100 limit.",
+    "No OLV/Stellar change is claimed."
+  ],
+  "sql_sha256": "fb01ee14521a417bbf72518c8d898a549bc523e3dba771c01b8dc3e1191561ae",
+  "ps_sha256": "96c6fca47272c1595bbf3dc01791bd074b13685945eeaa78de0aa0cd1baa2809",
+  "native_pins": {
+    "Item.scp": "b8b79a3caef7b48d56c1604d51c98be1497e63167916bb3a6f0286218eae6750",
+    "Item2.scp": "0c91422986344bd533be8edd701afb77e70b158a3cfbf39094f9fad0ca94c669",
+    "Item3.scp": "fd09784bc4a582c376a4befa5ef6a7c8f652e68294081da2bafb77559cfb7b80",
+    "Item4.scp": "ef57aaea1f793aecf388f1b209ac80ffb1ccd8e321f6eefcae79c3cdad92d009",
+    "Forcecore_Option.scp": "c756d28f004838b6193078d76c30b809bd1231dfcea91fb19252d8f6c3139db6",
+    "Enchant.scp": "7710a53ab9dc76ea392fd10e073ad0d6c1703a52a8894590ba0fca15515c0db6",
+    "Limit_Upgrade.scp": "7d8cb43dff09c14c885d809aef9856d6fd8aed63311a1dc030393fe3ff096cbd",
+    "DivineUpgrade.scp": "019b3ed7dc05fc0a28b17c0d759e3768f85fa5f35d84c17a13a491bb454e930f",
+    "ForceWing.scp": "a61ac14f2218a44fae34053f93aa4fcd458fe22ae5f97f312443c7df0c47f052",
+    "Myth.scp": "e7935a846efe48d3236739f76642fd6dbb895d09b6832f8e8f1eeb266aa013be",
+    "MeritSystem.scp": "307fc981ec3efe66f6cc1b0606ed7d86cd9e5a6e46205769a9bb34b012464295",
+    "honor_medal.scp": "f12dfaf7c000dcaa55d6ad103f0a9b3b8f50bbb76bb63e1e569630679cd081f9",
+    "Ability.scp": "3c454b297d83ec5f4c61dd9ff877080ae0bad76567d75c65d8dedb1ecc2c48a0",
+    "Const.scp": "962c1fc391d49bb6b35252064aa2bf0eb8b4cb0100aa6e85da75e54d4521132c"
+  },
+  "tests": {
+    "python_native_recipe_sender": 5,
+    "tsql150_full_batch": "PASS",
+    "powershell_parse_receipt_and_payload_match": "PASS",
+    "actual_database_execution": false
+  },
+  "grant_applied": false,
+  "includes_level200_grade20": true,
+  "mail_items": 7,
+  "account_masteries_shared": true
+}
