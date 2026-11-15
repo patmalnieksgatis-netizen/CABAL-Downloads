@@ -1,0 +1,170 @@
+{
+  "status": "PREPARED_NOT_APPLIED",
+  "character": "Storm",
+  "items": [
+    {
+      "kind": 1060890643436,
+      "option": 536871161,
+      "label": "Dragonium Suit Outrageous",
+      "extreme": 7,
+      "divine": 15,
+      "slots": 2,
+      "normal": 20,
+      "base": 33557484
+    },
+    {
+      "kind": 1060890643445,
+      "option": 536871161,
+      "label": "Dragonium Gloves Outrageous",
+      "extreme": 7,
+      "divine": 15,
+      "slots": 2,
+      "normal": 20,
+      "base": 33557493
+    },
+    {
+      "kind": 1060890643454,
+      "option": 536871161,
+      "label": "Dragonium Boots Outrageous",
+      "extreme": 7,
+      "divine": 15,
+      "slots": 2,
+      "normal": 20,
+      "base": 33557502
+    },
+    {
+      "kind": 1060890643463,
+      "option": 536871161,
+      "label": "Dragonium Headpiece Outrageous",
+      "extreme": 7,
+      "divine": 15,
+      "slots": 2,
+      "normal": 20,
+      "base": 33557511
+    },
+    {
+      "kind": 1060890643425,
+      "option": 536871161,
+      "label": "Dragonium Orb Outrageous",
+      "extreme": 7,
+      "divine": 15,
+      "slots": 2,
+      "normal": 20,
+      "base": 33557473
+    },
+    {
+      "kind": 1060890643425,
+      "option": 536871161,
+      "label": "Dragonium Orb Outrageous",
+      "extreme": 7,
+      "divine": 15,
+      "slots": 2,
+      "normal": 20,
+      "base": 33557473
+    },
+    {
+      "kind": 33719943,
+      "option": 0,
+      "label": "Arcana Guardian Chaos +20",
+      "base": 33556103,
+      "chaos": 20,
+      "bonuses": {
+        "5": 400,
+        "7": 360,
+        "78": 125,
+        "74": 125,
+        "57": 7,
+        "1": 320,
+        "72": 220,
+        "158": 12,
+        "153": 6
+      }
+    },
+    {
+      "kind": 33719555,
+      "option": 0,
+      "label": "Arcana Chaos +20",
+      "base": 33555715,
+      "chaos": 20,
+      "bonuses": {
+        "113": 170,
+        "8": 32,
+        "114": 21,
+        "79": 250,
+        "80": 80,
+        "1": 260,
+        "73": 60,
+        "139": 30,
+        "125": 3
+      }
+    },
+    {
+      "kind": 33719556,
+      "option": 0,
+      "label": "Arcana Laws Chaos +20",
+      "base": 33555716,
+      "chaos": 20,
+      "bonuses": {
+        "5": 360,
+        "7": 400,
+        "98": 85,
+        "112": 42,
+        "74": 110,
+        "1": 450,
+        "173": 12,
+        "172": 6,
+        "97": 3
+      }
+    },
+    {
+      "kind": 33718571,
+      "option": 0,
+      "label": "Sage Belt Chaos +20",
+      "base": 33554731,
+      "chaos": 20,
+      "bonuses": {
+        "1": 210,
+        "4": 125,
+        "8": 22,
+        "32": 14,
+        "79": 110,
+        "80": 80
+      }
+    },
+    {
+      "kind": 33719217,
+      "option": 0,
+      "label": "Carnelian Chaos +20",
+      "base": 33555377,
+      "chaos": 20,
+      "bonuses": {
+        "5": 170,
+        "7": 350,
+        "78": 70,
+        "8": 16,
+        "114": 10,
+        "80": 60,
+        "124": 30,
+        "1": 250
+      }
+    }
+  ],
+  "mileage_added_once": 10000,
+  "epic_option": "0x200000F9",
+  "old_wrong_option": "0x20000079",
+  "native_pins": {
+    "Item.scp": "b8b79a3caef7b48d56c1604d51c98be1497e63167916bb3a6f0286218eae6750",
+    "Item2.scp": "0c91422986344bd533be8edd701afb77e70b158a3cfbf39094f9fad0ca94c669",
+    "Item3.scp": "fd09784bc4a582c376a4befa5ef6a7c8f652e68294081da2bafb77559cfb7b80",
+    "Item4.scp": "ef57aaea1f793aecf388f1b209ac80ffb1ccd8e321f6eefcae79c3cdad92d009",
+    "Forcecore_Option.scp": "c756d28f004838b6193078d76c30b809bd1231dfcea91fb19252d8f6c3139db6",
+    "Enchant.scp": "7710a53ab9dc76ea392fd10e073ad0d6c1703a52a8894590ba0fca15515c0db6",
+    "Limit_Upgrade.scp": "7d8cb43dff09c14c885d809aef9856d6fd8aed63311a1dc030393fe3ff096cbd",
+    "DivineUpgrade.scp": "019b3ed7dc05fc0a28b17c0d759e3768f85fa5f35d84c17a13a491bb454e930f",
+    "Chaos_Upgrade.scp": "17132fcbe78e7dc368d44168a267b1522989a4d643759ba112417bd8418523a4"
+  },
+  "original_items_preserved": true,
+  "progression_unchanged": true,
+  "sql_sha256": "dd7590eaf92d16c5df1aaebb8ab5ba80fcd5dea8b9ed52ba24b345a535506f3f",
+  "ps_sha256": "1edde54b02237c43b3047a80da94753875f6d024923dd1150c1e81b123e590f0"
+}
