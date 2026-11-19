@@ -8,7 +8,7 @@ This folder preserves technical work produced by ChatGPT for `MainCmd(485) -> in
 
 1. Read `STATUS.json` for machine-readable facts and current constraints.
 2. Read `HISTORY.md` for stage chronology and previous Windows outcomes.
-3. Browse `source/stage-*/` and `source/clientpatch/` for all recovered **text-only** scripts/tests/reports. Stages P/Q/R are a **failed startup approach**, not active patches.
+3. Extract the tracked archive with `tar -xzf warp485-ep39/sources-text-only.tar.gz` from the repository root (it creates `warp485-ep39/source/...`). Then browse `warp485-ep39/source/stage-*/` and `warp485-ep39/source/clientpatch/` for all recovered **text-only** scripts/tests/reports. Stages P/Q/R are a **failed startup approach**, not active patches.
 4. Prefer original signed x64 `CabalMain.exe`, check its SHA256 `52e7956d4781fea1f0369cac8ab1eac4c3ddec2d1977c6557be53ec2b79885d9`. Original `mapinfo.enc`: `88f7694e476e1ebe5cf55014657194fcc2a4b61c2d83d8c908bf823e538b63fc`.
 5. User has an existing v291 launcher/SDK integration in this repo (`Client291-LoginStart-v4_9_5.zip`, later profiles), but check their README/manifest: many were Windows-unverified or withdrawn. Do not blindly reuse or modify production without audit.
 
