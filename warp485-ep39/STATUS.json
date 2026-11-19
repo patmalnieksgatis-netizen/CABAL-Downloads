@@ -1,0 +1,52 @@
+{
+  "project": "CABAL v291 / EP39 Warp485",
+  "updated": "2026-11-19",
+  "resolution": "NOT_FIXED",
+  "active_server_should_not_be_modified": true,
+  "active_client": "F:\\CABAL_291_TEST",
+  "lab_client": "F:\\CABAL_291_LAB",
+  "original_exe_sha256": "52e7956d4781fea1f0369cac8ab1eac4c3ddec2d1977c6557be53ec2b79885d9",
+  "original_mapinfo_sha256": "88f7694e476e1ebe5cf55014657194fcc2a4b61c2d83d8c908bf823e538b63fc",
+  "server_symptom": "MainCmd(485) -> OnCSCQDungeonLimitCheck(): invalid qdIdx(4380) -> UsrMap Fail -> disconnect",
+  "known_sender_va": "0x1406C9F30",
+  "callback_registration_va": "0x1406C7047",
+  "sender_packet_length": 14,
+  "qdidx_offset_in_packet": "0x0A",
+  "related_world": 8,
+  "warp_reference_id": 675,
+  "stage_p_q_r": "FAILED_WINDOWS_STARTUP",
+  "lab_exe_state": "ORIGINAL_RESTORED",
+  "windows_gameplay_fix_verified": false,
+  "client_integrity_protection_possible": "SIGNED_EXE_AND_SecureEngineSDK64.dll_IMPORT; NOT_CONFIRMED_CRASH_CAUSE",
+  "actions_not_to_repeat": [
+    "Stage P/Q/R in-place exe modification",
+    "bruteforce XOR guess",
+    "label reference-only XML authentic v291",
+    "disable WorldSvr validation",
+    "copy QD IDs indiscriminately"
+  ],
+  "next_direction": "Use original signed EXE + existing legitimate v291 launcher/SDK integration, instrument responsible sender callback, inspect server validation/packet response with safe isolated tests. Do not claim success without real gameplay test.",
+  "observed_results": {
+    "stage_q": {
+      "status": "LAB_CLIENT_LAUNCHED_NOT_GAMEPLAY_VERIFIED",
+      "patched_exe_sha256": "ef4fd980520d52d6ede0785d5de42d7ed90045acfe56c2f86be89c6e317869d1",
+      "copied_files": 57764,
+      "server_modified": false,
+      "gameplay_verified": false
+    },
+    "rollback_after_q": {
+      "status": "ORIGINAL_LAB_PROCESS_ALIVE_AFTER_12S",
+      "original_restored": true,
+      "original_sha256": "52e7956d4781fea1f0369cac8ab1eac4c3ddec2d1977c6557be53ec2b79885d9",
+      "error_events_count": 0
+    },
+    "stage_r": {
+      "applied_sha256": "02f51bb0051243b9da3b4730fc030f6dda491cb691551999e1df0df0ac123daf",
+      "corrected_pe_checksum": "0xe73456",
+      "new_pdata_end_rva": "0x6c9f7f",
+      "user_observed": "LAB client exited quickly; restoring original LAB EXE automatically",
+      "rollback_status": "LAB_ORIGINAL_RESTORED",
+      "original_sha256": "52e7956d4781fea1f0369cac8ab1eac4c3ddec2d1977c6557be53ec2b79885d9"
+    }
+  }
+}

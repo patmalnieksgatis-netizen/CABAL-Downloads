@@ -1,0 +1,1022 @@
+{
+  "generated_at": "2026-11-19",
+  "project": "CABAL v291 / EP39 Warp 485",
+  "root": "warp485-ep39",
+  "status": "UNRESOLVED_NOT_GAMEPLAY_VERIFIED",
+  "archives": {
+    "stage-b": {
+      "original_archive": "CABAL_v291_Warp485_StageB_Offline_20261118.zip",
+      "sha256": "390664ff0deb9d04072ba0f20388844ed34b6fe7f2d8516bb9cc07f52b5a1e1b"
+    },
+    "stage-c": {
+      "original_archive": "CABAL_v291_Warp485_StageC_Offline_20261118.zip",
+      "sha256": "30038d15fde2eb16e6fe7d76892d1f0cd459ff4f49f1ace4d760c1012f4fcce2"
+    },
+    "stage-e": {
+      "original_archive": "CABAL_v291_Warp485_StageE_REFERENCE_ONLY_20261118.zip",
+      "sha256": "7f3e63f1fdb1a358d0115ee024c06807a984254585e1b6920132fc194fd0b40f"
+    },
+    "stage-f": {
+      "original_archive": "CABAL_v291_Warp485_StageF_ReferenceWorldConsistency_20261118.zip",
+      "sha256": "2e634d58988c8a6a4dec6c34c7654215bcc2bfda0d5df6eddd26828321841d60"
+    },
+    "stage-g": {
+      "original_archive": "CABAL_v291_Warp485_StageG_TripleJoin_20261118.zip",
+      "sha256": "85fbb435a7d35e76af7e84220d1f51e29c4aa3d7341a908a1dbce7a57027d3dc"
+    },
+    "stage-h": {
+      "original_archive": "CABAL_v291_Warp485_StageH_OriginalMapinfoCache_20261118.zip",
+      "sha256": "a1df437cd26172ed466d6ceb98b7943542473bebca5e8bd5594f0cf7374c898c"
+    },
+    "stage-i": {
+      "original_archive": "CABAL_v291_Warp485_StageI_AuthenticCaptureAudit_20261118.zip",
+      "sha256": "993b310d86ab1faf2e990eda01141c42f34e7b3778da0f93245ea5a7fc670845"
+    },
+    "stage-j": {
+      "original_archive": "CABAL_v291_Warp485_StageJ_DualModeCapture_20261118.zip",
+      "sha256": "7ccabb4dc5f624aad59ba4d7e90f31b7230ef2377f18cfcd72edccbfedfb8c98"
+    },
+    "clientpatch": {
+      "original_archive": "CABAL_v291_Warp485_ClientPatch_Offline_20261118.zip",
+      "sha256": "a8f9bcc66c95f3dfe25e7fe3f19b968152c8eb4644766005882faca5a3e48669"
+    },
+    "stage-k": {
+      "original_archive": "CABAL_v291_StageK_IndependentOffline_20261118.zip",
+      "sha256": "ac585adf7d236c3b5628a7e1b99c4b6d054f11ea4bf429958469ddffc793f750"
+    },
+    "stage-l": {
+      "original_archive": "CABAL_v291_StageL_CodecLifecycle_20261118.zip",
+      "sha256": "6c325a70fa704d05189048419fae77c2ddb0c8367f482a760e13eda00de6e442"
+    },
+    "stage-m": {
+      "original_archive": "CABAL_v291_StageM_FullEXE_20261118.zip",
+      "sha256": "54e5f509cc1df02cb16b391bf78dcb7676ecfc290a188c748a2fd6d4e8fc39f7"
+    },
+    "stage-n": {
+      "original_archive": "CABAL_v291_StageN_OfflineCandidate_20261118.zip",
+      "sha256": "bc6bb2e81c7caf357899c684ef277e723a0c302d81d1ae59c95fec940767f55a"
+    },
+    "stage-o": {
+      "original_archive": "CABAL_v291_StageO_RuntimeKey_20261118.zip",
+      "sha256": "fbb3d9548d24d1646224107ac37e99b676d0a0289da3940aba58724297a898a9"
+    },
+    "stage-p": {
+      "original_archive": "CABAL_v291_Warp485_StageP_BinaryGuard_LAB_20261119.zip",
+      "sha256": "e6ac9d55f8c0f267f57d1cb75bbff61577fef8d78bc11c56e998e5a73f62f5e6"
+    },
+    "stage-q": {
+      "original_archive": "CABAL_v291_Warp485_StageQ_LAB_20261119.zip",
+      "sha256": "dfcedb40b4f037a431dcb7821b22471faaf4925d7e59119de84bac502e5396b1"
+    },
+    "stage-r": {
+      "original_archive": "CABAL_v291_Warp485_StageR_StructuralFix_LAB_20261119.zip",
+      "sha256": "0bec5aee3c4172242e90956cb128a5b80ea1a8856caf0f351cdf5720b9781c60"
+    },
+    "lab-recovery": {
+      "original_archive": "CABAL_v291_LAB_StartupRecovery_20261119.zip",
+      "sha256": "3d52313801032a6f0e4a222d161e6116668d499ac82685400773f6ccdc204929"
+    }
+  },
+  "files": [
+    {
+      "path": "source/stage-b/README_LV.md",
+      "bytes": 2977,
+      "sha256": "c8d176e791b6c508730b6cf323cf7b3f8e69a6b64ac57a67a3a65f09a9816bc9",
+      "original_zip": "CABAL_v291_Warp485_StageB_Offline_20261118.zip"
+    },
+    {
+      "path": "source/stage-b/warp485_gate.py",
+      "bytes": 5721,
+      "sha256": "5d6262098ad311c0c142efde8964b92268f48f501d4f0a4de8f040aa432957c8",
+      "original_zip": "CABAL_v291_Warp485_StageB_Offline_20261118.zip"
+    },
+    {
+      "path": "source/stage-b/test_gate.py",
+      "bytes": 2954,
+      "sha256": "53db8b5c8d886e61586a2889525f94687e6407bb3f6fd5aaaae11f10cb9c2700",
+      "original_zip": "CABAL_v291_Warp485_StageB_Offline_20261118.zip"
+    },
+    {
+      "path": "source/stage-b/binary_xrefs.txt",
+      "bytes": 7967,
+      "sha256": "a93da13031c4f221aee6ef6201250a63bfce4e197f97c8b31a98750086695b6e",
+      "original_zip": "CABAL_v291_Warp485_StageB_Offline_20261118.zip"
+    },
+    {
+      "path": "source/stage-c/test_stage_c.py",
+      "bytes": 5950,
+      "sha256": "60aebe9fe2a9b147fe18d94012c36f417b3ea105421b669d18dc34b12935af5e",
+      "original_zip": "CABAL_v291_Warp485_StageC_Offline_20261118.zip"
+    },
+    {
+      "path": "source/stage-c/README_LV.md",
+      "bytes": 4429,
+      "sha256": "86c7fa3358c14bf2890d43ecf5980ca4a55e4815239b0f7d6d826c7da05e6a65",
+      "original_zip": "CABAL_v291_Warp485_StageC_Offline_20261118.zip"
+    },
+    {
+      "path": "source/stage-c/WorldSvr_Log_Excerpt.txt",
+      "bytes": 415,
+      "sha256": "8cb96f3c562e789f91c9bf635641a82e3af55b72803c6dd7f1890949afd246f8",
+      "original_zip": "CABAL_v291_Warp485_StageC_Offline_20261118.zip"
+    },
+    {
+      "path": "source/stage-c/stage_c_audit.py",
+      "bytes": 6751,
+      "sha256": "56e37b0b08df855eb8218617e4f9948a4f8e7fad34e6ecc9d820fe031f9535a7",
+      "original_zip": "CABAL_v291_Warp485_StageC_Offline_20261118.zip"
+    },
+    {
+      "path": "source/stage-c/mapinfo_485_stager.py",
+      "bytes": 4182,
+      "sha256": "2d1c3d1f8ed9a9d4ad30b4009d5d1bd0db4860c6ba91e1b768aff5f7a93b818c",
+      "original_zip": "CABAL_v291_Warp485_StageC_Offline_20261118.zip"
+    },
+    {
+      "path": "source/stage-c/WorldSvr_Log_Full.txt",
+      "bytes": 13391,
+      "sha256": "e592109db636c4ee5f4f4477e1c9cc9f4bb5e2ad6fdd25e2d5c9a9da0c5273d2",
+      "original_zip": "CABAL_v291_Warp485_StageC_Offline_20261118.zip"
+    },
+    {
+      "path": "source/stage-c/checksums.json",
+      "bytes": 1052,
+      "sha256": "31771cdf6e2d03d96bd7e469e479e96895ce913efc80b0f6a3ca4a0408d3a85e",
+      "original_zip": "CABAL_v291_Warp485_StageC_Offline_20261118.zip"
+    },
+    {
+      "path": "source/stage-c/report.json",
+      "bytes": 1518,
+      "sha256": "885d3873ea04779fec5ecfa1050e00a4276303c91abaceafd2dcee7b3ea38454",
+      "original_zip": "CABAL_v291_Warp485_StageC_Offline_20261118.zip"
+    },
+    {
+      "path": "source/stage-e/README_LV.md",
+      "bytes": 2712,
+      "sha256": "ce65b070bc61e5ba5622af61ae991691202d21f7aa88dad422342d3c5b6faf0c",
+      "original_zip": "CABAL_v291_Warp485_StageE_REFERENCE_ONLY_20261118.zip"
+    },
+    {
+      "path": "source/stage-e/mapinfo_warp675_guard.py",
+      "bytes": 6265,
+      "sha256": "27e92156f3dacd45b6f87ac85bfeadcd211d0fa4784985a405701b7d5ab6ce3c",
+      "original_zip": "CABAL_v291_Warp485_StageE_REFERENCE_ONLY_20261118.zip"
+    },
+    {
+      "path": "source/stage-e/report.json",
+      "bytes": 673,
+      "sha256": "2dbeeec21ee61ef4431e131baea4004b5f002e67ac64d93b123c1e6dfd043b85",
+      "original_zip": "CABAL_v291_Warp485_StageE_REFERENCE_ONLY_20261118.zip"
+    },
+    {
+      "path": "source/stage-e/test_stage_e.py",
+      "bytes": 2523,
+      "sha256": "6b5c9f6f97537df615f85c14e46fb3a20ef1acf4b5c569df92a8d24b3ef3d6d6",
+      "original_zip": "CABAL_v291_Warp485_StageE_REFERENCE_ONLY_20261118.zip"
+    },
+    {
+      "path": "source/stage-e/unit_test_log.txt",
+      "bytes": 930,
+      "sha256": "f64ed33472358b40f52203f6986688dca0c12cd008df126e18ac08d36dc2bbe0",
+      "original_zip": "CABAL_v291_Warp485_StageE_REFERENCE_ONLY_20261118.zip"
+    },
+    {
+      "path": "source/stage-e/unsupported_reference_menu_audit.json",
+      "bytes": 1923,
+      "sha256": "8f990d1ef7e82329b392809e0a25b85206c878e85136bea8119b052750a7239e",
+      "original_zip": "CABAL_v291_Warp485_StageE_REFERENCE_ONLY_20261118.zip"
+    },
+    {
+      "path": "source/stage-f/README_LV.md",
+      "bytes": 2645,
+      "sha256": "4eadb01cbced35b5f64df1c66d083d1d58775e48edbd75a17c5ff5fd416ba03b",
+      "original_zip": "CABAL_v291_Warp485_StageF_ReferenceWorldConsistency_20261118.zip"
+    },
+    {
+      "path": "source/stage-f/test_stage_f.py",
+      "bytes": 4164,
+      "sha256": "b8297b348a3018d4e347fc122b0f8e0f9e256a4b782f4255557d35e6f918b393",
+      "original_zip": "CABAL_v291_Warp485_StageF_ReferenceWorldConsistency_20261118.zip"
+    },
+    {
+      "path": "source/stage-f/warp_registry_world_audit.py",
+      "bytes": 8130,
+      "sha256": "16fabdc4c6eab50b06d5785a762ea541b21fc7185f0d5857ee0e9fd44d5fefd8",
+      "original_zip": "CABAL_v291_Warp485_StageF_ReferenceWorldConsistency_20261118.zip"
+    },
+    {
+      "path": "source/stage-f/test_results.txt",
+      "bytes": 1533,
+      "sha256": "fe08a97c8fefd693a77c8bc7a989fade580706c1144f42301e021980c8da4453",
+      "original_zip": "CABAL_v291_Warp485_StageF_ReferenceWorldConsistency_20261118.zip"
+    },
+    {
+      "path": "source/stage-f/analysis_stdout.json",
+      "bytes": 4529,
+      "sha256": "4d42c5e3ec4469a29febec6a1dfb3a0a00f11b3baef045b7386445143323413c",
+      "original_zip": "CABAL_v291_Warp485_StageF_ReferenceWorldConsistency_20261118.zip"
+    },
+    {
+      "path": "source/stage-f/report.json",
+      "bytes": 4528,
+      "sha256": "098f9fa29d49591b7e528826d14df0736016194d14b5d9aa1d85693e6ac266f8",
+      "original_zip": "CABAL_v291_Warp485_StageF_ReferenceWorldConsistency_20261118.zip"
+    },
+    {
+      "path": "source/stage-g/README_LV.md",
+      "bytes": 4104,
+      "sha256": "5bd42724ce029cb1e2b0b879e1d2c1552b15ac079bd97665850138441e4e3c82",
+      "original_zip": "CABAL_v291_Warp485_StageG_TripleJoin_20261118.zip"
+    },
+    {
+      "path": "source/stage-g/triple_join_audit.py",
+      "bytes": 6384,
+      "sha256": "a422367d027e1526c077b29691bf9aa359483317a8b2420dc4713c3b6044ed07",
+      "original_zip": "CABAL_v291_Warp485_StageG_TripleJoin_20261118.zip"
+    },
+    {
+      "path": "source/stage-g/test_stage_g.py",
+      "bytes": 4750,
+      "sha256": "d6c46acda5db10d4f39bb4eda52aee2734e523817524c6b0af9f8a834d2c0201",
+      "original_zip": "CABAL_v291_Warp485_StageG_TripleJoin_20261118.zip"
+    },
+    {
+      "path": "source/stage-g/test_results.txt",
+      "bytes": 98,
+      "sha256": "13f47c221b6e1ffbd488ec3100997bdfe1112f256126880ad2b06ea62b095b82",
+      "original_zip": "CABAL_v291_Warp485_StageG_TripleJoin_20261118.zip"
+    },
+    {
+      "path": "source/stage-g/summary.json",
+      "bytes": 564,
+      "sha256": "d188a42f1c84b3c42237b160bf601f6b4a7294c248e1b2a58ff12753c956a9ba",
+      "original_zip": "CABAL_v291_Warp485_StageG_TripleJoin_20261118.zip"
+    },
+    {
+      "path": "source/stage-g/report.json",
+      "bytes": 26505,
+      "sha256": "11cdf4da0ffb84d207519326e36ff51a6f69fc7aa8e6d9d0d5fa41f2e433424f",
+      "original_zip": "CABAL_v291_Warp485_StageG_TripleJoin_20261118.zip"
+    },
+    {
+      "path": "source/stage-g/SHA256.json",
+      "bytes": 741,
+      "sha256": "3de15e9a3f06e2c7afcd91a1df5aa2329517d73a55d2cc9e2019f4046ad828d2",
+      "original_zip": "CABAL_v291_Warp485_StageG_TripleJoin_20261118.zip"
+    },
+    {
+      "path": "source/stage-h/SHA256.json",
+      "bytes": 793,
+      "sha256": "54fba6d649c34eee365e649b981c9b6a3729aaff15bc7bf8b452f8ea68b0e272",
+      "original_zip": "CABAL_v291_Warp485_StageH_OriginalMapinfoCache_20261118.zip"
+    },
+    {
+      "path": "source/stage-h/Collect-Original-v291-Mapinfo.ps1",
+      "bytes": 4266,
+      "sha256": "f78d264865ba81576906ef0897cb6fb2df2feb9396765949c37b3160d5695588",
+      "original_zip": "CABAL_v291_Warp485_StageH_OriginalMapinfoCache_20261118.zip"
+    },
+    {
+      "path": "source/stage-h/README_LV.md",
+      "bytes": 3266,
+      "sha256": "c20f2af96a4d4db9bd8b896d8321ddaaee19546c7253731f99d0d95381be0e81",
+      "original_zip": "CABAL_v291_Warp485_StageH_OriginalMapinfoCache_20261118.zip"
+    },
+    {
+      "path": "source/stage-h/test_results.txt",
+      "bytes": 1507,
+      "sha256": "a60570a0c1ed3cf3d6fb8f269d1b4e48a5a233bee11a5e4bac3a48f1ef12b0dc",
+      "original_zip": "CABAL_v291_Warp485_StageH_OriginalMapinfoCache_20261118.zip"
+    },
+    {
+      "path": "source/stage-h/test_stage_h.py",
+      "bytes": 5200,
+      "sha256": "3f3198c0b233602327f246d51185b574e13131385b506386de07beb9051fc0bf",
+      "original_zip": "CABAL_v291_Warp485_StageH_OriginalMapinfoCache_20261118.zip"
+    },
+    {
+      "path": "source/stage-h/Mapinfo291CacheReader.cs",
+      "bytes": 5933,
+      "sha256": "7c52690016b80f3dab832202b269067db79e81c6df36684fbb677804f1acfcb1",
+      "original_zip": "CABAL_v291_Warp485_StageH_OriginalMapinfoCache_20261118.zip"
+    },
+    {
+      "path": "source/stage-h/Palaist-Original-Mapinfo.cmd",
+      "bytes": 151,
+      "sha256": "8afc87069596e84ce34eca9eaf9bc1d8cf1e0636d96438d2cc821a82efb0b8f4",
+      "original_zip": "CABAL_v291_Warp485_StageH_OriginalMapinfoCache_20261118.zip"
+    },
+    {
+      "path": "source/stage-i/Collect-Original-v291-Mapinfo.ps1",
+      "bytes": 4433,
+      "sha256": "3f270c85b00f2684f302364dfc1ed543d951e3e3a41c9ec28331c584dae9180d",
+      "original_zip": "CABAL_v291_Warp485_StageI_AuthenticCaptureAudit_20261118.zip"
+    },
+    {
+      "path": "source/stage-i/Mapinfo291CacheReader.cs",
+      "bytes": 7068,
+      "sha256": "aabbe404de49f758c81d9c2b853de0c254658d38b5f4c4477be74771a174810b",
+      "original_zip": "CABAL_v291_Warp485_StageI_AuthenticCaptureAudit_20261118.zip"
+    },
+    {
+      "path": "source/stage-i/Palaist-Original-Mapinfo.cmd",
+      "bytes": 151,
+      "sha256": "8afc87069596e84ce34eca9eaf9bc1d8cf1e0636d96438d2cc821a82efb0b8f4",
+      "original_zip": "CABAL_v291_Warp485_StageI_AuthenticCaptureAudit_20261118.zip"
+    },
+    {
+      "path": "source/stage-i/README_LV.md",
+      "bytes": 4868,
+      "sha256": "114b55c59f5dfce636ea51477c786e0bee198ee38ee9049e9dc207db88081d65",
+      "original_zip": "CABAL_v291_Warp485_StageI_AuthenticCaptureAudit_20261118.zip"
+    },
+    {
+      "path": "source/stage-i/SHA256.json",
+      "bytes": 1150,
+      "sha256": "647667b7467b102a307221983c5e33fce9105ab8450e66db557b7406d492b6fe",
+      "original_zip": "CABAL_v291_Warp485_StageI_AuthenticCaptureAudit_20261118.zip"
+    },
+    {
+      "path": "source/stage-i/test_results.txt",
+      "bytes": 1639,
+      "sha256": "98d7536236aa015ac59b184033ee5149e961618a04bcbfa9bcb56bfa4dcb5416",
+      "original_zip": "CABAL_v291_Warp485_StageI_AuthenticCaptureAudit_20261118.zip"
+    },
+    {
+      "path": "source/stage-i/test_stage_i.py",
+      "bytes": 6051,
+      "sha256": "39f57cbdfd5d48bbd0c332589a05205a378f2499b96763102dbf1c31471e71f5",
+      "original_zip": "CABAL_v291_Warp485_StageI_AuthenticCaptureAudit_20261118.zip"
+    },
+    {
+      "path": "source/stage-i/triple_join_audit.py",
+      "bytes": 6384,
+      "sha256": "a422367d027e1526c077b29691bf9aa359483317a8b2420dc4713c3b6044ed07",
+      "original_zip": "CABAL_v291_Warp485_StageI_AuthenticCaptureAudit_20261118.zip"
+    },
+    {
+      "path": "source/stage-i/validate_capture_and_audit.py",
+      "bytes": 5290,
+      "sha256": "c788dc464ce32e14ecef262ccbaf981509c1100bca509428d6400a9161b56bd5",
+      "original_zip": "CABAL_v291_Warp485_StageI_AuthenticCaptureAudit_20261118.zip"
+    },
+    {
+      "path": "source/stage-j/Collect-Original-v291-Mapinfo.ps1",
+      "bytes": 5921,
+      "sha256": "de133ff5c2e0923f9a1d216ce722ce27523ef63a9658010df0530814ae02e9f1",
+      "original_zip": "CABAL_v291_Warp485_StageJ_DualModeCapture_20261118.zip"
+    },
+    {
+      "path": "source/stage-j/Mapinfo291CacheReader.cs",
+      "bytes": 7068,
+      "sha256": "aabbe404de49f758c81d9c2b853de0c254658d38b5f4c4477be74771a174810b",
+      "original_zip": "CABAL_v291_Warp485_StageJ_DualModeCapture_20261118.zip"
+    },
+    {
+      "path": "source/stage-j/Palaist-Bez-Login.cmd",
+      "bytes": 164,
+      "sha256": "70da98b2deedc07d14d10d5551898efb1d033817c18ec6e40b62bd3015e31344",
+      "original_zip": "CABAL_v291_Warp485_StageJ_DualModeCapture_20261118.zip"
+    },
+    {
+      "path": "source/stage-j/Palaist-Pievienosanos.cmd",
+      "bytes": 164,
+      "sha256": "7f9e0cc37716e99ffe2b29ab0dcd97cb60a71203e710f9b0268b439ec0f39eb5",
+      "original_zip": "CABAL_v291_Warp485_StageJ_DualModeCapture_20261118.zip"
+    },
+    {
+      "path": "source/stage-j/README_LV.md",
+      "bytes": 3851,
+      "sha256": "472c4b793cc7714186e2da9e67fbaab7ed096bd19c868f73099cf9b1373089fa",
+      "original_zip": "CABAL_v291_Warp485_StageJ_DualModeCapture_20261118.zip"
+    },
+    {
+      "path": "source/stage-j/SHA256.json",
+      "bytes": 1741,
+      "sha256": "2caf75291c47a4546726f9a9051b0e134b7b094ca1d620b9156f8c5469aa4888",
+      "original_zip": "CABAL_v291_Warp485_StageJ_DualModeCapture_20261118.zip"
+    },
+    {
+      "path": "source/stage-j/test_results.txt",
+      "bytes": 990,
+      "sha256": "15d4bb40c781a9b60a41c4a0e617f296ba4d122bf28e32d72ecaabe295a7babd",
+      "original_zip": "CABAL_v291_Warp485_StageJ_DualModeCapture_20261118.zip"
+    },
+    {
+      "path": "source/stage-j/test_stage_j.py",
+      "bytes": 4657,
+      "sha256": "00dcabb8be35a913fb3b383949e960dec694010fa59a7f6c88a406259dbc1e9b",
+      "original_zip": "CABAL_v291_Warp485_StageJ_DualModeCapture_20261118.zip"
+    },
+    {
+      "path": "source/stage-j/triple_join_audit.py",
+      "bytes": 6384,
+      "sha256": "a422367d027e1526c077b29691bf9aa359483317a8b2420dc4713c3b6044ed07",
+      "original_zip": "CABAL_v291_Warp485_StageJ_DualModeCapture_20261118.zip"
+    },
+    {
+      "path": "source/stage-j/validate_capture_and_audit.py",
+      "bytes": 6200,
+      "sha256": "998a24f3cc5e934f98e5319d1a240c92ac05e49cf3253a967fdce69f1b097747",
+      "original_zip": "CABAL_v291_Warp485_StageJ_DualModeCapture_20261118.zip"
+    },
+    {
+      "path": "source/clientpatch/validate_capture_and_audit.py",
+      "bytes": 6200,
+      "sha256": "998a24f3cc5e934f98e5319d1a240c92ac05e49cf3253a967fdce69f1b097747",
+      "original_zip": "CABAL_v291_Warp485_ClientPatch_Offline_20261118.zip"
+    },
+    {
+      "path": "source/clientpatch/build_client_candidate.py",
+      "bytes": 8521,
+      "sha256": "5240ffa40560f83f7a80042d22ff62730a0679f026ccc6a42247784162faa36a",
+      "original_zip": "CABAL_v291_Warp485_ClientPatch_Offline_20261118.zip"
+    },
+    {
+      "path": "source/clientpatch/SHA256.json",
+      "bytes": 1204,
+      "sha256": "d63465655947b4ad4d92a9514962a9cb93613d54a1942f4b5b0c942a0191727a",
+      "original_zip": "CABAL_v291_Warp485_ClientPatch_Offline_20261118.zip"
+    },
+    {
+      "path": "source/clientpatch/Collect-Original-v291-Mapinfo.ps1",
+      "bytes": 5921,
+      "sha256": "de133ff5c2e0923f9a1d216ce722ce27523ef63a9658010df0530814ae02e9f1",
+      "original_zip": "CABAL_v291_Warp485_ClientPatch_Offline_20261118.zip"
+    },
+    {
+      "path": "source/clientpatch/README_LV.md",
+      "bytes": 3373,
+      "sha256": "6cfd8c28f3e0849207dec703638d5e453d1e8cc5d9c5cb3a88e9bcd36a3f1a7e",
+      "original_zip": "CABAL_v291_Warp485_ClientPatch_Offline_20261118.zip"
+    },
+    {
+      "path": "source/clientpatch/Palaist-Pievienosanos.cmd",
+      "bytes": 164,
+      "sha256": "7f9e0cc37716e99ffe2b29ab0dcd97cb60a71203e710f9b0268b439ec0f39eb5",
+      "original_zip": "CABAL_v291_Warp485_ClientPatch_Offline_20261118.zip"
+    },
+    {
+      "path": "source/clientpatch/triple_join_audit.py",
+      "bytes": 6384,
+      "sha256": "a422367d027e1526c077b29691bf9aa359483317a8b2420dc4713c3b6044ed07",
+      "original_zip": "CABAL_v291_Warp485_ClientPatch_Offline_20261118.zip"
+    },
+    {
+      "path": "source/clientpatch/test_client_candidate.py",
+      "bytes": 4585,
+      "sha256": "1604858571c3afe15a22b30bd025693d4c302b609e07e06042070289cc35fe56",
+      "original_zip": "CABAL_v291_Warp485_ClientPatch_Offline_20261118.zip"
+    },
+    {
+      "path": "source/clientpatch/Palaist-Bez-Login.cmd",
+      "bytes": 164,
+      "sha256": "70da98b2deedc07d14d10d5551898efb1d033817c18ec6e40b62bd3015e31344",
+      "original_zip": "CABAL_v291_Warp485_ClientPatch_Offline_20261118.zip"
+    },
+    {
+      "path": "source/clientpatch/test_results.txt",
+      "bytes": 1953,
+      "sha256": "4fb41e54be1d3e87e30ad2758f2460e4d3f43358295edca3071e1b2d581ca58a",
+      "original_zip": "CABAL_v291_Warp485_ClientPatch_Offline_20261118.zip"
+    },
+    {
+      "path": "source/clientpatch/Mapinfo291CacheReader.cs",
+      "bytes": 7068,
+      "sha256": "aabbe404de49f758c81d9c2b853de0c254658d38b5f4c4477be74771a174810b",
+      "original_zip": "CABAL_v291_Warp485_ClientPatch_Offline_20261118.zip"
+    },
+    {
+      "path": "source/stage-k/README_LV.md",
+      "bytes": 5246,
+      "sha256": "d623920d87d9cfee123a6ba14176e4967bf3fa51a6e38442a3903eea9185cdf0",
+      "original_zip": "CABAL_v291_StageK_IndependentOffline_20261118.zip"
+    },
+    {
+      "path": "source/stage-k/Palaist-StageK-Offline.cmd",
+      "bytes": 311,
+      "sha256": "c3df338025e08ed25a2624e1e458704a2e031dda354ff75b488d903619724b0a",
+      "original_zip": "CABAL_v291_StageK_IndependentOffline_20261118.zip"
+    },
+    {
+      "path": "source/stage-k/stagek_report.json",
+      "bytes": 1908,
+      "sha256": "090dfd4e86c01f622c1d8cfc6b2da504478d0bd36b6c1063404729c6b692db0f",
+      "original_zip": "CABAL_v291_StageK_IndependentOffline_20261118.zip"
+    },
+    {
+      "path": "source/stage-k/test_results.txt",
+      "bytes": 353,
+      "sha256": "2d8d18e7867d4d807253f67c7361a9cd997af509fb0c7630fe4500373f9f0567",
+      "original_zip": "CABAL_v291_StageK_IndependentOffline_20261118.zip"
+    },
+    {
+      "path": "source/stage-k/tools/stagek_audit.py",
+      "bytes": 7806,
+      "sha256": "6f515158c329154539a7339bbcd8dc9dab5c5887277ba63311aa196aec03236e",
+      "original_zip": "CABAL_v291_StageK_IndependentOffline_20261118.zip"
+    },
+    {
+      "path": "source/stage-k/tools/test_stagek.py",
+      "bytes": 2079,
+      "sha256": "8f56b821111a188be227e98ab13a70583a372faeba472eec549af2063931948e",
+      "original_zip": "CABAL_v291_StageK_IndependentOffline_20261118.zip"
+    },
+    {
+      "path": "source/stage-l/Palaist-StageL-Code-Collector.cmd",
+      "bytes": 153,
+      "sha256": "4956573e1bfc8dfacc43d5ad4e66654616f18a935f42406a17c6af33cafbd788",
+      "original_zip": "CABAL_v291_StageL_CodecLifecycle_20261118.zip"
+    },
+    {
+      "path": "source/stage-l/README_LV.md",
+      "bytes": 5412,
+      "sha256": "91dc606a58109a66e1540472bf02fce032bb59222f24233d2592aee71f0a7141",
+      "original_zip": "CABAL_v291_StageL_CodecLifecycle_20261118.zip"
+    },
+    {
+      "path": "source/stage-l/evidence/lifecycle_report.json",
+      "bytes": 897,
+      "sha256": "e5d3fbafcd779ceb44bea5a05dbfa442d3f236a4d07c566860b68e57242fd71f",
+      "original_zip": "CABAL_v291_StageL_CodecLifecycle_20261118.zip"
+    },
+    {
+      "path": "source/stage-l/evidence/mapinfo_header_probe.txt",
+      "bytes": 49,
+      "sha256": "5d40683122c3720c05858c85c2c6c2cdb49549e792ec94e27cc14925c339ba81",
+      "original_zip": "CABAL_v291_StageL_CodecLifecycle_20261118.zip"
+    },
+    {
+      "path": "source/stage-l/evidence/next_step.json",
+      "bytes": 814,
+      "sha256": "dfb7b0b954707803e3ce12c6f738bee293024277a3ed78d07c5b4ac87f48f284",
+      "original_zip": "CABAL_v291_StageL_CodecLifecycle_20261118.zip"
+    },
+    {
+      "path": "source/stage-l/evidence/shared_header_probe.txt",
+      "bytes": 50,
+      "sha256": "6699e6d2d5c67b09f7cc72bbffc69612799c38f7347dd222090ed9cd0b2497d5",
+      "original_zip": "CABAL_v291_StageL_CodecLifecycle_20261118.zip"
+    },
+    {
+      "path": "source/stage-l/tools/audit_lifecycle.py",
+      "bytes": 2985,
+      "sha256": "e13a5ec056295fb22c1a1a04697eb715b03e8e0a70065bacfcb0d2b240592791",
+      "original_zip": "CABAL_v291_StageL_CodecLifecycle_20261118.zip"
+    },
+    {
+      "path": "source/stage-l/tools/codec_mapinfo_header_probe.cpp",
+      "bytes": 2284,
+      "sha256": "931fac1452965f6b530d13f0e4f5bac4fff2eb83c9017d30296e945ba3f6a2d1",
+      "original_zip": "CABAL_v291_StageL_CodecLifecycle_20261118.zip"
+    },
+    {
+      "path": "source/stage-l/tools/codec_shared_header_probe.cpp",
+      "bytes": 1916,
+      "sha256": "4431f5622c3476725b06ae6c94b834a3ac8f7a56f91fe2be5e6c7a67b6101b1c",
+      "original_zip": "CABAL_v291_StageL_CodecLifecycle_20261118.zip"
+    },
+    {
+      "path": "source/stage-l/tools/collect_missing_codec.py",
+      "bytes": 3994,
+      "sha256": "10dd7caaa188aaf10a4336a901dd7e4cf37ed1ff8829a5e6a34b682c7a6872de",
+      "original_zip": "CABAL_v291_StageL_CodecLifecycle_20261118.zip"
+    },
+    {
+      "path": "source/stage-m/Palaist-Mapinfo-Agrina-Nolasishana.cmd",
+      "bytes": 254,
+      "sha256": "f8d35fca488964acf1a7654be600d8f1310843057816c11284639e96453c6e23",
+      "original_zip": "CABAL_v291_StageM_FullEXE_20261118.zip"
+    },
+    {
+      "path": "source/stage-m/README_LV.md",
+      "bytes": 5603,
+      "sha256": "b630804bc9c88981547416fbdc623784b6e5b91a3c70eacb5ba458bd0a121704",
+      "original_zip": "CABAL_v291_StageM_FullEXE_20261118.zip"
+    },
+    {
+      "path": "source/stage-m/evidence/direct_reader_audit.json",
+      "bytes": 3441,
+      "sha256": "04d8aa33f9aacddc18eb2718457a061cf91e03cb2b65061d5e66281151a9dfa4",
+      "original_zip": "CABAL_v291_StageM_FullEXE_20261118.zip"
+    },
+    {
+      "path": "source/stage-m/evidence/native_call_chain.txt",
+      "bytes": 7533,
+      "sha256": "c799b8a1896f88de0f39d2cfb50530efb976b49a37cb13590f2183bfef85669a",
+      "original_zip": "CABAL_v291_StageM_FullEXE_20261118.zip"
+    },
+    {
+      "path": "source/stage-m/evidence/previous_candidate_regression.txt",
+      "bytes": 1745,
+      "sha256": "c1e5abfd9bcea291e1ba821fb7e9ace5b780b784678f78917e664e666e43ffd8",
+      "original_zip": "CABAL_v291_StageM_FullEXE_20261118.zip"
+    },
+    {
+      "path": "source/stage-m/evidence/test_results.txt",
+      "bytes": 1458,
+      "sha256": "978f391707d745be2d9e3a8c4bf914dd486997d4b23fb7914be8e7ead0607eed",
+      "original_zip": "CABAL_v291_StageM_FullEXE_20261118.zip"
+    },
+    {
+      "path": "source/stage-m/manifest.json",
+      "bytes": 1480,
+      "sha256": "49ee48dea19a006fa7619dea93848fdac5d6955ddb3285c531fadc338399b147",
+      "original_zip": "CABAL_v291_StageM_FullEXE_20261118.zip"
+    },
+    {
+      "path": "source/stage-m/tools/capture_mapinfo_early.py",
+      "bytes": 9441,
+      "sha256": "7b42dd4b8502492dc19023e1e7740c25f2f0568377c1812712936ea93feffddb",
+      "original_zip": "CABAL_v291_StageM_FullEXE_20261118.zip"
+    },
+    {
+      "path": "source/stage-m/tools/test_stage_m.py",
+      "bytes": 3586,
+      "sha256": "911d24598cf1bb5499292842e9ac0f59c3c26d5a5766e395ef78fb025b32a3b4",
+      "original_zip": "CABAL_v291_StageM_FullEXE_20261118.zip"
+    },
+    {
+      "path": "source/stage-m/tools/verify_loader_path.py",
+      "bytes": 5974,
+      "sha256": "3a764b9b29b77cc54ea3e3331e986b9cbc2166fc7fb7b593209d3c43b7c20832",
+      "original_zip": "CABAL_v291_StageM_FullEXE_20261118.zip"
+    },
+    {
+      "path": "source/stage-n/tools/research_repeat_xor4_dynamic.cpp",
+      "bytes": 1900,
+      "sha256": "1ae3e2334607e5cce45592ab73bda640f515a84afed7ed2b620fddb050004818",
+      "original_zip": "CABAL_v291_StageN_OfflineCandidate_20261118.zip"
+    },
+    {
+      "path": "source/stage-n/tools/stage_n_one_shot_windows.py",
+      "bytes": 2346,
+      "sha256": "a6bfe35de76cbc92f096434499d73a61e5eb170a4ad6788b7f93b6c5d9ee6722",
+      "original_zip": "CABAL_v291_StageN_OfflineCandidate_20261118.zip"
+    },
+    {
+      "path": "source/stage-n/tools/validate_capture_and_audit.py",
+      "bytes": 6200,
+      "sha256": "998a24f3cc5e934f98e5319d1a240c92ac05e49cf3253a967fdce69f1b097747",
+      "original_zip": "CABAL_v291_StageN_OfflineCandidate_20261118.zip"
+    },
+    {
+      "path": "source/stage-n/tools/verify_loader_path.py",
+      "bytes": 5974,
+      "sha256": "3a764b9b29b77cc54ea3e3331e986b9cbc2166fc7fb7b593209d3c43b7c20832",
+      "original_zip": "CABAL_v291_StageN_OfflineCandidate_20261118.zip"
+    },
+    {
+      "path": "source/stage-n/tools/codec_default.py",
+      "bytes": 1951,
+      "sha256": "56ca80bd093213420b0d447d48d335b42db5b543c90a99100437c1305b26e1b0",
+      "original_zip": "CABAL_v291_StageN_OfflineCandidate_20261118.zip"
+    },
+    {
+      "path": "source/stage-n/tools/test_stage_n.py",
+      "bytes": 7032,
+      "sha256": "3e7b2a771be910e50d1edddac6966574c1318661c64ffa3f387a96a10c73fae4",
+      "original_zip": "CABAL_v291_StageN_OfflineCandidate_20261118.zip"
+    },
+    {
+      "path": "source/stage-n/tools/build_client_candidate.py",
+      "bytes": 8521,
+      "sha256": "5240ffa40560f83f7a80042d22ff62730a0679f026ccc6a42247784162faa36a",
+      "original_zip": "CABAL_v291_StageN_OfflineCandidate_20261118.zip"
+    },
+    {
+      "path": "source/stage-n/tools/stage_n_prepare.py",
+      "bytes": 4150,
+      "sha256": "7d0900dd9723626f014ef7e92eaa5fbee9a449d52a864088d7253db5eec901d4",
+      "original_zip": "CABAL_v291_StageN_OfflineCandidate_20261118.zip"
+    },
+    {
+      "path": "source/stage-n/tools/capture_mapinfo_early.py",
+      "bytes": 9441,
+      "sha256": "7b42dd4b8502492dc19023e1e7740c25f2f0568377c1812712936ea93feffddb",
+      "original_zip": "CABAL_v291_StageN_OfflineCandidate_20261118.zip"
+    },
+    {
+      "path": "source/stage-n/tools/stage_n_isolated_install.py",
+      "bytes": 4641,
+      "sha256": "957363c25b46475d20f589a815fa0e8e8e30bcde68aa05146e6a202cb8f056a8",
+      "original_zip": "CABAL_v291_StageN_OfflineCandidate_20261118.zip"
+    },
+    {
+      "path": "source/stage-n/tools/triple_join_audit.py",
+      "bytes": 6384,
+      "sha256": "a422367d027e1526c077b29691bf9aa359483317a8b2420dc4713c3b6044ed07",
+      "original_zip": "CABAL_v291_StageN_OfflineCandidate_20261118.zip"
+    },
+    {
+      "path": "source/stage-n/README_LV.md",
+      "bytes": 5901,
+      "sha256": "e49732cbaf398beafa7039e741919ecb53fbcdd653e5602b2c9b2d0b8268e4fa",
+      "original_zip": "CABAL_v291_StageN_OfflineCandidate_20261118.zip"
+    },
+    {
+      "path": "source/stage-n/sha256_manifest.json",
+      "bytes": 2332,
+      "sha256": "3242beb60bdf105f83eea22100579728288e9c150820ceae419972384399daca",
+      "original_zip": "CABAL_v291_StageN_OfflineCandidate_20261118.zip"
+    },
+    {
+      "path": "source/stage-n/Palaist-StageN-Vienaa-Reize.cmd",
+      "bytes": 254,
+      "sha256": "fed51df058c689330efcd4db20c0e861bf431f147576bfb62fd953e5d26d8ff0",
+      "original_zip": "CABAL_v291_StageN_OfflineCandidate_20261118.zip"
+    },
+    {
+      "path": "source/stage-n/evidence/repeat_xor4_b0_first_half.txt",
+      "bytes": 1828,
+      "sha256": "b3b4f0c15fd107cadc27fbf55fca0ae88e95b178019fc71fbe5378005b77e565",
+      "original_zip": "CABAL_v291_StageN_OfflineCandidate_20261118.zip"
+    },
+    {
+      "path": "source/stage-n/evidence/verified_native_loader.json",
+      "bytes": 3441,
+      "sha256": "04d8aa33f9aacddc18eb2718457a061cf91e03cb2b65061d5e66281151a9dfa4",
+      "original_zip": "CABAL_v291_StageN_OfflineCandidate_20261118.zip"
+    },
+    {
+      "path": "source/stage-n/evidence/stage_n_test_results.txt",
+      "bytes": 1671,
+      "sha256": "c11b4ffd51c6110e185eb0e7ebaccff4dd2cd0cb0a87596550dc8cba1cb48f3a",
+      "original_zip": "CABAL_v291_StageN_OfflineCandidate_20261118.zip"
+    },
+    {
+      "path": "source/stage-n/evidence/repeat_xor4_b0_second_half.txt",
+      "bytes": 1839,
+      "sha256": "74b8f2bf0877d3f5004ebdc72ad52ceb287cdd9decd281c872eaf308f188cfd2",
+      "original_zip": "CABAL_v291_StageN_OfflineCandidate_20261118.zip"
+    },
+    {
+      "path": "source/stage-n/evidence/stage_n_report.json",
+      "bytes": 1275,
+      "sha256": "438790e6b21f86d01db2369ad143999d4c0c274428db3d25b32592e220b7f3e3",
+      "original_zip": "CABAL_v291_StageN_OfflineCandidate_20261118.zip"
+    },
+    {
+      "path": "source/stage-o/Palaist-StageO.cmd",
+      "bytes": 73,
+      "sha256": "e28c4c7080f923f101367bd392194825edea7ed14567acc868c000c0b432f5db",
+      "original_zip": "CABAL_v291_StageO_RuntimeKey_20261118.zip"
+    },
+    {
+      "path": "source/stage-o/README_LV.md",
+      "bytes": 5672,
+      "sha256": "eb3ee2363c088341fbb18b8f287eb8c2f9fefdaeac0e6f3891aa0520fc27ddf6",
+      "original_zip": "CABAL_v291_StageO_RuntimeKey_20261118.zip"
+    },
+    {
+      "path": "source/stage-o/SHA256.json",
+      "bytes": 1865,
+      "sha256": "27b729a8e84bd88cb5b3fa0876b5b9472cd4be20a6e9e2bceba502b8b4db9c68",
+      "original_zip": "CABAL_v291_StageO_RuntimeKey_20261118.zip"
+    },
+    {
+      "path": "source/stage-o/evidence/StageO_v291_20261118-212214_4205/Report.json",
+      "bytes": 683,
+      "sha256": "665440d0d9312b948d0c94b8fe823a997c9cdd1c5b53ec735a3f7b5ea03de5f7",
+      "original_zip": "CABAL_v291_StageO_RuntimeKey_20261118.zip"
+    },
+    {
+      "path": "source/stage-o/evidence/unit_tests.txt",
+      "bytes": 1481,
+      "sha256": "7ffc3802fc3591ef89a518067b84ba3445979693d8dc1bee0bb49a4f47c8f04c",
+      "original_zip": "CABAL_v291_StageO_RuntimeKey_20261118.zip"
+    },
+    {
+      "path": "source/stage-o/tools/build_client_candidate.py",
+      "bytes": 8521,
+      "sha256": "5240ffa40560f83f7a80042d22ff62730a0679f026ccc6a42247784162faa36a",
+      "original_zip": "CABAL_v291_StageO_RuntimeKey_20261118.zip"
+    },
+    {
+      "path": "source/stage-o/tools/isolated_apply.py",
+      "bytes": 4351,
+      "sha256": "85bba4d4f15bb772a92770bd5381dbea37c4b8cb2e031b86af44e3a1d5546842",
+      "original_zip": "CABAL_v291_StageO_RuntimeKey_20261118.zip"
+    },
+    {
+      "path": "source/stage-o/tools/runtime_key_audit.py",
+      "bytes": 17012,
+      "sha256": "b2de0fd20882883533273669312e022602739307d597817c5a5b012847ce02a0",
+      "original_zip": "CABAL_v291_StageO_RuntimeKey_20261118.zip"
+    },
+    {
+      "path": "source/stage-o/tools/test_stage_o.py",
+      "bytes": 5706,
+      "sha256": "df286ec0e424c9c7bf5af9a50c62f98dfc1f0b2b37bf59f91ce9c65943b4c38c",
+      "original_zip": "CABAL_v291_StageO_RuntimeKey_20261118.zip"
+    },
+    {
+      "path": "source/stage-o/tools/triple_join_audit.py",
+      "bytes": 6384,
+      "sha256": "a422367d027e1526c077b29691bf9aa359483317a8b2420dc4713c3b6044ed07",
+      "original_zip": "CABAL_v291_StageO_RuntimeKey_20261118.zip"
+    },
+    {
+      "path": "source/stage-o/tools/validate_capture_and_audit.py",
+      "bytes": 6200,
+      "sha256": "998a24f3cc5e934f98e5319d1a240c92ac05e49cf3253a967fdce69f1b097747",
+      "original_zip": "CABAL_v291_StageO_RuntimeKey_20261118.zip"
+    },
+    {
+      "path": "source/stage-p/README_LV.md",
+      "bytes": 4513,
+      "sha256": "73000f3450d8db8896135a2a2abd6514b104e35903274708081033d8d73f0be7",
+      "original_zip": "CABAL_v291_Warp485_StageP_BinaryGuard_LAB_20261119.zip"
+    },
+    {
+      "path": "source/stage-p/test_results.txt",
+      "bytes": 2005,
+      "sha256": "3f4c586b536f280eee273d2271d3fcef9a7b8f980cfd0899dfde2a7db26689b8",
+      "original_zip": "CABAL_v291_Warp485_StageP_BinaryGuard_LAB_20261119.zip"
+    },
+    {
+      "path": "source/stage-p/manifest.json",
+      "bytes": 919,
+      "sha256": "ed1706ebed32049151fd8abe7af3bee5a204f2032ad27a3303db5d1532ce7617",
+      "original_zip": "CABAL_v291_Warp485_StageP_BinaryGuard_LAB_20261119.zip"
+    },
+    {
+      "path": "source/stage-p/disassembly_after.txt",
+      "bytes": 1362,
+      "sha256": "a14af6a36de707d1253198be91d25fe1278abaafd032eb0120d363f846b6943e",
+      "original_zip": "CABAL_v291_Warp485_StageP_BinaryGuard_LAB_20261119.zip"
+    },
+    {
+      "path": "source/stage-p/disassembly_before.txt",
+      "bytes": 1342,
+      "sha256": "c5ae5f0f04a58cf77f0440d7cffd01b9b73332f5133ed1265e4b2cde97f405a7",
+      "original_zip": "CABAL_v291_Warp485_StageP_BinaryGuard_LAB_20261119.zip"
+    },
+    {
+      "path": "source/stage-p/guard485.py",
+      "bytes": 9718,
+      "sha256": "a6422468037c8035179b93eaef7792a105efbcd3ea6cc7cf3991e8fc072f871a",
+      "original_zip": "CABAL_v291_Warp485_StageP_BinaryGuard_LAB_20261119.zip"
+    },
+    {
+      "path": "source/stage-p/Palaist-LAB-Uzlikt.cmd",
+      "bytes": 169,
+      "sha256": "dcb455606965ad4b4c552ea7219fa5fb8015427320eca0fc91dc562898491f53",
+      "original_zip": "CABAL_v291_Warp485_StageP_BinaryGuard_LAB_20261119.zip"
+    },
+    {
+      "path": "source/stage-p/Palaist-LAB-Atcelt.cmd",
+      "bytes": 82,
+      "sha256": "b2e18de9a679f915c7002d5d4b975c1d75083f1cd57049c1f39d9be5453d17bd",
+      "original_zip": "CABAL_v291_Warp485_StageP_BinaryGuard_LAB_20261119.zip"
+    },
+    {
+      "path": "source/stage-p/test_guard485.py",
+      "bytes": 5824,
+      "sha256": "117db9320a2ed5a98cff7323c11e31d253992b91e3cd732f2489787c7d99515b",
+      "original_zip": "CABAL_v291_Warp485_StageP_BinaryGuard_LAB_20261119.zip"
+    },
+    {
+      "path": "source/stage-q/README_LV.md",
+      "bytes": 3269,
+      "sha256": "945efc854443fae8ff32915967d126a2155d9db517a8e9d5e752c26d4fde534f",
+      "original_zip": "CABAL_v291_Warp485_StageQ_LAB_20261119.zip"
+    },
+    {
+      "path": "source/stage-q/manifest.json",
+      "bytes": 1260,
+      "sha256": "72c481d33665a48d747b7bf57ddd9133951a888b2e34e600354e3bc3784d2da3",
+      "original_zip": "CABAL_v291_Warp485_StageQ_LAB_20261119.zip"
+    },
+    {
+      "path": "source/stage-q/test_results.txt",
+      "bytes": 2926,
+      "sha256": "716845f1d97b31a8f37be982072bbd2fc4470a77b08295f3a4eaa954fc3b534d",
+      "original_zip": "CABAL_v291_Warp485_StageQ_LAB_20261119.zip"
+    },
+    {
+      "path": "source/stage-q/guard485.py",
+      "bytes": 9718,
+      "sha256": "a6422468037c8035179b93eaef7792a105efbcd3ea6cc7cf3991e8fc072f871a",
+      "original_zip": "CABAL_v291_Warp485_StageQ_LAB_20261119.zip"
+    },
+    {
+      "path": "source/stage-q/stageq_lab.py",
+      "bytes": 8365,
+      "sha256": "192950d72efe9aec76fe1872345a8b512b60446d20f3b45f9acaa365001ff8ae",
+      "original_zip": "CABAL_v291_Warp485_StageQ_LAB_20261119.zip"
+    },
+    {
+      "path": "source/stage-q/test_guard485.py",
+      "bytes": 5824,
+      "sha256": "117db9320a2ed5a98cff7323c11e31d253992b91e3cd732f2489787c7d99515b",
+      "original_zip": "CABAL_v291_Warp485_StageQ_LAB_20261119.zip"
+    },
+    {
+      "path": "source/stage-q/test_stageq_lab.py",
+      "bytes": 3670,
+      "sha256": "d517617ebb37987b7639c97127dec0b94856baaa57c529b66f388c6e759e8075",
+      "original_zip": "CABAL_v291_Warp485_StageQ_LAB_20261119.zip"
+    },
+    {
+      "path": "source/stage-q/Palaist-Vienaa-Reize-LAB.cmd",
+      "bytes": 254,
+      "sha256": "09c32f57cbb965a6c789a8d133bb6d400b5a1b3260723c8397a17e003752d72f",
+      "original_zip": "CABAL_v291_Warp485_StageQ_LAB_20261119.zip"
+    },
+    {
+      "path": "source/stage-q/Palaist-Parbaudit-LAB.cmd",
+      "bytes": 59,
+      "sha256": "74d803cd2407fa3b2dc22169d4c5ea8790b982052d3b15b3aada8bf785ac9c95",
+      "original_zip": "CABAL_v291_Warp485_StageQ_LAB_20261119.zip"
+    },
+    {
+      "path": "source/stage-q/Palaist-Atcelt-LAB.cmd",
+      "bytes": 61,
+      "sha256": "7587895679b89187dfb11004cb6c07cedb6cde572dcdd8d1268c9c5e310e423a",
+      "original_zip": "CABAL_v291_Warp485_StageQ_LAB_20261119.zip"
+    },
+    {
+      "path": "source/stage-r/stagep_core.py",
+      "bytes": 9718,
+      "sha256": "a6422468037c8035179b93eaef7792a105efbcd3ea6cc7cf3991e8fc072f871a",
+      "original_zip": "CABAL_v291_Warp485_StageR_StructuralFix_LAB_20261119.zip"
+    },
+    {
+      "path": "source/stage-r/Palaist-StageR-LAB.ps1",
+      "bytes": 4165,
+      "sha256": "eccb47ec4f78377f911f9ecce92a55d9218938f46bddf1aeb369164e9ae1b4cf",
+      "original_zip": "CABAL_v291_Warp485_StageR_StructuralFix_LAB_20261119.zip"
+    },
+    {
+      "path": "source/stage-r/README_LV.md",
+      "bytes": 4534,
+      "sha256": "c94513dc936cf2749fe06efb06d7ff388dffef43634d427dd27a41d3ad52f7e5",
+      "original_zip": "CABAL_v291_Warp485_StageR_StructuralFix_LAB_20261119.zip"
+    },
+    {
+      "path": "source/stage-r/Palaist-Atjaunot-Oriģinālo-LAB.cmd",
+      "bytes": 93,
+      "sha256": "727463b7b09291c3e85ff09ecd37727127bc46a88f035daf7c33b9fa93d6b3bb",
+      "original_zip": "CABAL_v291_Warp485_StageR_StructuralFix_LAB_20261119.zip"
+    },
+    {
+      "path": "source/stage-r/manifest.json",
+      "bytes": 1274,
+      "sha256": "b5335ac2e60713148002dbdfeab199cd55b0e53891c77afbba0e99c26aa4e268",
+      "original_zip": "CABAL_v291_Warp485_StageR_StructuralFix_LAB_20261119.zip"
+    },
+    {
+      "path": "source/stage-r/test_results.txt",
+      "bytes": 2081,
+      "sha256": "1fbc1023b87c8745be1dce6b594ba0d98fc8976ff5b35acdfadab7e24c1790d3",
+      "original_zip": "CABAL_v291_Warp485_StageR_StructuralFix_LAB_20261119.zip"
+    },
+    {
+      "path": "source/stage-r/test_stage_r.py",
+      "bytes": 5075,
+      "sha256": "2a9903ba5a6051241e1fb7447bc0b39d8cd1f09022e680bcf611f18efb761d6e",
+      "original_zip": "CABAL_v291_Warp485_StageR_StructuralFix_LAB_20261119.zip"
+    },
+    {
+      "path": "source/stage-r/stager.py",
+      "bytes": 9231,
+      "sha256": "61ca1d6158dd7fbfaa7201c601bc15fc157d8b6256c47f332661d4c8031f867c",
+      "original_zip": "CABAL_v291_Warp485_StageR_StructuralFix_LAB_20261119.zip"
+    },
+    {
+      "path": "source/stage-r/Palaist-StageR-LAB.cmd",
+      "bytes": 122,
+      "sha256": "82d24bac91f1c583ff9a2fcb60e827a3452ce80f29b95636bf6ab75f7986c5f3",
+      "original_zip": "CABAL_v291_Warp485_StageR_StructuralFix_LAB_20261119.zip"
+    },
+    {
+      "path": "source/lab-recovery/Palaist-LAB-Starta-Parbaudi.cmd",
+      "bytes": 197,
+      "sha256": "cc24c02c95d523b629c1f805ee4f6c77005beec4a61a170df2b5e399583ff24b",
+      "original_zip": "CABAL_v291_LAB_StartupRecovery_20261119.zip"
+    },
+    {
+      "path": "source/lab-recovery/Parbaudit-LAB-Startu.ps1",
+      "bytes": 4996,
+      "sha256": "189eab15be6bfb1ffb4bb1e20d877a932425cf0d3a7b0dfe46003818cd203c0b",
+      "original_zip": "CABAL_v291_LAB_StartupRecovery_20261119.zip"
+    },
+    {
+      "path": "source/lab-recovery/README_LV.txt",
+      "bytes": 969,
+      "sha256": "72b1364d6a4ada7bc8a6590c103a9a18833d2cde431e327990d6d3af0a79314f",
+      "original_zip": "CABAL_v291_LAB_StartupRecovery_20261119.zip"
+    }
+  ],
+  "excluded": [
+    "original EXE",
+    "ENC files",
+    "server binary evidence",
+    "reference XML/DEC",
+    "nested ZIP",
+    "compiled binaries",
+    "bytecode",
+    "raw full logs"
+  ]
+}
