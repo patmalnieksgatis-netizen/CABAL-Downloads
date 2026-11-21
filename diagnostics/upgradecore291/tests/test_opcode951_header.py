@@ -25,7 +25,7 @@ class PacketHeaderInferences(unittest.TestCase):
         self.assertEqual("ONE_POSSIBLE_SHIFTED_COUNT_FIELD",r["status"])
         self.assertEqual("0x15",r["count_field_candidates"][0]["candidate_offset"])
     def test_fixed_header_extension_not_assumed_safe(self):
-        r=mod.analyze_header(145,header(145,0x15,0))
+        r=mod.analyze_header(144,header(144,0x15,0))
         self.assertEqual("FIXED_SIZE_OR_LAYOUT_MISMATCH",r["status"])
     def test_ambiguous_candidates_require_more_evidence(self):
         b=bytearray(header(143,0x15,2));struct.pack_into("<H",b,0x19,2)
