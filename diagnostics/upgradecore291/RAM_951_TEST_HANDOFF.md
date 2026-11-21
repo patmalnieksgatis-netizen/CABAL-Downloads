@@ -32,3 +32,7 @@ powershell -NoProfile -ExecutionPolicy Bypass -File "$env:USERPROFILE\Downloads\
 ```
 
 If `apply` succeeds, test Upgrade Core then Perfect Core in TEST only, followed by Force/Chaos/Divine regression and persistence after reconnect. Retain full stderr if the next validator fails. The RAM-only patch is a **test**, not a durable release fix.
+
+## Verified in-game after previous RAM length-base trial
+
+The user confirmed **ordinary Upgrade Core now works up to +20** with 259-byte opcode 951 RAM guard. Perfect Core works only to +17, and Safeguard does not work (separate issues). Do not roll back the working base patch while testing either follow-up.
