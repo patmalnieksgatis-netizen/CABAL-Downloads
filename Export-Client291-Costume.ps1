@@ -114,17 +114,35 @@ try {
         Start-Sleep -Milliseconds 100
     }
     if ($last -ne 'STABLE_ORIGINAL_SDK_DECODED_RESOURCE') { throw ('COSTUME_EXPORT_TIMEOUT=' + $last) }
-    $stream = [IO.MemoryStream]::new($record.Data)
+    $desktop = [Environment]::GetFolderPath('DesktopDirectory')
+    $raw = Join-Path $desktop 'Costume291-catalogue.raw'
+    [byte[]]$data = $record.Data
+    [IO.File]::WriteAllBytes($raw,$data)
     try {
-        $xml = [Xml.XmlDocument]::new()
-        $xml.XmlResolver = $null
-        $xml.Load($stream)
-    } finally { $stream.Dispose() }
-    $rows = $xml.SelectNodes('/costume/costume_list/*[@Item_ID and @Type]')
-    if ($rows.Count -eq 0) { throw 'COSTUME_XML_SCHEMA_DIFFERS' }
-    $pets = $xml.SelectNodes('/costume/costume_list/*[@Item_ID and @Type="5"]')
-    $file = Join-Path ([Environment]::GetFolderPath('DesktopDirectory')) 'Costume291-catalogue.xml'
-    [IO.File]::WriteAllBytes($file,$record.Data)
-    "PET_COUNT=$($pets.Count)"
-    "UPLOAD=$file"
+        $start = 0
+        if ($data.Length -ge 3 -and $data[0] -eq 0xef -and $data[1] -eq 0xbb -and $data[2] -eq 0xbf) { $start = 3 }
+        $offset = $start
+        while ($offset -lt $data.Length -and $data[$offset] -eq 12) { $offset++ }
+        if ($offset -gt $start) {
+            $clean = [byte[]]::new($data.Length - $offset + $start)
+            [Array]::Copy($data,0,$clean,0,$start)
+            [Array]::Copy($data,$offset,$clean,$start,$data.Length - $offset)
+        } else { $clean = $data }
+        $stream = [IO.MemoryStream]::new($clean)
+        try {
+            $xml = [Xml.XmlDocument]::new()
+            $xml.XmlResolver = $null
+            $xml.Load($stream)
+        } finally { $stream.Dispose() }
+        $rows = $xml.SelectNodes('/costume/costume_list/*[@Item_ID and @Type]')
+        if ($rows.Count -eq 0) { throw 'COSTUME_XML_SCHEMA_DIFFERS' }
+        $pets = $xml.SelectNodes('/costume/costume_list/*[@Item_ID and @Type="5"]')
+        $file = Join-Path $desktop 'Costume291-catalogue.xml'
+        [IO.File]::WriteAllBytes($file,$clean)
+        "PET_COUNT=$($pets.Count)"
+        "UPLOAD=$file"
+    } catch {
+        "XML_STATUS=$($_.Exception.GetBaseException().Message)"
+        "UPLOAD=$raw"
+    }
 } finally { if ($null -ne $client) { $client.Dispose() } }
