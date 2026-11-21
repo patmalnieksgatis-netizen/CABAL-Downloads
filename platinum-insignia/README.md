@@ -52,3 +52,58 @@ powershell -NoProfile -ExecutionPolicy Bypass -File "$env:USERPROFILE\Downloads\
 Next: user runs the script on their local Windows PC (SSH to VM), reports \`PLATINUM_STATUS\` and \`PLATINUM_RESULT\`. Depending on result, no-op if already enabled, guarded flag activate, or targeted fix rather than an unsafe broad patch.
 
 After Platinum gameplay verified, continue Diamond Insignia native adapter and SQL persistence work from draft PR #2, and only then Anima Mastery.
+
+
+## 2026-11-21 — actual activation attempt; Gold + Platinum both disabled
+
+User executed the v1 script against private VM. Validation succeeded for:
+- active v291 client SHA \`3d859032a8b42c3e011c6d7ff739c9ac088b7f63effbc8afbc7215e162c1b78a\`;
+- one row in \`Server01.dbo.cabal_contents_control_etc_table\`;
+- prerequisite SQL tables and previously checked Merit SCP.
+
+**Actual SQL flags (read-only): \`MeritUse=0\`, \`MeritPlatinumUse=0\`**.
+The v1 script correctly STOPPED with \`GOLD_MERIT_USE_NOT_ENABLED\`;
+**no SQL or server modifications were performed**. Do not use the v1
+\`CABAL_PLATINUM_SAFE_ACTIVATE.ps1\` again for this actual 0/0 state.
+
+Prepared **CABAL_PLATINUM_ENABLE_V2.ps1**, SHA-256
+\`0a076622ce6cef60d687dd672f94d0adae27022b58c1c62f48db74bd6c82c92b\`.
+Offline bundle \`CABAL_PLATINUM_ENABLE_V2_BUNDLE.zip\`, SHA-256
+\`de1401ef7fdcec6ff51eb326669c3518e995cb122c7482ea1b0187bd766a5958\`,
+includes source, README and 19 offline mocked tests.
+
+### V2 behavior — ONLY 2 global SQL flags
+- Existing \`0/0\` -> \`1/1\` **in one SQL transaction**.
+- \`1/0\` -> \`1/1\` by changing only \`MeritPlatinumUse\`.
+- \`1/1\` -> no SQL change.
+- \`0/1\`, multiple SQL rows, changed native/file hashes, absent Platinum
+  handler or SQL persistence tables -> STOP without changes.
+- V2 writes a rollback anchor
+  \`Downloads\CABAL_PLATINUM_GOLD_ENABLE_V2_STATE.json\` **BEFORE**
+  attempting any SQL UPDATE; if SSH dies after commit, operator can still
+  use rollback, which checks actual current SQL flags.
+- \`Rollback\` restores **both exact original flag values** (0/0 or 1/0).
+- Guarded transactional UPDATE has \`UPDLOCK,HOLDLOCK\`, required preflags,
+  single row, rowcount 1, \`XACT_ABORT\`, and rechecks.
+- Only \`cabal_contents_control_etc_table.MeritUse\` and
+  \`MeritPlatinumUse\` can be altered, globally. Gold prerequisite is
+  enabled intentionally; **this may affect all players on the server**.
+- No client or WorldSvr file changes; no server restart to preserve Upgrade
+  Core +20 / Safeguard RAM modifications; no player or inventory changes.
+
+The standalone script and full bundle were delivered as **conversation
+artifacts**. Full V2 source is in the bundle; source has not been separately
+uploaded to this public GitHub repository. 19 mocked success/failure
+scenarios pass, but **real deployment against the private VM is still pending**.
+
+Commands on user's Windows host:
+\`\`\`powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File "$env:USERPROFILE\Downloads\CABAL_PLATINUM_ENABLE_V2.ps1" -Action Inspect
+powershell -NoProfile -ExecutionPolicy Bypass -File "$env:USERPROFILE\Downloads\CABAL_PLATINUM_ENABLE_V2.ps1" -Action Activate
+powershell -NoProfile -ExecutionPolicy Bypass -File "$env:USERPROFILE\Downloads\CABAL_PLATINUM_ENABLE_V2.ps1" -Action Rollback
+\`\`\`
+
+Enabling SQL flags does not prove Platinum works in-game. The WorldSvr may
+cache these flags on startup. Any later controlled restart must be coordinated
+with reapplication of the already working runtime +20 and Safeguard fixes.
+Diamond Insignia and Anima Mastery are NOT installed by V2.
