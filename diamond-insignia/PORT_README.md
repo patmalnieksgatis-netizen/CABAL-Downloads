@@ -295,3 +295,37 @@ Next implementation gates: live mapped module inventory and SQL column names,
 versioned v291 client Merit packet captures, additive DB persistence design,
 native Diamond-only handler in isolated clone, Gold/Platinum and core+20
 regression tests.
+
+
+## Priority clarification — 2026-11-21: Platinum + Diamond together, Anima Mastery next
+
+User instruction: **Merit system must include both Platinum Insignia and
+Diamond Insignia**. Only after these work, proceed with **Anima Mastery**.
+Do NOT conflate Anima Mastery with Diamond Merit; it is a separate later system.
+
+Acceptance/implementation sequence:
+1. Preserve **all existing Platinum Insignia** config, mastery purchase,
+   stats and character persistence (94 \`Badge_Grade=1\` rows) and old Gold
+   compatibility data (64 \`Badge_Grade=0\` rows).
+2. Add **Diamond Insignia** \`Badge_Grade=2\`, 316 Mastery definitions in 16
+   category IDs 11–26, four groups and prerequisites; do not modify
+   Platinum index/force tables or packet layouts.
+3. Implement/test **server-authoritative** Diamond rank-up, points and
+   category restrictions; verify SQL persistence across logout/restart,
+   passive effects and cost validation, preserving existing character data.
+4. Verify older working systems (Costume, dungeons, Upgrade Core +20,
+   Safeguard, etc.) are unaffected. Only then begin **Anima Mastery**.
+
+A newly committed offline \`diamond-insignia/test_platinum_diamond_integrity.py\`
+checks SHA-pinned original and staged SCP files, identical existing rows,
+Gold 64 / Platinum 94 / Diamond 316, 16 categories, 474 contiguous
+Mastery_Index values, no orphan new Mastery_Value references,
+and Diamond rank-up source values (30,000 WExp + 100 units item 33554961).
+This test PASSED against the user's uploaded ZIP and offline staged ZIP,
+but **gameplay, SQL and wire packet compatibility remain unverified**.
+
+The read-only \`Audit-DiamondRuntime-v291.ps1\` in conversation is ready
+to query the active VM's WorldSvr module identities and available
+\`Server01.INFORMATION_SCHEMA.COLUMNS\` **only**; it does not read any
+player records, alter game files, SQL or restart WorldSvr. A remote SSH
+run by the Windows host is needed for actual runtime schema evidence.
