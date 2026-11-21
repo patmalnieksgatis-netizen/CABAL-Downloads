@@ -36,3 +36,42 @@ All **6/6** offline tests passed. **No SQL Server execution was done**, so the T
 - Only after Diamond works proceed to Anima Mastery.
 
 Avoid telling the user Diamond is installed. It remains offline/staged.
+
+
+## V2: stored procedures and deterministic rollback smoke (2026-11-21)
+
+Additional files committed here:
+- \`05_create_diamond_lab_procedures_TEST_CLONE_ONLY.sql\` creates
+  \`cabal_diamond_lab_init_v1\`, \`cabal_diamond_lab_get_v1\`,
+  \`cabal_diamond_lab_commit_v1\`.
+- \`06_transaction_smoke_TEST_CLONE_ONLY.sql\` tests a synthetic
+  \`UserNum=2147483600\` *inside a transaction*, then **ROLLBACKs**.
+  Requires the LAB schema and procedures; does not touch real user records.
+- \`07_remove_diamond_lab_procedures_TEST_CLONE_ONLY.sql\` removes only those
+  three uniquely LAB-named procedures; use before V1's table rollback.
+- \`test_lab_v2_static.py\` / \`.github/workflows/diamond-sql-lab-static.yml\`
+  perform **10 CI static guard tests** (passed:
+  https://github.com/patmalnieksgatis-netizen/CABAL-Downloads/actions/runs/44933080128).
+  Separate conversation ZIP performed **17 additional local static/model tests**.
+
+**Boundaries:** no SQL Server execution performed and no actual C2S packet
+handler or WorldSvr integration exists. \`init\` only checks Platinum badge
+and inserts a *locked* Diamond row. \`commit\` requires an already unlocked
+row, matching \`RowRevision\`, valid category and bounded payload.
+It does **not** authenticate client packets, deduct WExp/items or validate
+mastery points against the game configuration; only a future
+server-authoritative adapter may call it after such validations.
+There is no GRANT, live account update or game restart.
+
+Exact execution order in an isolated clone:
+1. V1 \`01_install...\` (creates lab table)
+2. V2 \`05_create...\` (three procedures)
+3. V1 \`02_verify...\` (schema checks)
+4. V2 \`06_transaction_smoke...\` (synthetic ID, complete rollback)
+5. V2 \`07_remove...\` (procedures)
+6. V1 \`03_rollback...\` (only if table empty)
+
+The full offline tested package with graph validator is a conversation
+artifact \`CABAL_DIAMOND_ENGINE_PREP_V3.zip\` (21,678 bytes, SHA256
+\`4460dfc0af73b5b82b1692da4a370d927edc3572f136e7889e246d9313806dd2\`).
+It is **NOT FOR LIVE INSTALLATION**.
