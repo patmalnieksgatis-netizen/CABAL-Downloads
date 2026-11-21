@@ -126,3 +126,12 @@ Static audit (GitHub Actions): https://github.com/patmalnieksgatis-netizen/cabal
 - **Action:** do not revert these SCP files or remap packet opcodes blindly.
   Fix requires correlating the current client action with its active WorldSvr
   handler/response in the isolated VM first. No game fix was deployed.
+
+## 2026-11-21 archived WorldSvr log scan (new verified result)
+
+Github Actions native-server archive log audit:
+https://github.com/patmalnieksgatis-netizen/cabal-ep36/actions/runs/44899777807
+
+The historical VPS archive contained **50 archived WorldSvr_01_01 / _01_16 log files** in the bounded scan. **156** log lines matched broad upgrade-related terms across **3** files; **zero** of those lines matched error/disconnect categories. No exact `OnCSC...` normal-upgrade handler trace or actionable crash signature was recovered. These are **historical October logs, not the active November v291 disconnect**. They do not justify an opcode remap or binary patch.
+
+The only missing decisive evidence is a reproduced request/reply trace or current WorldSvr error log from the reachable Windows-hosted VM. The ChatGPT connector environment has **no TCP/SSH route** to VirtualBox host-only `192.168.56.101` or to `F:\\CABAL_291_TEST`. GitHub-hosted Actions cannot reach those private hosts either. Use the existing read-only collector on the local VM and do not deploy any speculative binary patch.
