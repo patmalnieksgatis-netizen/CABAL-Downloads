@@ -190,3 +190,17 @@ User can download the **committed CI-checked** PS1 from the GitHub branch; run:
 powershell -NoProfile -ExecutionPolicy Bypass -File "$env:USERPROFILE\Downloads\Inspect-Cabal291-MeritDispatch-V3.ps1"
 ```
 Output `UPLOAD_THIS_ZIP=...CABAL_DIAMOND_MERIT_DISPATCH_V3_*.zip`; inspect code windows at branch targets, identify the enclosing loader/decompressor call if possible, then determine target v291 Merit codec. No native install until proven. Keep `wolverine` Platinum intact.
+
+## 2026-11-21 21:20 — Active CABAL client is x64 ONLY (user correction)
+
+The user explicitly clarified that the **active / supported CABAL build for this project is x64 only**. The same Windows V3 run reported both x64 and x86 because old x86 files happen to remain on disk. **Never treat x86 references or ABI as production targets.**
+
+User successfully ran original V3, with `MERIT_V3_POWERSHELL_SELF_TEST=PASS` and the exact x64 refs:
+- `meritsystem.enc` branch RVA `0x21C20A`
+- `meritsystem_msg.enc` branch RVA `0x21C37C`
+
+V3 produced `CABAL_DIAMOND_MERIT_DISPATCH_V3_20261121-212022.zip` locally on user's Windows under Downloads. **User has not yet attached this V3 archive in this turn**, so the branch-landing code snippets are not available for analysis here. **No new scan needed**: original ZIP already contains both x64 code windows. Ask only for that generated ZIP to continue. Do not infer decoder or native opcode from console summary.
+
+The committed V3 script `diamond-insignia/client-codec/Inspect-Cabal291-MeritDispatch-V3.ps1` was adjusted to **x64-only**, with `independent_sites=2`, and no `Bin\x86\CabalMain.exe` dependency for future use. This is a future quality fix, not a reason to rerun the successful user scan. Prior full x64/x86 source probes were research references only.
+
+Preserve live Platinum for account `wolverine`; no active server/SQL/client writes. Diamond still not installed.
