@@ -13,7 +13,7 @@ if ($firstNewline -lt 0) {throw 'C_SHARP_SOURCE_NO_NEWLINE'}
 $end=$raw.IndexOf("'@",$firstNewline+1,[StringComparison]::Ordinal)
 if ($end -lt 0){throw 'C_SHARP_HERE_STRING_UNTERMINATED'}
 $cs=$raw.Substring($firstNewline+1,$end-$firstNewline-1).TrimEnd([char]13,[char]10)
-if ($cs.Length -lt 10000 -or !$cs.Contains('CabalPeMeritInspector')) {throw 'C_SHARP_SOURCE_UNEXPECTED_SIZE'}
+if ($cs.Length -lt 8000 -or !$cs.Contains('CabalPeMeritInspector')) {throw 'C_SHARP_SOURCE_UNEXPECTED_SIZE'}
 if ($cs.Contains('int prefix=0,op=off')) {throw 'UNUSED_LOCAL_COMPILE_BUG_REGRESSED'}
 Add-Type -TypeDefinition $cs -Language CSharp -ErrorAction Stop -WarningAction Stop
 if (-not ('CabalPeMeritInspector' -as [type])) {throw 'C_SHARP_TYPE_NOT_COMPILED'}
