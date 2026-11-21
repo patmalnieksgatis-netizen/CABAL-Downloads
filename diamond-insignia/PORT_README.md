@@ -214,3 +214,84 @@ RAM compatibility patches** for Upgrade Core +20 and Safeguard.
 Next implementation milestone (still unimplemented): audit loaded extension
 modules, exact merit-related packets and SQL schema on an isolated test VM,
 then build Diamond-specific native adapter, preserving old Gold/Platinum rows.
+
+
+## 2026-11-21 NEXT PHASE — native add-only SCP built; legacy-code limits and codec audited
+
+The user explicitly requested autonomous continuation after the six-file binary
+Merit audit. Performed offline from the exact uploaded source ZIP and reviewed
+Diamond delta. **No changes to their active game/client/VM/SQL.**
+
+### Staged native candidate (not deployable)
+
+The conversation attachment \`CABAL-DIAMOND-NATIVE-STAGED-DO-NOT-INSTALL.zip\`
+contains a fully assembled native \`MeritSystem.DIAMOND_STAGED_DO_NOT_INSTALL.scp\`,
+a source-based reproducible builder, and SHA-256 manifest.
+
+- Base **active SCP** SHA256 \`307fc981ec3efe66f6cc1b0606ed7d86cd9e5a6e46205769a9bb34b012464295\`, 54,866 bytes.
+- New **staged SCP** SHA256 \`26c9c4cbe3136f67f0298c8e412a4aa7620ba46d62b5c3950880fe821f2ee2e5\`, 116,812 bytes.
+- Appends 2,442 *only Diamond* rows to eight existing tables, without adding
+  speculative new native section headers:
+  - \`MeritMastery_Base\` 316, \`MeritMastery_Value\` 1096,
+  - \`SlotOpen_Material\` 616, \`SlotOpen_Time\` 308,
+  - \`SpecialMastery_Active\` 4, \`SpecialMastery_Material\` 1,
+  - \`SpecialMastery_Value\` 100, \`UpGrade_Material\` 1.
+- The source builder **removes the appended rows and byte-compares the result
+  to the original**. Exact recovery passed.
+- Highest new Diamond Mastery_Index **474**, categories 11–26. Old loaded
+  parser/array lengths need audit before any attempt to ingest these values.
+- Four Diamond groups' subcategory indices:
+  \`11 -> 12,13,14\`, \`15 -> 16,17,18\`,
+  \`19 -> 20,21,22\`, \`23 -> 24,25,26\`.
+- The 301 Diamond score bands are contiguous (0–800,568); 15 passive-exp
+  bands are contiguous (0–600,000). EP45 XML includes source definitions
+  but not the missing native server \`SpecialMastery_Ratio\` table extension.
+- **Do not install** this candidate on live WorldSvr: grade=2 arrays,
+  category selection handler, packet versions, expiry, SQL persistence and
+  passive effects are not proven and could crash or corrupt game state.
+
+### Client codec blockers — verified, not guessed
+
+- Actual v291 compressed Merit file: 41,368 bytes, declared **663,334**
+  uncompressed bytes; EP45 donor: 42,290 bytes, declared **660,148**
+  bytes. v291 might already have newer Merit client fields; file sizes
+  cannot prove Diamond support.
+- Classic v282/EP45 XOR first 4 compressed bytes, key
+  \`92 65 67 57\`, successfully decodes EP45 XML. It fails on v291.
+- An independent offline brute-force sanity check of **1,903,680 complete
+  standard-DEFLATE dynamic-header candidates** (plus BFINAL=0) failed to
+  produce a valid XML prefix from v291 unchanged suffix bytes. This is
+  not a proof of the actual v291 codec, but shows *do not* assume EP45
+  encoding. Need v291 client codec/runtime data-cache analysis.
+- **Never transplant the EP45 \`.enc\` over v291.**
+
+### Additional source inventory
+
+Private \`cabal-ep36\` branch's read-only CI audited both
+\`CABAL_EXTRA_SOURCE.tar.gz\` and \`CABAL_VPS_FULL.tar.gz\`.
+The extra source is an **incomplete WorldSvr extension project** with
+87 files (WorldSvrRealm, packet structs, macro BM3, warp, etc.),
+not a full proprietary game WorldSvr. It has no Merit/Diamond code
+keyword hits. The full server tar has SQL backups and scripts but
+no ready Diamond implementation. Native Diamond adapter therefore
+requires reverse engineering verified current modules / wire protocol
+and DB table schema. No unsafe guessed ABI or SQL migration was emitted.
+
+### Safe active-runtime audit artifact
+
+Conversation-local \`Audit-DiamondRuntime-v291.ps1\` (SHA256
+\`36443647641d808e8b6b712a5841fddb59b7bf252f994647f5095e0f033a5608\`)
+performs a **read-only** single SSH audit:
+- inspect mapped \`/etc/cabal/*.so\` and WorldSvr file SHA256 and limited
+  Merit/Diamond text symbol hints;
+- query **only** \`Server01.INFORMATION_SCHEMA.COLUMNS\` via \`sql_main\`
+  if \`sqlcmd\` and container environment credentials exist;
+- writes no files to VM and reads no character/account table rows;
+- stores \`CABAL_DIAMOND_RUNTIME_AUDIT.json\` in Windows Downloads.
+- **Not run on user's private VM**. SQL metadata may be unavailable if
+  \`sqlcmd\` is missing; fail closed and do not read secret config files.
+
+Next implementation gates: live mapped module inventory and SQL column names,
+versioned v291 client Merit packet captures, additive DB persistence design,
+native Diamond-only handler in isolated clone, Gold/Platinum and core+20
+regression tests.
