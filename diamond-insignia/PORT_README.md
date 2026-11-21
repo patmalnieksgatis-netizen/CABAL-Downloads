@@ -368,3 +368,75 @@ saved JSON is supplied**.
 Next work: inspect the report; then, if needed, perform a narrow read-only
 PK/FK/constraint audit of exactly the observed Merit tables. Preserve
 Platinum and Gold, and keep Anima Mastery as a separate future milestone.
+
+
+## 2026-11-21 — user-provided live SQL metadata report fully inspected
+
+User attached \`CABAL_DIAMOND_RUNTIME_AUDIT.json\`, which contains a successful
+read-only \`Server01.INFORMATION_SCHEMA.COLUMNS\` result (74 matching column
+records across 34 distinct tables; no truncation, limit 140).
+
+**Actual active tables (from attached source, not inferred):**
+
+- \`dbo.cabal_merit_table\`:
+  \`UserNum int\`, \`MeritPoint int\`, \`MeritMasteryPoint int\`,
+  \`MeritMasteryData varbinary\`.
+- \`dbo.cabal_merit_platinum_table\`:
+  \`UserNum int\`, \`HaveMeritPlatinumBagde tinyint\`,
+  \`MeritPlatinumPoint int\`, \`MeritPlatinumMasteryPoint int\`,
+  \`UsingMeritPlatinumPageID tinyint\`,
+  \`MeritPlatinumMasteryOpenIndex int\`,
+  \`MeritPlatinumMasteryOpenDate datetime\`,
+  \`MeritPlatinumMasteryRemainPoint varbinary\`,
+  \`MeritPlatinumMasteryOpenSlot varbinary\`,
+  \`MeritPlatinumSpecialMastery varbinary\`,
+  \`MeritPlatinumPageExtendedCount tinyint\`.
+- \`dbo.cabal_merit_platinum_mastery_table\`:
+  \`UserNum int\`, \`MeritPlatinumMastery varbinary\`.
+- \`dbo.cabal_contents_control_etc_table\`:
+  \`MeritUse tinyint\`, \`MeritPlatinumUse tinyint\`.
+- \`dbo.cabal_honormedal_user_table\`:
+  \`UserNum int\`, \`Grade int\`, \`Score int\`.
+
+Among columns/tables matching Diamond or Insignia in this catalog query,
+**none** are found. However the query is filtered by names, so that does not
+prove the absence of opaque/unrelated Diamond data elsewhere; no other tables
+or rows have been read.
+
+**Runtime code fact**: current WorldSvr has literal Platinum handlers
+\`OnCSCMeritPlatinumBadgeGradeUp\`,
+\`OnCSCMeritPlatinumBadgeMasterySlotOpen\`,
+\`OnCSCMeritPlatinumPageChange\`,
+\`OnCSCMeritPlatinumSpecialMastery\`, and
+\`OnCSCMeritPlatinumSpecialMasterySeal\`. No Diamond literal in the two
+identified loaded modules. This supports a likely Diamond-specific native
+feature gap but does not prove all dynamically resolved handlers are absent.
+
+**Critical boundaries**:
+1. The initial Information Schema report only returns matching *columns*;
+   it does NOT give \`varbinary\` lengths, PK, FK, indices, null/default
+   constraints, or Merit-related stored procedure parameter signatures.
+2. Do not create/alter SQL tables merely based on guessed names. Platinum is
+   demonstrably a user-level (\`UserNum\`) data model with binary payloads.
+3. No live Diamond client packet capture or its v291 \`.enc\` serializer has
+   been decoded. Do not deploy the staged Diamond SCP in isolation.
+4. Platinum + Diamond is the single current target, Anima Mastery next.
+
+A new conversation-local **read-only** Windows PowerShell script
+\`Audit-DiamondSqlDeep-v291.ps1\` inspects only
+\`sys.tables\`, \`sys.columns\`, \`sys.types\`, \`sys.indexes\`,
+\`sys.index_columns\`, \`sys.foreign_keys\`, \`sys.triggers\`,
+\`sys.procedures\` and \`sys.parameters\` for the five grounded existing
+tables and Merit/Platinum/Diamond named procedures. It does not read game rows
+or SQL procedure bodies; it writes a JSON report to Windows Downloads.
+The embedded remote Python passed an offline syntax check and query string
+static review; **not yet executed on user's private VM**.
+
+\`\`\`powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File "$env:USERPROFILE\Downloads\Audit-DiamondSqlDeep-v291.ps1"
+\`\`\`
+
+Next, use the resulting \`CABAL_DIAMOND_SQL_DETAILS_*.json\` to design
+an additive, reversible **test-only** Diamond persistence migration (with
+transactions, unique user key and verified binary layout). Do not modify the
+working Gold/Platinum tables until this is proven in an isolated clone.
