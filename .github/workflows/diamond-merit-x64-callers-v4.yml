@@ -1,0 +1,24 @@
+name: Diamond x64 Merit selector caller V4 Windows compile
+on:
+  push:
+    branches:
+      - feature/diamond-insignia-v291-20261121
+    paths:
+      - diamond-insignia/client-codec/Inspect-Cabal291-MeritCaller-V4.ps1
+      - .github/workflows/diamond-merit-x64-callers-v4.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  native-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compile C# scanner and run Windows PowerShell 5.1 synthetic selector tests
+        shell: powershell
+        run: |
+          & .\diamond-insignia\client-codec\Inspect-Cabal291-MeritCaller-V4.ps1 -SelfTestOnly
+      - name: Explain CI limits
+        shell: powershell
+        run: |
+          Write-Output 'NO production game files or server access; only synthetic test bytes'
