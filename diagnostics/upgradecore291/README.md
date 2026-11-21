@@ -46,3 +46,27 @@ During each window reproduce the corresponding game action once. Store outputs p
 - Real game acceptance: Upgrade Core success/failure result, Perfect Core, item +level persistence after reconnect, no disconnect, Force/Chaos/Divine regression, no WorldSvr restart.
 - Commit text-only implementation changes/test evidence summaries after verified test; label any untested hypothesis as unverified.
 
+## Automated private three-case comparison
+
+After capturing one Upgrade Core, one Perfect Core and one successful Force Core
+control during three **separate real client tests** (on the TEST VM), run:
+
+```bash
+python3 Analyze-UpgradeCore-v291.py   --upgrade /tmp/upgradecore-case.json   --perfect /tmp/perfectcore-case.json   --force /tmp/forcecore-control.json   --out /tmp/upgradecore-triage.json
+```
+
+The output gives a root-cause **category and next investigation step**, but
+cannot recover missing packet opcodes or claim a fixed game. It does not print
+raw log lines or upload any files. Keep even the redacted triage private if it
+can disclose your setup. Available categories include crash/restart, server
+log rejection, missing status, and stable-WorldSvr client disconnect.
+
+**Review note (2026-11-21):** Source archaeology on linked GitHub found no
+confirmed EP45 server-side Normal Upgrade donor source: CABAL-EP45 contains
+client inventory and baseline metadata, not a confirmed EP45 WorldSvr runtime.
+No real Upgrade Core case logs are available through these connected tools.
+Do not conflate the unrelated Warp 485 disconnect with this incident.
+
+**No tested fix:** The collector and analyzer are diagnostic utilities only.
+Do not merge an inferred WorldSvr patch without isolated gameplay regression
+and an observed root cause.
