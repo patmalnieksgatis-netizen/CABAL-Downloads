@@ -56,11 +56,7 @@ $specs=@(
  [pscustomobject]@{Path='Bin\x64\CabalMain.exe';Sha='52e7956d4781fea1f0369cac8ab1eac4c3ddec2d1977c6557be53ec2b79885d9';
   Size=15089000;TextEnd=11733504;PdataStart=14474752;PdataLen=522240;
   Entries=@(@{name='meritsystem.enc';off=2209957;ins='488d15bc299400';jump=2209290},
-            @{name='meritsystem_msg.enc';off=2210148;ins='4c8d0d0d299400';jump=2209660})},
- [pscustomobject]@{Path='Bin\x86\CabalMain.exe';Sha='7f0aa64333d5c8e1e48c1e8e8512e45b6ea91ce3efee23d8cb7dbbc63f1feb26';
-  Size=10099560;TextEnd=8651776;PdataStart=0;PdataLen=0;
-  Entries=@(@{name='meritsystem.enc';off=1818262;ins='689cf0c400';jump=1819192},
-            @{name='meritsystem_msg.enc';off=1818274;ins='68acf0c400';jump=1819192})}
+            @{name='meritsystem_msg.enc';off=2210148;ins='4c8d0d0d299400';jump=2209660})}
 )
 $all=New-Object System.Collections.Generic.List[object]
 foreach($spec in $specs){
@@ -100,7 +96,7 @@ foreach($spec in $specs){
 }
 $report=[ordered]@{schema=3;mode='READ_ONLY_MERIT_DISPATCH_LANDING_AUDIT';time_utc=[DateTime]::UtcNow.ToString('o');
  client_root=$ClientRoot;merit_enc_sha256=$encSha;files=@($all.ToArray());
- independent_sites=4;game_launched=$false;client_modified=$false;sql_or_vm_touched=$false;
+ independent_sites=2;game_launched=$false;client_modified=$false;sql_or_vm_touched=$false;
  decoder_found=$false;diamond_opcode_found=$false}
 $stamp=Get-Date -Format 'yyyyMMdd-HHmmss'
 $zip=Join-Path (Join-Path $env:USERPROFILE 'Downloads') ('CABAL_DIAMOND_MERIT_DISPATCH_V3_'+$stamp+'.zip')
@@ -110,11 +106,11 @@ try{
  [IO.File]::WriteAllText((Join-Path $tempDir 'MERIT_DISPATCH_V3_REPORT.json'),
     ($report|ConvertTo-Json -Depth 16),(New-Object Text.UTF8Encoding($false)))
  [IO.File]::WriteAllText((Join-Path $tempDir 'README.txt'),
-    'Static bounded x86/x64 Merit filename branch windows, NOT a proven decoder or game opcode.',
+    'Static bounded x64 ONLY Merit filename branch windows, NOT a proven decoder or game opcode.',
     (New-Object Text.UTF8Encoding($false)))
  Add-Type -AssemblyName System.IO.Compression.FileSystem
  [IO.Compression.ZipFile]::CreateFromDirectory($tempDir,$zip)
- Write-Host 'INDEPENDENT_MERIT_CODE_REFERENCES=4'
+ Write-Host 'INDEPENDENT_MERIT_CODE_REFERENCES=2'
  Write-Host "UPLOAD_THIS_ZIP=$zip"
  Write-Host 'CLIENT_AND_SERVER_UNMODIFIED=YES'
 }finally{Remove-Item -LiteralPath $tempDir -Recurse -Force -ErrorAction SilentlyContinue}
