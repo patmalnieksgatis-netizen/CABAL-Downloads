@@ -204,3 +204,16 @@ V3 produced `CABAL_DIAMOND_MERIT_DISPATCH_V3_20261121-212022.zip` locally on use
 The committed V3 script `diamond-insignia/client-codec/Inspect-Cabal291-MeritDispatch-V3.ps1` was adjusted to **x64-only**, with `independent_sites=2`, and no `Bin\x86\CabalMain.exe` dependency for future use. This is a future quality fix, not a reason to rerun the successful user scan. Prior full x64/x86 source probes were research references only.
 
 Preserve live Platinum for account `wolverine`; no active server/SQL/client writes. Diamond still not installed.
+
+## 2026-11-21 21:20 V3 ZIP inspected — x64 Merit resource string selector found
+
+The user attached their successful V3 branch-window ZIP. It contains exactly 2 x64 source references and 2 x64 branch landings, all inside one `.pdata` function `0x21BB98–0x21CBD2` (4,154 bytes). Opcode and displacement bytes were independently re-decoded from the uploaded `bytes_hex`. This is **not a decoder**.
+
+Case `r8d=0x34` (52) selects `meritsystem.enc`, LEA `0x21C4A5` -> landing `0x21C20A`; case `r8d=0x35` (53) selects `meritsystem_msg.enc`, LEA `0x21C564` -> landing `0x21C37C`. Message landing loads literal length `0x13` (19). Both are ordinary filename resource selector IDs, **not Diamond opcodes**.
+
+Next collector is checked-in `diamond-insignia/client-codec/Inspect-Cabal291-MeritCaller-V4.ps1`. Exact SHA gates the **x64-only** `CabalMain.exe` plus v291 Merit ENC; scans raw E8/E9 relative candidate references to function entry `0x21BB98`, reports bounded caller windows and enclosing `.pdata` function bounds, captures 4,154-byte selector body, does not alter any CABAL data. Windows PowerShell 5.1 C# compilation and synthetic call/jmp/pdata checks **PASS** in https://github.com/patmalnieksgatis-netizen/CABAL-Downloads/actions/runs/44940866262. **V4 still not executed on user's actual client**.
+
+One-line Windows command to download the exact repo source and run without x86:
+`$u='https://raw.githubusercontent.com/patmalnieksgatis-netizen/CABAL-Downloads/feature/diamond-insignia-v291-20261121/diamond-insignia/client-codec/Inspect-Cabal291-MeritCaller-V4.ps1'; $p="$env:USERPROFILE\Downloads\Inspect-Cabal291-MeritCaller-V4.ps1"; Invoke-WebRequest -UseBasicParsing -Uri $u -OutFile $p -ErrorAction Stop; powershell -NoProfile -ExecutionPolicy Bypass -File $p`
+
+The produced ZIP `CABAL_DIAMOND_MERIT_X64_CALLERS_V4_*.zip` is needed to advance caller graph; no further broad EXE/DLL scans. If there are zero direct candidates, don't claim absence; find indirect calls. No live WorldSvr/SQL/client change; Platinum wolverine preserved, Diamond not yet operational.
