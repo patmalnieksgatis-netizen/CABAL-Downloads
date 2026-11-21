@@ -122,7 +122,7 @@ try {
         $start = 0
         if ($data.Length -ge 3 -and $data[0] -eq 0xef -and $data[1] -eq 0xbb -and $data[2] -eq 0xbf) { $start = 3 }
         $offset = $start
-        while ($offset -lt $data.Length -and $data[$offset] -eq 12) { $offset++ }
+        while ($offset -lt $data.Length -and $data[$offset] -in @(9,10,11,12,13,32)) { $offset++ }
         if ($offset -gt $start) {
             $clean = [byte[]]::new($data.Length - $offset + $start)
             [Array]::Copy($data,0,$clean,0,$start)
