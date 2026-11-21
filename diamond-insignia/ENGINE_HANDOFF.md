@@ -217,3 +217,22 @@ One-line Windows command to download the exact repo source and run without x86:
 `$u='https://raw.githubusercontent.com/patmalnieksgatis-netizen/CABAL-Downloads/feature/diamond-insignia-v291-20261121/diamond-insignia/client-codec/Inspect-Cabal291-MeritCaller-V4.ps1'; $p="$env:USERPROFILE\Downloads\Inspect-Cabal291-MeritCaller-V4.ps1"; Invoke-WebRequest -UseBasicParsing -Uri $u -OutFile $p -ErrorAction Stop; powershell -NoProfile -ExecutionPolicy Bypass -File $p`
 
 The produced ZIP `CABAL_DIAMOND_MERIT_X64_CALLERS_V4_*.zip` is needed to advance caller graph; no further broad EXE/DLL scans. If there are zero direct candidates, don't claim absence; find indirect calls. No live WorldSvr/SQL/client change; Platinum wolverine preserved, Diamond not yet operational.
+
+## 2026-11-21 21:28 — x64 Merit V4 caller collector executed successfully
+
+User ran the committed `Inspect-Cabal291-MeritCaller-V4.ps1` against the active `F:\CABAL_291_TEST` client. Output:
+
+```text
+MERIT_X64_CALLER_V4_WINDOWS_SELF_TEST=PASS
+CABAL_DIAMOND_MERIT_X64_CALLER_V4=READ_ONLY_STATIC
+ACTIVE_ARCHITECTURE=x64;GAME_RUN=NO;SQL_OR_VM=NO;CLIENT_EDIT=NO
+DIRECT_E8_OR_E9_CANDIDATE_COUNT=6
+SELECTOR_FULL_BODY_BYTES=4154
+EXPORTED_CALLER_CONTEXTS=6
+UPLOAD_THIS_ZIP=C:\Users\patma\Downloads\CABAL_DIAMOND_MERIT_X64_CALLERS_V4_20261121-212827.zip
+CLIENT_AND_SERVER_UNMODIFIED=YES
+```
+
+**Interpretation:** six RAW E8/E9 rel32 byte-pattern candidates to selector RVA `0x21BB98`, not yet six validated instruction-boundary callers, nor the ENC decoder/ Diamond packet handler. The collector exported all six bounded code contexts and the 4,154-byte selector body. Its on-device smoke test passed and the game/server remained unchanged.
+
+**Immediate next input is the already-generated ZIP above. Do not ask for another scan.** Once attached, parse `MERIT_X64_CALLER_V4_REPORT.json`, decode candidate branch instructions and inspect enclosing `.pdata` ranges; discard bytes inside other instructions, map real caller flow to file IO/decode code if evidence permits. Keep investigation x64 only. Do not change live WorldSvr, SQL, active client, or Platinum account wolverine.
