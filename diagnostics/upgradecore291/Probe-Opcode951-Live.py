@@ -43,6 +43,35 @@ def select_host_pid(inner_pid):
         raise RuntimeError("WORLD_HOST_PID_NOT_UNIQUE_OR_BINARY_HASH_CHANGED: matched="+str(len(candidates)))
     return candidates[0]
 
+def extract_header(gdb_stdout):
+    """Parse 48 or 19 raw bytes between GDB markers, excluding address labels."""
+    first = gdb_stdout.find("OPCODE_951_HEADER_BEGIN")
+    last = gdb_stdout.find("OPCODE_951_HEADER_END",first)
+    if first < 0 or last < 0:
+        return None
+    section = gdb_stdout[first+len("OPCODE_951_HEADER_BEGIN"):last]
+    values = re.findall(r"(?<![0-9a-fA-F])0x([0-9a-fA-F]{2})(?![0-9a-fA-F])",section)
+    if len(values) not in (19,48):
+        return None
+    return bytes(int(v,16) for v in values)
+
+def infer_layout(header):
+    if not header or len(header) < 19:
+        return {"status":"NO_HEADER"}
+    declared=struct.unpack_from("<H",header,2)[0]
+    escape=struct.unpack_from("<H",header,17)[0]
+    expected=139+2*escape
+    implied=(declared-139)//2 if declared>=139 and (declared-139)%2==0 else None
+    candidates=[]
+    if implied is not None and implied<=521:
+        for off in range(14,len(header)-1):
+            if struct.unpack_from("<H",header,off)[0]==implied:
+                candidates.append(off)
+    return {"declared":declared,"legacy_escape_count":escape,"legacy_expected":expected,
+        "length_delta":declared-expected,"length_implied_escape_count":implied,
+        "possible_shifted_offsets":[hex(i) for i in candidates],
+        "status":"LEGACY_LENGTH_MATCH" if declared==expected and escape<=521 else "V291_HEADER_MISMATCH"}
+
 def main():
     a=argparse.ArgumentParser(description=__doc__)
     a.add_argument("--out",type=Path,default=Path("/tmp/upgrade951-live-shape.txt"))
@@ -65,6 +94,13 @@ break *0x7ac0f0
 commands
   silent
   printf "OPCODE_951_SHAPE actual_packet_len=%u escape_slot_count=%u expected_packet_len=%u core_slot_count=%u main_slot=%u\n", *(unsigned short*)($r15+2), *(unsigned short*)($r15+0x11), (139+2*(*(unsigned short*)($r15+0x11))), *(unsigned char*)($r15+0x10), *(unsigned short*)($r15+0x0e)
+  printf "OPCODE_951_HEADER_BEGIN\\n"
+  if *(unsigned short*)($r15+2) >= 48
+    x/48xb $r15
+  else
+    x/19xb $r15
+  end
+  printf "OPCODE_951_HEADER_END\\n"
   detach
   quit
 end
@@ -80,9 +116,14 @@ continue
     lines=[line.strip() for line in (proc.stdout+"\n"+proc.stderr).splitlines() if "OPCODE_951_SHAPE" in line or
            re.search("ptrace|Operation not permitted|Cannot attach|not permitted|not installed",line,re.I)]
     args.out.parent.mkdir(parents=True,exist_ok=True)
-    args.out.write_text("\n".join(lines)+"\n",encoding="utf-8");args.out.chmod(0o600)
+    header = extract_header(proc.stdout)
+    layout = infer_layout(header)
+    private_report = {"lines":lines,"layout":layout,
+                      "first_48_or_19_bytes_hex":header.hex() if header else None}
+    args.out.write_text(json.dumps(private_report,indent=2)+"\n",encoding="utf-8");args.out.chmod(0o600)
     print(json.dumps({"gdb_rc":proc.returncode,"captured":any(x.startswith("OPCODE_951_SHAPE") for x in lines),
-                       "report":str(args.out),"lines":lines}))
+                       "report":str(args.out),"lines":lines,"layout":layout,
+                       "header_bytes_saved_privately":len(header) if header else 0}))
     if not any(x.startswith("OPCODE_951_SHAPE") for x in lines):
         raise SystemExit("NO_951_PACKET_CAPTURED; server unchanged")
     print("NO_PATCH_APPLIED=YES")
