@@ -40,6 +40,96 @@ public static class CabalMeritNativeV5 {
   }
   return new int[0];
  }
+
+ static int FileOff(byte[] d,int sect,int n,uint rva){
+  for(int i=0;i<n;i++){
+   int p=sect+i*40;
+   if(p<0 || p+40>d.Length) return -1;
+   uint virtualSize=BitConverter.ToUInt32(d,p+8);
+   uint va=BitConverter.ToUInt32(d,p+12);
+   uint rawSize=BitConverter.ToUInt32(d,p+16);
+   uint rawPtr=BitConverter.ToUInt32(d,p+20);
+   uint span=Math.Max(virtualSize,rawSize);
+   if(rva>=va && (ulong)rva<(ulong)va+span && rva-va<rawSize){
+    ulong off=(ulong)rawPtr+(rva-va);
+    if(off<d.Length)return (int)off;
+   }
+  }
+  return -1;
+ }
+ static string Ascii(byte[] d,int off,int maxLen){
+  if(off<0 || off>=d.Length)return null;
+  int end=off;
+  while(end<d.Length && end-off<maxLen && d[end]!=0)end++;
+  if(end>=d.Length || end-off==maxLen)return null;
+  return System.Text.Encoding.ASCII.GetString(d,off,end-off);
+ }
+ public static string ImportSlotName(byte[] d,int wantedRva){
+  if(d==null || d.Length<512 || d[0]!=0x4d || d[1]!=0x5a)return null;
+  int pe=BitConverter.ToInt32(d,0x3c);
+  if(pe<64 || pe>d.Length-24 || BitConverter.ToUInt32(d,pe)!=0x00004550)return null;
+  int n=BitConverter.ToUInt16(d,pe+6);
+  int optLen=BitConverter.ToUInt16(d,pe+20);
+  int opt=pe+24;
+  if(n<1 || n>128 || optLen<128 || opt+optLen+n*40>d.Length ||
+     BitConverter.ToUInt16(d,opt)!=0x20b)return null;
+  int sec=opt+optLen;
+  uint importRva=BitConverter.ToUInt32(d,opt+120);
+  if(importRva==0)return null;
+  int imp=FileOff(d,sec,n,importRva);
+  if(imp<0)return null;
+  for(int k=0;k<512;k++){
+   int at=imp+k*20;
+   if(at<0 || at+20>d.Length)break;
+   uint orig=BitConverter.ToUInt32(d,at);
+   uint dllRva=BitConverter.ToUInt32(d,at+12);
+   uint iat=BitConverter.ToUInt32(d,at+16);
+   if(orig==0 && dllRva==0 && iat==0)break;
+   if(iat==0 || wantedRva<iat || (wantedRva-iat)%8!=0 || (wantedRva-iat)/8>65536)continue;
+   uint index=(uint)(wantedRva-iat)/8;
+   ulong lookup=(ulong)(orig!=0?orig:iat)+index*8UL;
+   if(lookup>uint.MaxValue)continue;
+   int thunk=FileOff(d,sec,n,(uint)lookup);
+   if(thunk<0 || thunk+8>d.Length)continue;
+   ulong entry=BitConverter.ToUInt64(d,thunk);
+   if(entry==0)continue;
+   int dllOff=FileOff(d,sec,n,dllRva);
+   string dll=Ascii(d,dllOff,256);
+   if(dll==null)continue;
+   if((entry&0x8000000000000000UL)!=0)
+    return dll+"!ordinal_"+(entry&0xffffUL).ToString();
+   if(entry>uint.MaxValue)continue;
+   int funcOff=FileOff(d,sec,n,(uint)entry);
+   if(funcOff<0 || funcOff+3>d.Length)continue;
+   string name=Ascii(d,funcOff+2,256);
+   if(name!=null)return dll+"!"+name;
+  }
+  return null;
+ }
+ public static bool ImportParserSmoke(){
+  byte[] b=new byte[4096];b[0]=0x4d;b[1]=0x5a;
+  Buffer.BlockCopy(BitConverter.GetBytes(0x80),0,b,0x3c,4);
+  Buffer.BlockCopy(BitConverter.GetBytes(0x00004550U),0,b,0x80,4);
+  Buffer.BlockCopy(BitConverter.GetBytes((ushort)1),0,b,0x86,2);
+  Buffer.BlockCopy(BitConverter.GetBytes((ushort)0xf0),0,b,0x94,2);
+  int opt=0x98,sec=opt+0xf0;
+  Buffer.BlockCopy(BitConverter.GetBytes((ushort)0x20b),0,b,opt,2);
+  Buffer.BlockCopy(BitConverter.GetBytes(0x1000U),0,b,opt+120,4);
+  Buffer.BlockCopy(BitConverter.GetBytes(0x800U),0,b,sec+8,4);
+  Buffer.BlockCopy(BitConverter.GetBytes(0x1000U),0,b,sec+12,4);
+  Buffer.BlockCopy(BitConverter.GetBytes(0x800U),0,b,sec+16,4);
+  Buffer.BlockCopy(BitConverter.GetBytes(0x200U),0,b,sec+20,4);
+  Buffer.BlockCopy(BitConverter.GetBytes(0x1100U),0,b,0x200,4);
+  Buffer.BlockCopy(BitConverter.GetBytes(0x1180U),0,b,0x20c,4);
+  Buffer.BlockCopy(BitConverter.GetBytes(0x1200U),0,b,0x210,4);
+  Buffer.BlockCopy(BitConverter.GetBytes(0x1190UL),0,b,0x300,8);
+  byte[] dll=System.Text.Encoding.ASCII.GetBytes("KERNEL32.dll\0");
+  Buffer.BlockCopy(dll,0,b,0x380,dll.Length);
+  byte[] name=System.Text.Encoding.ASCII.GetBytes("GetFileAttributesA\0");
+  Buffer.BlockCopy(name,0,b,0x392,name.Length);
+  return ImportSlotName(b,0x1200)=="KERNEL32.dll!GetFileAttributesA" &&
+         ImportSlotName(b,0x1208)==null;
+ }
 }
 '@
 Add-Type -TypeDefinition $native -Language CSharp -ErrorAction Stop -WarningAction Stop
@@ -71,6 +161,7 @@ $bounds=[CabalMeritNativeV5]::PdataFunction($t,360,24,0x1100)
 Must ($bounds.Length -eq 2 -and $bounds[0] -eq 0x1100 -and
  $bounds[1] -eq 0x1200) 'Synthetic function-boundary failure'
 Must ([CabalMeritNativeV5]::FindCalls($t,0,128,4096,[int[]]@(0x1300)).Length -eq 0) 'Synthetic negative caller failure'
+Must ([CabalMeritNativeV5]::ImportParserSmoke()) 'Synthetic PE import slot name resolution failure'
 Write-Host 'MERIT_X64_V5_WINDOWS_SELF_TEST=PASS'
 if($SelfTestOnly){Write-Host 'SELF_TEST_ONLY_NO_GAME_FILES_OPENED=YES';exit 0}
 
@@ -121,6 +212,11 @@ foreach($tgt in $targets.GetEnumerator()){
  Write-Host ('FUNCTION='+$tgt.Key+';rva=0x{0:x}-0x{1:x};bytes={2}' -f $begin,$end,$fullSize)
 }
 $found=[CabalMeritNativeV5]::FindCalls($b,$textStart,$textEnd,$delta,[int[]]@($wrapper,$helper))
+$importInfo=[ordered]@{
+ iat_slot_0xb329f8=[CabalMeritNativeV5]::ImportSlotName($b,0xb329f8);
+ iat_slot_0xb32c28=[CabalMeritNativeV5]::ImportSlotName($b,0xb32c28)
+}
+Write-Host ('IAT_0xB329F8=' + $(if($importInfo.iat_slot_0xb329f8){$importInfo.iat_slot_0xb329f8}else{'UNRESOLVED'}))
 Write-Host ('DIRECT_E8_E9_CANDIDATES='+$found.Length)
 $results=New-Object System.Collections.Generic.List[object]
 foreach($h in @($found | Select-Object -First 120)){
@@ -141,7 +237,7 @@ $report=[ordered]@{
  exe_sha256=$exeSHA;merit_enc_sha256=$encSHA;
  source='F:\CABAL_291_TEST\Bin\x64\CabalMain.exe';
  functions=@($blocks.ToArray());
- raw_e8_e9_candidate_count=$found.Length;exported_contexts=@($results.ToArray());
+ import_slot_name_candidates=$importInfo;raw_e8_e9_candidate_count=$found.Length;exported_contexts=@($results.ToArray());
  export_limit=120;game_launched=$false;process_memory_read=$false;
  sql_or_vm_access=$false;client_modified=$false;
  actual_decoder_found=$false;diamond_opcode_found=$false
