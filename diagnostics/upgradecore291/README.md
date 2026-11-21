@@ -179,3 +179,44 @@ No game patch deployed yet: the connected ChatGPT environment cannot reach the
 VM's host-only network. An exact source-safe packet guard with eight synthetic
 test cases was saved as \`Opcode951-Contract.py\` and
 \`tests/test_opcode951_contract.py\`; these are *not* functional upgrade patches.
+
+## 2026-11-21: Exact live 951 packet CAPTURED; two-byte candidate proved against archived WorldSvr
+
+The user's **real hardware breakpoint capture** on the TEST VM:
+- Native running WorldSvr SHA256: \`caec7772acd22fd8918cfac386845c644451781e48c51975eaefed334c6705c3\`.
+- MainCmd 951 declared packet length **259**; legacy server expected **139**;
+  delta **120 bytes**.
+- \`escapeSlotCount\` at old offset \`0x11\`: **0**; \`coreSlotCount\`: **1**;
+  main slot **129**; first core entry at offset \`0x13\`: **42**.
+- First 192 captured bytes contain one nonzero 2-byte core entry, the rest of
+  the following array bytes are zero. The **last 67 packet bytes were NOT
+  captured**, so the whole extended layout is not verified.
+
+**Reversible LAB-only compatibility hypothesis**: change the *single* old
+WorldSvr opcode-951 validation length-base immediate from **139** to **259**
+while retaining \`2 * escapeSlotCount\` and the entire item/slot validation
+path. At virtual address \`0x7AC0FD\` opcode \`48 8d 94 12 8b 00 00 00\`
+becomes \`48 8d 94 12 03 01 00 00\` (changed bytes file offsets
+\`0x3AC101\` and \`0x3AC102\`).
+
+This was verified **against the archived, SHA-matched actual 10,596,184-byte
+WorldSvr ELF**, without executing or writing the candidate:
+https://github.com/patmalnieksgatis-netizen/cabal-ep36/actions/runs/44904164461
+
+Candidate SHA256:
+\`08b3316be18d1ffe57d7a88d35ea99e0e4e4b2c3687b5b1a1829512f53a5052f\`.
+
+Local isolated deployment wrapper was packaged as
+\`CABAL_951_PATCH_TEST.ps1\` plus its embedded Linux Python patcher.
+It verifies original SHA, checks exact disassembly bytes, backs up before
+the mutation, installs exactly two changed bytes, restarts **only**
+\`WorldSvr_01_01\`, checks the process running SHA and has explicit rollback.
+No \`gdb\`, \`apt\` or VM internet required. This package was created as
+a conversation download artifact, not a committed WorldSvr binary.
+
+**Not applied on the actual user's VM by this assistant** because it is
+VirtualBox host-only. No successful normal upgrade has been tested yet.
+If any in-game upgrade or persistence test fails, revert using the rollback
+action. Because the old length-base is replaced, old 139-byte opcode-951
+clients may no longer work on this LAB WorldSvr. Force/Chaos/Divine use
+distinct handler code and remain unmodified, but require smoke tests.
