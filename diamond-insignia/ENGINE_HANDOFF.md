@@ -117,10 +117,10 @@ Official EP38 patch introduced Diamond and official EP39 fixes mention its UI; t
 
 ### New offline client probe and safe rule validator
 
-Prepared conversation artifact `CABAL_DIAMOND_CLIENT_CODEC_STATIC_AUDIT.zip` SHA256 `c07db87338c7b9e425bf2050dc3bbc128b62b65681f33490b299635d79234865`, containing:
+Prepared conversation artifact `CABAL_DIAMOND_CLIENT_CODEC_STATIC_AUDIT.zip` SHA256 `ce11ccd9a4818fb6a659f7489abe6bc78c42966c947a5e1d454d69278cdaff2d`, containing 9 files including the exact private donor XML (for local reproducible tests only; **do not commit this XML to public GitHub**):
 
 - `Inspect-Cabal291-MeritCodec.ps1`: read-only static SHA-gated scanner for *actual* `F:\CABAL_291_TEST` `Bin/x64` EXE/DLL; records limited byte-pattern context around Merit/Diamond/ENC/XOR candidate markers, no game process launch, binary export, account data, SQL or game file mutations. **Not yet executed on user's Windows client.**
-- `analyze_static_report.py` and 4 synthetic analyzer tests, plus 4 script static safety tests: **8/8 passed locally**. A pattern match is NOT proof of a working key or handler.
+- `analyze_static_report.py` and 4 synthetic analyzer tests, plus 4 script static safety tests: **21/21 passed locally in the final ZIP (13 donor rules, 4 report-analyzer, 4 scanner static checks)**. A pattern match is NOT proof of a working key or handler.
 - `verify_enc_codec.py`: independently validates the EP45 donor classic codec and reports the v291 variant as NOT decoded by that specific codec.
 - `DiamondPurchasePolicy_OFFLINE_REFERENCE.py` plus 13 tests run with private decoded EP45 XML. This is a prototype returning a proposed purchase state, **not** active WorldSvr, SQL, item handling or client packet code.
 
