@@ -440,3 +440,15 @@ Next, use the resulting \`CABAL_DIAMOND_SQL_DETAILS_*.json\` to design
 an additive, reversible **test-only** Diamond persistence migration (with
 transactions, unique user key and verified binary layout). Do not modify the
 working Gold/Platinum tables until this is proven in an isolated clone.
+
+## 2026-11-21 Diamond phase after Platinum user acceptance
+
+The user reported Platinum for the wolverine account is OK. Treat this as user-reported success; no independent in-game persistence regression proof was supplied.
+
+Retested the exact uploaded source ZIP against the offline Diamond staged SCP: PASS (64 old Gold and 94 Platinum untouched, 316 new Diamond grade2 masters, 16 Diamond categories, 2442 additive rows). Source SCP SHA256 307fc981ec3efe66f6cc1b0606ed7d86cd9e5a6e46205769a9bb34b012464295; candidate SHA256 26c9c4cbe3136f67f0298c8e412a4aa7620ba46d62b5c3950880fe821f2ee2e5.
+
+Do NOT install the staged SCP: loaded old WorldSvr and EP36CostumeMileage.so do not expose named Diamond handlers; the user SQL metadata includes Platinum tables but no named Diamond persistence; the live v291 ENC codec is not decoded.
+
+Next required isolated proof is the already created read-only Audit-DiamondSqlDeep-v291.ps1, SHA256 f010b3fd8ff0dc76f6cf3a58454a19e3f5e57965811d9192c371c5a161128596. It inventories only SQL catalog (exact column lengths/nullable/defaults, keys/indexes, FKs, triggers, stored procedure names and parameter types). It has passed the embedded Python syntax and SQL static checks, not yet run on the private VM. Output in Downloads/CABAL_DIAMOND_SQL_DETAILS_*.json. Then prepare separate Diamond persistence adapter in an isolated VM, packet compatibility tests, and v291 client Merit serializer research.
+
+Order remains Platinum -> Diamond -> Anima Mastery. No server or client modifications in this update.
