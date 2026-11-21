@@ -1,0 +1,22 @@
+name: Diamond Mastery Offline Policy Gate
+on:
+  push:
+    branches:
+      - feature/diamond-insignia-v291-20261121
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  policy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Verify Diamond rules fail closed on untrusted, linked, stale and invalid purchases
+        run: python3 -m unittest discover -s diamond-insignia/policy -p 'test_*.py' -v
+      - name: Scope
+        run: |
+          echo 'OFFLINE ONLY; no CABAL client run, no WorldSvr patch, no SQL reads or writes.'
+          echo 'Donor XML is not committed to public repository.'
