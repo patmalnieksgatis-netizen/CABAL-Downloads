@@ -19,3 +19,43 @@ The script and native tracer are delivered as conversation download artifacts; *
 
 ## Do not merge speculative patch
 Need distinguish +17 client UI cap, server extension rate/load cap, or invalid core grade/material; Safeguard packet body and server semantics must be mapped before changing parser. Preserve working +0..+17 and Force/Chaos/Divine. Final functional fix **not yet achieved**.
+
+
+## Additional verified config evidence — 2026-11-21
+
+Archive-wide scan verified in
+https://github.com/patmalnieksgatis-netizen/cabal-ep36/actions/runs/44906335206 :
+
+- \`home/data_main/cabal/Data/Enchant.scp\` contains
+  \`[EnchantExtendLimit] ItemGrade MaxEnchant\` entries with max **20**.
+- Its \`[EnchantExtendRate]\` has all five progression entries, for target
+  +16,+17,+18,+19,+20 (levels 15..19).
+- Required ordinary cores by current level: 15→16: 20; 16→17: 30;
+  **17→18: 40; 18→19: 50; 19→20: 60**.
+  Enhanced/Superior core needs: 10, 15, 20, 25, 30.
+  \`PerfectCoreNeeds\` is 3 for each of those five levels.
+- \`home/data_main/cabal/Data/EventEnchant.scp\` has an additional
+  \`[EnchantExtend_Core]\` table through level 19 (event core needs).
+- \`home/data_main/cabal/Common.ini\` contains
+  \`ChinaScrollSafeguard=1\`. This does **not** prove v291 new Safeguard
+  request support: native item configuration and opcode-951 parser are
+  separate concerns.
+- \`Core.scp [EnchantRate]\` 0..14 and \`Enchant.scp
+  [EnchantExtendRate]\` 15..19 combine to cover up to +20 in the
+  historical server package.
+
+**Conclusion:** The archived server *configuration* already targets +20.
+Do NOT blindly increase WorldSvr.ini MaxUpperGradeCoreEnchantLv from 12 to 20
+or write fake EnchantRate 15..19 rows to Core.scp. The live v291 case
+needs either the +17→18 server response/error or an observed lack of 951
+request and actual material stack/core type to establish the limit's cause.
+
+In particular, +17→18's archived \`CoreNeeds=40\` is a concrete
+material requirement, **not proof** the user lacks cores. Validate the
+currently running VM's \`Enchant.scp\` against the archived copy before
+adjusting.
+
+The 259-byte complete packet capture tool is saved as user downloadable
+\`CABAL_951_CAPTURE_FULL_SAFEGUARD.ps1\`, with cases \`base\`,
+\`safeguard\`, and \`plus18\`. It has synthetic ptrace capture
+verification of all 259 bytes but has not yet been run on this VM.
