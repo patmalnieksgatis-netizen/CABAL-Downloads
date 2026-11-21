@@ -136,6 +136,8 @@ def compare(samples):
 
 
 def main():
+    import os
+    os.umask(0o077)  # Secure new report files from creation, not only after writing.
     ap = argparse.ArgumentParser(description=__doc__)
     ap.add_argument("--seconds", type=int, default=60, help="Sampling window, 5 to 300 seconds")
     ap.add_argument("--interval", type=float, default=1.0, help="PID/status sampling period in seconds")
