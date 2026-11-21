@@ -190,3 +190,27 @@ Private \`cabal-ep36\` branch \`feature/diamond-insignia-ep39-audit-20261121\`
 adds a SHA-matched static WorldSvr scan of Diamond parser and handler tokens.
 It does not modify any VM. Then verify actual v291 client packets, current
 extension modules and database schema before integrating any new rows.
+
+
+### Original WorldSvr capability scan — completed
+
+GitHub Actions static read-only run:
+https://github.com/patmalnieksgatis-netizen/cabal-ep36/actions/runs/44924708106
+validated **the exact same** WorldSvr SHA-256 as the user VM. Binary-string
+inspection found Gold/Platinum loader tags \`MeritScore_Fomula_Platinum\`,
+\`MeritMastery_Base\`, \`MeritMastery_Value\`, \`SpecialMastery_Ratio\`,
+\`OnCSCMeritMasteryLvUp\`, plus **one generic** \`Category_Group\` token.
+It found **zero** ASCII/UTF16 occurrences of:
+\`Diamond\`, \`diamond\`, \`DIAMOND\`, \`MeritScore_Fomula_Diamond\`,
+\`SpecialCategory_Active\`, \`MasteryIndex_Group\`,
+\`SpecailMastery_Passive\`, and \`Category_Summary\`.
+
+This makes a **server-native extension/adapter very likely necessary**, but
+string absence alone cannot disprove unnamed handlers or code inside loaded
+external extension modules. Never apply the staged config rows directly
+to the live WorldSvr without handler/SQL testing. **Preserve the two working
+RAM compatibility patches** for Upgrade Core +20 and Safeguard.
+
+Next implementation milestone (still unimplemented): audit loaded extension
+modules, exact merit-related packets and SQL schema on an isolated test VM,
+then build Diamond-specific native adapter, preserving old Gold/Platinum rows.
