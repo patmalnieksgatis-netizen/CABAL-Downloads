@@ -33,3 +33,11 @@ A **one-request RAM register redirect** test helper exists as conversation artif
 It requires the working prior opcode 951 259-base RAM compatibility patch to already be active. It sets a hardware breakpoint at \`0x7AC574\` on all WorldSvr threads, verifies exact native code and the active 259-length instruction, checks 261-byte one-Safeguard packet layout, reads the real Safeguard slot from \`packet+259\`, replaces **only stopped thread RAX and RIP** to skip the stale slot-read instruction, and lets all subsequent server validation run. No code/data file writes or restart. It applies **once**, not persistently. It passed 3 synthetic ptrace tests (valid one-shot, malformed packet stops without change, missing 259 RAM patch stops without change).
 
 This is an **unverified CABAL gameplay compatibility trial**; do not claim Safeguard works until the user confirms actual protection behavior. No item permission/binding checks are removed.
+
+## 2026-11-21: Actual one-shot safeguard run and logging-only crash
+
+User's runtime log confirms `REGISTER_REDIRECT_APPLIED_ONCE`, actual core slot **133** (not prior example 42), Safeguard slot **132**, and replacement `EAX=132`, next RIP `0x7AC579`. The WorldSvr process was still the same PID afterwards. This proves the register redirect occurred, **not** that Safeguard protected an item.
+
+Then Python log-redaction postprocessing failed with `re.error: invalid group reference 1`. Specifically `re.sub(r'\\b(?:userNum|CharIdx|Addr)\\([^)]*\\)',r'\\1([redacted])',line)` references capturing group 1 in replacement but used a **noncapturing group** in pattern. Correct to `r'\\b(userNum|CharIdx|Addr)\\([^)]*\\)'` (the user-facing script `CABAL_951_SAFEGUARD_ONE_SHOT_V2.ps1` implements this). No need to rerun the one-shot merely to fix logging.
+
+Also created separate read-only `CABAL_951_SAFEGUARD_RESULT_CHECK.ps1` to query latest WorldSvr stderr and supervisor state via SSH, *without any new in-game action, breakpoint, RAM change, or restart*. In-game Safeguard protection result still requires player confirmation.
