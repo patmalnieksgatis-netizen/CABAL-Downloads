@@ -1,0 +1,24 @@
+name: Diamond Merit x64 loader V5 native Windows tests
+on:
+  push:
+    branches:
+      - feature/diamond-insignia-v291-20261121
+    paths:
+      - diamond-insignia/client-codec/Inspect-Cabal291-MeritLoader-V5.ps1
+      - .github/workflows/diamond-merit-x64-loader-v5.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  windows-power-shell:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compile C# and validate synthetic x64 calls and PDATA without CABAL binaries
+        shell: powershell
+        run: |
+          & .\diamond-insignia\client-codec\Inspect-Cabal291-MeritLoader-V5.ps1 -SelfTestOnly
+      - name: Confirm isolated test
+        shell: powershell
+        run: |
+          Write-Output 'No CABAL client execution, no SQL or VM access, and no game file writes.'
