@@ -107,3 +107,71 @@ Enabling SQL flags does not prove Platinum works in-game. The WorldSvr may
 cache these flags on startup. Any later controlled restart must be coordinated
 with reapplication of the already working runtime +20 and Safeguard fixes.
 Diamond Insignia and Anima Mastery are NOT installed by V2.
+
+
+## 2026-11-21 — Platinum points for one account (NPC Elixir postponed)
+
+The user requested either Platinum Insignia Elixir from NPC, or directly maximum
+Platinum points to manually allocate. Chosen implementation: **one-account
+guarded Platinum max score grant**, not NPC work, not completing/mastering all
+blobs.
+
+Confirmed from the **user's active** \`Server01\` / WorldSvr
+\`/etc/cabal/Data/MeritSystem.scp\`:
+- \`[MeritScore_Fomula_Platinum]\`: 301 bands; highest
+  \`Max_MeritScore_Platinum = 360542\`.
+- Sum of \`Reward_MeritPoint_Platinum\` is **2052** awarded spendable Merit
+  points. 360542 is Merit Score, **not** 360542 spendable points.
+- A public EP33 native SQL example uses
+  \`MeritPlatinumPoint = 360542\`,
+  \`MeritPlatinumMasteryPoint = 362000\`,
+  \`HaveMeritPlatinumBagde = 1\`. The second figure is a SQL progress field,
+  **not** 362000 spendable mastery points, and its exact behavior on this
+  customized v291 client remains to be tested.
+  Reference: https://forum.ragezone.com/threads/cabal-online-episode-33-offline-play.1243727/page-18
+
+Prepared standalone PowerShell artifact
+\`CABAL_PLATINUM_MAX_POINTS_GUARDED.ps1\` with SHA-256
+\`d6b80b25e5f7f7c8cfd044efcad5feffdf5c61eb658046737847a3415be7dbe5\`;
+conversation bundle \`CABAL_PLATINUM_MAX_POINTS_BUNDLE.zip\`, SHA-256
+\`fdd6683096d19220653384e2b56665eb06f821377301e8e76a08935944a36ac2\`.
+Full script is in the **conversation artifact**, not GitHub.
+
+- Accepts \`-AccountName <login>\`; maps login via
+  \`Account.dbo.cabal_auth_table.ID -> UserNum\` on actual live SQL with
+  strict whitelist and unique account check. **Do not guess UserNum**.
+- Requires user explicitly ran \`-LoggedOut\`; no in-game session may be
+  active at grant or rollback.
+- Checks exact WorldSvr SHA, exact native SCP SHA and Platinum formula
+  cap (360542 score / 2052 earned), old Gold 64 and Platinum 94 definitions;
+  fails closed on server revision mismatch.
+- Checks \`MeritUse=1\`, \`MeritPlatinumUse=1\`, exactly one global control
+  record and exactly one existing Platinum user row.
+- Takes rollback anchor locally **before** SQL mutation; if prior anchor
+  already exists, refuse new grant to prevent overwriting backup.
+- A guarded SQL transaction changes **only** three scalar fields in
+  \`Server01.dbo.cabal_merit_platinum_table\` for **exactly one UserNum**:
+  \`HaveMeritPlatinumBagde=1\`, \`MeritPlatinumPoint=360542\`,
+  \`MeritPlatinumMasteryPoint=362000\`.
+- Does NOT modify Platinum Mastery serialized varbinary, open slots, selected
+  page, other users, Gold Mastery, control flags, NPC or WorldSvr; no restarts
+  to preserve Upgrade Core +20 and Safeguard patches.
+- \`-Action Inspect\` reads only target user's three scalar Platinum values,
+  \`-Action Rollback\` restores exact prior values if account row has not
+  changed after grant; automatic conditional WHERE guards prevent accidental
+  overwrites.
+- Six **mocked** read/write/rollback tests pass; embedded remote Python and
+  the game-verification Python compile. The script has **not been executed
+  on the user's Windows environment or SQL VM**. Gameplay must be tested.
+
+Windows command after logout (replace the login if different):
+\`\`\`powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File "$env:USERPROFILE\Downloads\CABAL_PLATINUM_MAX_POINTS_GUARDED.ps1" -Action GrantMax -AccountName YOUR_LOGIN -LoggedOut
+\`\`\`
+If a Platinum account row is absent, **STOP**, do not auto-INSERT a guessed
+binary serialization. The underlying game server must have created/loaded a
+valid Platinum account row before an additive grant.
+
+The user wants to **manually spend points**; do not copy publicly posted
+fully mastered \`varbinary\` payloads. Platinum Elixir NPC is optional later,
+Diamond and Anima remain future milestones.
