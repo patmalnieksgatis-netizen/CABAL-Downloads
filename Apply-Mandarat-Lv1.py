@@ -108,9 +108,12 @@ def main(body):
         login = pid("LoginSvr_01")
         require(process > 0 and login > 0, "START_TEST_SERVER_FIRST")
         require(digest(Path("/proc") / str(process) / "exe") == WORLD_SHA, "WORLD_BINARY_DIFFERS")
-        status = subprocess.check_output(["supervisorctl", "status"], text=True, timeout=15)
-        active = [line for line in status.splitlines() if line.startswith("WorldSvr_") and "RUNNING" in line]
-        require(len(active) == 1 and active[0].split()[0] == WORLD, "OTHER_WORLD_CHANNEL_RUNNING")
+        status = subprocess.run(["supervisorctl", "status"], capture_output=True, text=True, timeout=15)
+        # Supervisor returns 3 when the listing includes services that are stopped.
+        require(status.returncode in (0, 3), "SUPERVISOR_STATUS_FAILED")
+        rows = [line.split() for line in status.stdout.splitlines()]
+        active = [row[0] for row in rows if len(row) >= 2 and row[0].startswith("WorldSvr_") and row[1] == "RUNNING"]
+        require(len(active) == 1 and active[0] == WORLD, "OTHER_WORLD_CHANNEL_RUNNING")
         if all(digest(DATA / name) == row["after"] for name, row in manifest.items()):
             print("MANDARAT_ALREADY_APPLIED; GAMEPLAY_PENDING", flush=True)
             return
