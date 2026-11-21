@@ -6,7 +6,7 @@ import subprocess
 import sys
 
 VM = "7632fb78-37a0-f645-97c0-dc322c50b002"
-ARCHIVE_SHA = "8e02aa42257ed6ac218f98c7194fdc22e0f130bd2e047668d7f81ee4e02f21b0"
+ARCHIVE_SHA = "bbb59d24c23213c190a872c0a01d07ef5db100d7e80f0b1ea2d9293b8dbd3c36"
 
 INSIDE = r'''
 import fcntl, hashlib, io, json, os, shutil, stat, subprocess, tempfile, time, zipfile
@@ -169,7 +169,7 @@ def main(body):
 def main():
     if Path("/sys/class/dmi/id/product_uuid").read_text().strip().lower() != VM:
         sys.exit("WRONG_TEST_VM")
-    body = Path("/tmp/Mandarat-Lv1-test.zip").read_bytes()
+    body = Path("/tmp/Mandarat-Lv1-4379.zip").read_bytes()
     if hashlib.sha256(body).hexdigest() != ARCHIVE_SHA:
         sys.exit("ZIP_HASH_DIFFERS")
     source = INSIDE + "\nmain(__import__('base64').b64decode(" + repr(base64.b64encode(body).decode()) + "))\n"

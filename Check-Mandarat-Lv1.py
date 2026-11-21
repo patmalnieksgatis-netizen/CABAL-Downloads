@@ -7,8 +7,8 @@ import sys
 import zipfile
 from pathlib import Path
 
-EXPECTED = "8e02aa42257ed6ac218f98c7194fdc22e0f130bd2e047668d7f81ee4e02f21b0"
-archive = Path("/tmp/Mandarat-Lv1-test.zip").read_bytes()
+EXPECTED = "bbb59d24c23213c190a872c0a01d07ef5db100d7e80f0b1ea2d9293b8dbd3c36"
+archive = Path("/tmp/Mandarat-Lv1-4379.zip").read_bytes()
 if hashlib.sha256(archive).hexdigest() != EXPECTED:
     sys.exit("ZIP_HASH_DIFFERS")
 with zipfile.ZipFile(io.BytesIO(archive)) as package:
