@@ -131,3 +131,16 @@ powershell -NoProfile -ExecutionPolicy Bypass -File "$env:USERPROFILE\Downloads\
 \`\`\`
 
 If target v291 directory changed, pass \`-ClientRoot 'F:\real\client\path'\`. User should upload just this archive in the conversation for direct byte-level .enc inspection. This is needed before any actual port or SQL migration. No feature has been enabled yet.
+
+
+### 2026-11-21 Windows collector run: six sources collected, ZIP path check false negative
+
+The user executed \`Collect-DiamondInsignia-Sources.ps1\` in Windows PowerShell 5.1; source readback succeeded:
+- v291 \`F:\CABAL_291_TEST\Data\meritsystem.enc\`: 41,368 bytes, SHA \`3d859032a8b42c3e011c6d7ff739c9ac088b7f63effbc8afbc7215e162c1b78a\`.
+- v291 English \`meritsystem_msg.enc\`: 9,328 bytes, SHA \`ab324be83f31ed6da63572e49bd6a4dd9c4b0edb177f190773b3109b5b0d1a16\`.
+- v291 Korean \`meritsystem_msg.enc\`: 7,658 bytes, SHA \`b3b200d937823b2b17c1fd5d5735dfba0da1ef06e7ac015318f3d8fa3233a2ed\`.
+- EP45 \`meritsystem.enc\`: 42,290 bytes, SHA \`74391c4317adb1dcd375de6097812f6fa57f3f52864d4f96c83c4e862de46ec1\`.
+- EP45 Korean \`meritsystem_msg.enc\`: 9,736 bytes, SHA \`8325002522e565b7d06cf82b9e64bbe0b00a564be38f5f2474dfa018a7078e76\`.
+- active server \`MeritSystem.scp\`: SHA \`307fc981ec3efe66f6cc1b0606ed7d86cd9e5a6e46205769a9bb34b012464295\`.
+
+Original script called \`ZipFile.CreateFromDirectory\`, then checked \`ZipArchiveEntry.FullName\` against manifests containing forward slashes. Windows .NET Framework may write archive entry names with backslashes. Result \`ZIP_MISSING: client/v291/meritsystem.enc\` happened **after ZIP file creation**, not during content collection. Script \`finally\` deletes only the temporary source copies, **not** the ZIP in Downloads. The latest \`CABAL-DIAMOND-SOURCES-*.zip\` likely already contains all six sources; verify entry names normalized with \`.Replace('\\','/')\` before any re-run. Fix committed in \`diamond-insignia/Collect-DiamondInsignia-Sources.ps1\` as of \`a209abdb2f7627cf5eccc83eb32db502d6b1eb42\`. Do not require the user to rerun SSH collection if the already-existing ZIP is valid. No client or VM modifications occurred. Feature port pending direct source analysis.
