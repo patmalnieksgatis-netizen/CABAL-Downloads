@@ -144,3 +144,49 @@ The user executed \`Collect-DiamondInsignia-Sources.ps1\` in Windows PowerShell 
 - active server \`MeritSystem.scp\`: SHA \`307fc981ec3efe66f6cc1b0606ed7d86cd9e5a6e46205769a9bb34b012464295\`.
 
 Original script called \`ZipFile.CreateFromDirectory\`, then checked \`ZipArchiveEntry.FullName\` against manifests containing forward slashes. Windows .NET Framework may write archive entry names with backslashes. Result \`ZIP_MISSING: client/v291/meritsystem.enc\` happened **after ZIP file creation**, not during content collection. Script \`finally\` deletes only the temporary source copies, **not** the ZIP in Downloads. The latest \`CABAL-DIAMOND-SOURCES-*.zip\` likely already contains all six sources; verify entry names normalized with \`.Replace('\\','/')\` before any re-run. Fix committed in \`diamond-insignia/Collect-DiamondInsignia-Sources.ps1\` as of \`a209abdb2f7627cf5eccc83eb32db502d6b1eb42\`. Do not require the user to rerun SSH collection if the already-existing ZIP is valid. No client or VM modifications occurred. Feature port pending direct source analysis.
+
+
+## USER-UPLOADED ZIP: exact EP45 Merit binary decode + add-only delta (2026-11-21)
+
+Source (user-provided, no remote VM access required): \`CABAL-DIAMOND-SOURCES-1bec4d3ce4.zip\`. ZIP manifest and all **six** source file byte lengths/SHA256 checks pass.
+
+- EP45 \`meritsystem.enc\` is successfully decoded to **660,148 bytes** of actual XML, with verified 4-byte uncompressed size and raw DEFLATE data using the classic 4-byte XOR key \`92 65 67 57\`.
+- EP45 \`meritsystem_msg.enc\` decodes to **97,784 bytes** of XML; category labels and descriptions are present.
+- Actual v291 \`meritsystem.enc\` = **41,368 compressed/encoded bytes**, first 4 bytes represent 663,334 uncompressed bytes. It does **not** decode with EP45's classic XOR key. DO NOT replace it with the EP45 .enc; preserving the working v291 client is essential.
+- EP45 includes exactly **474 Mastery definitions**: 64 Gold (grade0), 94 Platinum (grade1), **316 new Diamond (grade2)** over 16 new category IDs 11-26. Active WorldSvr SCP has precisely 158 Gold/Platinum rows and zero grade2 rows.
+- All **158 of 158** old \`MeritMastery_Base\` records match EP45 byte-for-byte as TSV fields; existing \`MeritMastery_Value\` has **30** differences within its 840 old rows, and existing \`SpecialMastery_Value\` has **14** differences in 183 rows. Therefore **preserve existing** Gold/Platinum value rows rather than transplanting the entire EP45 configuration.
+
+Offline add-only donor deltas in conversation artifact \`CABAL-DIAMOND-INSIGNIA-EP45-DIFF-REVIEW.zip\`:
+| Native table | Additive rows | Existing differences (preserve old) |
+| --- | ---: | ---: |
+| MeritMastery_Base | 316 | 0 |
+| MeritMastery_Value | 1096 | 30 |
+| UpGrade_Material | 1 | 0 |
+| SlotOpen_Material | 616 | 0 |
+| SlotOpen_Time | 308 | 0 |
+| SpecialMastery_Material | 1 | 0 |
+| SpecialMastery_Value | 100 | 14 |
+| SpecialMastery_Active | 4 | 0 |
+
+Also decoded EP45 contains new client-only categories/sections:
+\`dia_meritscore_fomula\` (301), \`SpecialCategory_Active\` (12),
+\`Category_Summary\` (154), \`Category_Group\` (4), \`MasteryIndex_Group\` (4),
+\`SpecailMastery_Passive\` (15). **Native server equivalents/persistence must be established**, not guessed.
+
+Verified Diamond group mapping and EP45 English labels:
+- 11 **Steadfast Resolution** → 12,13,14
+- 15 **Fatal Strike** → 16,17,18
+- 19 **Indomitable Spirit** → 20,21,22
+- 23 **Powerful Judgment** → 24,25,26
+
+EP45 Diamond rank-up material: \`upgrade_badge=2\`, \`upgrade_wexp=30000\`,
+\`upgrade_item=33554961\`, \`upgrade_count=100\` (item ID, NOT a textual name).
+Requires native server validation, transactional accounting and persistent DB state.
+
+**Not safe to deploy data alone**: The actual WorldSvr's recognition of grade 2, script sections, new packet types, and SQL state is not established. The offline bundle deliberately contains \`STAGED_ONLY\` rows/JSON, not a one-click binary patch or deployable SCP. It includes decoded EP45 XML plus a reproducing Python3 comparison tool, validations and an audit report. The project branch \`feature/diamond-insignia-v291-20261121\` and draft PR #2 remain the handoff for Codex. Full game data is NOT committed to the public repository.
+
+### Native follow-up
+Private \`cabal-ep36\` branch \`feature/diamond-insignia-ep39-audit-20261121\`
+adds a SHA-matched static WorldSvr scan of Diamond parser and handler tokens.
+It does not modify any VM. Then verify actual v291 client packets, current
+extension modules and database schema before integrating any new rows.
