@@ -1,0 +1,15 @@
+-- SPECIFICATION ONLY. Do NOT execute against the active game database.
+-- Proposed wire/persistence contract, not implemented by the existing WorldSvr.
+--
+-- get(UserNum): return BadgeGrade, DiamondUnlocked, DiamondScore,
+--   DiamondMasteryPoint, ActiveDiamondCategory, blobs, RowRevision.
+-- set(UserNum, ExpectedRowRevision, NewState):
+--   1. verify server-authoritative Merit change and anti-replay rules;
+--   2. validate Diamond category and points against EP45 definitions;
+--   3. perform guarded update with WHERE UserNum=@UserNum
+--         AND RowRevision=@ExpectedRowRevision;
+--   4. require @@ROWCOUNT=1 before commit and RowRevision+=1;
+--   5. persist only validated server-side changes, never client-trusted values.
+--
+-- IMPORTANT: No procedures are emitted until packet ABI and game-side save
+-- routines are reverse-engineered and tested on an isolated clone.
