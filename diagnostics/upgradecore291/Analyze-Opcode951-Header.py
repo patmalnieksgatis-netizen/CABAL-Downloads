@@ -68,7 +68,10 @@ def main():
     a.add_argument("--hex",required=True,dest="header_hex")
     a.add_argument("--out",type=Path,default=None)
     x=a.parse_args()
-    packet=bytes.fromhex(re.sub(r"[^a-fA-F0-9]","",x.header_hex))
+    hex_input=re.sub(r"[\\s:,-]+","",x.header_hex)
+    if not re.fullmatch(r"(?:[0-9a-fA-F]{2})+",hex_input):
+        raise SystemExit("Expected raw even-length byte hex; do not paste debugger address labels.")
+    packet=bytes.fromhex(hex_input)
     result=analyze_header(x.declared,packet)
     if x.out:
         import os
