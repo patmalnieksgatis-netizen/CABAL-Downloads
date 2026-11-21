@@ -70,3 +70,36 @@ Do not conflate the unrelated Warp 485 disconnect with this incident.
 **No tested fix:** The collector and analyzer are diagnostic utilities only.
 Do not merge an inferred WorldSvr patch without isolated gameplay regression
 and an observed root cause.
+
+## 2026-11-21: Verified static protocol-name evidence (not a runtime root cause)
+
+A read-only GitHub Actions archive scan of `patmalnieksgatis-netizen/cabal-ep36`:
+https://github.com/patmalnieksgatis-netizen/cabal-ep36/actions/runs/44897997600
+scanned 58 text files in `CABAL_EXTRA_SOURCE.tar.gz` and 135 in
+`CABAL_V282_LIVE_MERGE_CANDIDATE_v14.zip`.
+
+The archived `WorldSvrRealm/WorldSvr/PacketManager/Protodefs.h` contains:
+
+- `CSC_ENCHANTCORE = 280` — an old server startup log registers this as
+  `OnCSCEnchantCore`; public game logs show it can handle **Force Core option
+  grants**, so do **not** blindly route Normal Upgrade traffic to 280.
+- `CSC_UPPERGRADECOREENCHANT = 950`
+- `CSC_REQ_UPPERGRADECOREENCHANT2 = 951`
+
+These are historic names only. Their direct relationship to the active v291
+client's Normal Upgrade request or Perfect Core is **not verified**. No complete
+Normal Upgrade handler was found in the archived extender sources; `EventAlert.cpp`
+uses the `SHF_UPGRADECORE` bitshift for **item drop/creation event matching**, not
+as proof of an item-upgrade request handler.
+
+**Critical next step (actual game integration):** Observe an Upgrade Core C2S
+request in the active v291 client, then inspect the corresponding live WorldSvr
+opcode registration/handler and reply, with exact packet sizes. If the server
+logs an unregistered command, register a correctly validated implementation;
+if native handler returns error, trace grade/slot/item validation; if reply is
+misparsed, adapt only the proven S2C fields. Avoid an unverified numeric
+remapping of `280`, `950` or `951`.
+
+The local test VM `192.168.56.101` is host-only and not reachable by ChatGPT
+or GitHub Actions runners. No live disconnect trace has been retrieved, so there
+is still **no verified functional patch**.
