@@ -103,3 +103,26 @@ remapping of `280`, `950` or `951`.
 The local test VM `192.168.56.101` is host-only and not reachable by ChatGPT
 or GitHub Actions runners. No live disconnect trace has been retrieved, so there
 is still **no verified functional patch**.
+
+## 2026-11-21 archived LFS cross-check — do not blindly restore the SCPs
+
+Static audit (GitHub Actions): https://github.com/patmalnieksgatis-netizen/cabal-ep36/actions/runs/44898529634
+
+- The original LFS `CABAL_FOR_CHATGPT.zip` has matching baseline `Core.scp`
+  (12,984 bytes) and `Limit_Upgrade.scp` (6,762 bytes) files. The WorldSvr
+  settings show `MaxUpperGradeCoreEnchantLv=12` consistently.
+- The separately archived `CABAL_VPS_FULL.tar.gz` has a modified
+  `home/data_main/cabal/Data/Core.scp` (13,753 bytes) and
+  `Limit_Upgrade.scp` (8,016 bytes), versus backup copies of 12,984 and
+  6,762 bytes. Detailed diff proves `Core.scp` adjustments are chiefly
+  Normal Upgrade success odds for +3 to +7 (900 versus original 800–440
+  in server-scale units); the column schema did **not** change.
+- `Limit_Upgrade.scp` modifications concern extra levels/costs and should
+  not be conflated with Normal Upgrade. Old SCP changes are not proof
+  of the user's November v291 client disconnect.
+- The archive contains a separate old client executable, not the active
+  v291 signed `CabalMain.exe`; there is no verified v291 live WorldSvr crash
+  trace or proven packet ABI for Normal Upgrade here.
+- **Action:** do not revert these SCP files or remap packet opcodes blindly.
+  Fix requires correlating the current client action with its active WorldSvr
+  handler/response in the isolated VM first. No game fix was deployed.
