@@ -110,7 +110,8 @@ print('DIAMOND_SCP_EXPORT_JSON_END')
     [System.IO.Compression.ZipFile]::CreateFromDirectory($work,$zip,[System.IO.Compression.CompressionLevel]::Optimal,$false)
     $archive = [System.IO.Compression.ZipFile]::OpenRead($zip)
     try {
-        $names = @($archive.Entries | ForEach-Object { $_.FullName })
+        # Normalize ZIP entry separators (Windows uses backslashes for .NET Framework archives).
+        $names = @($archive.Entries | ForEach-Object { $_.FullName.Replace('\','/') })
         foreach ($entry in $files) {
             if ($names -notcontains $entry.archive_path) { throw "ZIP_MISSING: $($entry.archive_path)" }
         }
