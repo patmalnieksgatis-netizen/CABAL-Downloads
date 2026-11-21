@@ -15,4 +15,4 @@ jobs:
         with:
           python-version: '3.11'
       - name: Test native opcode 951 packet guard invariants
-        run: python3 -m unittest discover -s diagnostics/upgradecore291/tests -p test_opcode951_contract.py -v
+        run: python3 -m unittest discover -s diagnostics/upgradecore291/tests -p 'test_opcode951_*.py' -v
