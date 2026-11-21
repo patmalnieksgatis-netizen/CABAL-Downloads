@@ -149,3 +149,18 @@ PowerShell command: `powershell -NoProfile -ExecutionPolicy Bypass -File "$env:U
 Repo includes `diamond-insignia/client-codec/REPORT_20261121_AND_NEXT_XREF.md` and `analyze_static_report_v2.py` for Codex. The **complete PowerShell scanner** is presently in the conversation artifact, not committed in the repo. Do not claim otherwise.
 
 Until the resulting XREF ZIP is inspected, no Diamond opcode or codec has been found. Keep Platinum, Gold and current 291 WorldSvr untouched. Anima follows after Diamond.
+
+## 2026-11-21 20:23 — Windows PowerShell Add-Type warning-as-error fixed
+
+User ran the initial `Inspect-Cabal291-MeritCodeRefs.ps1` and the embedded C# failed to compile at an unused-variable warning: `int prefix=0,op=off,dispAt=0,instrLength=0;`. No static client analysis was performed, and no ZIP was created; this was a code compilation failure, **not** a client/server issue.
+
+Removed the unused `prefix` and `op` locals, leaving `int dispAt=0,instrLength=0;`. Full fixed scanner **now committed** in `diamond-insignia/client-codec/Inspect-Cabal291-MeritCodeRefs.ps1`, SHA256 `bf1fd2d57a0eb133c1d1d5be790b0615f5b44bedc29a0d6a91a44850732c66ee`. Added `Compile-Test.ps1` and `.github/workflows/diamond-merit-pe-xref-compile.yml`.
+
+**Actual Windows PowerShell 5.1 CI PASS** for embedded C# `Add-Type`, with warning handling enabled, and malformed PE negative self-test: https://github.com/patmalnieksgatis-netizen/CABAL-Downloads/actions/runs/44937118960. Output `WINDOWS_POWERSHELL_51_ADD_TYPE_COMPILE=PASS`, `PE_NEGATIVE_SMOKE=PASS`. This is a native Windows build check but still not execution on user CABAL game files.
+
+Fixed conversation artifact `CABAL_DIAMOND_CODEC_XREF_V2_FIXED.zip`, SHA256 `c705c5e36ba55dca7c2203b9eeb4679deac6ea2b35ded181041ee4b10271f6af`. Standalone corrected PS1 has same SHA as checked-in file above. All five previous report-analysis and documentation files retained in fixed ZIP.
+
+On user's machine save the new PS1 to `Downloads`, overwriting the old copy, then run:
+`powershell -NoProfile -ExecutionPolicy Bypass -File "$env:USERPROFILE\Downloads\Inspect-Cabal291-MeritCodeRefs.ps1"`
+
+Expected `PE_PARSER_NEGATIVE_TEST=PASS`, then `AUDITED=` for x64/x86 clients, and `UPLOAD_THIS_ZIP=...`. Inspect the ZIP to find actual Merit-loader code reference candidates. This does **not** identify the native packet codec or install Diamond. No production WorldSvr, SQL, game files or Platinum data touched.
