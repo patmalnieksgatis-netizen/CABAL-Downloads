@@ -105,8 +105,11 @@ try {
             $last = $record.Status
             if ($last -eq 'STABLE_ORIGINAL_SDK_DECODED_RESOURCE') { break }
         } catch {
-            if (!$client.HasExited) { throw }
-            $last = 'CLIENT_EXITED'
+            if ($client.HasExited) {
+                $last = 'CLIENT_EXITED'
+            } elseif (!$checked) {
+                $last = 'WAIT_CLIENT_READY: ' + $_.Exception.GetBaseException().Message
+            } else { throw }
         }
         Start-Sleep -Milliseconds 100
     }
