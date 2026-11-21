@@ -1,0 +1,18 @@
+name: Verified Opcode 951 Contract Tests
+on:
+  push:
+    branches:
+      - diagnostics/upgradecore291-disconnect-20261121
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  contract:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Test native opcode 951 packet guard invariants
+        run: python3 -m unittest discover -s diagnostics/upgradecore291/tests -p 'test_opcode951_*.py' -v
