@@ -236,3 +236,25 @@ CLIENT_AND_SERVER_UNMODIFIED=YES
 **Interpretation:** six RAW E8/E9 rel32 byte-pattern candidates to selector RVA `0x21BB98`, not yet six validated instruction-boundary callers, nor the ENC decoder/ Diamond packet handler. The collector exported all six bounded code contexts and the 4,154-byte selector body. Its on-device smoke test passed and the game/server remained unchanged.
 
 **Immediate next input is the already-generated ZIP above. Do not ask for another scan.** Once attached, parse `MERIT_X64_CALLER_V4_REPORT.json`, decode candidate branch instructions and inspect enclosing `.pdata` ranges; discard bytes inside other instructions, map real caller flow to file IO/decode code if evidence permits. Keep investigation x64 only. Do not change live WorldSvr, SQL, active client, or Platinum account wolverine.
+
+## 2026-11-21 21:28 V4 ZIP analyzed, exact x64 function callers proven
+
+User supplied `CABAL_DIAMOND_MERIT_X64_CALLERS_V4_20261121-212827.zip`. This is schema 4 read-only, active only x64. Both EXE and v291 Merit ENC hashes match expected. The 6 reported E8 calls were revalidated by reconstructing overlapping windows, recomputing rel32 destinations to `0x21BB98`, and disassembling code from known `.pdata` entry points: **ALL SIX are real instruction-aligned call sites** (unlike the prior V2 duplicate REX matching).
+
+Calls grouped by enclosing x64 function:
+
+- `0x21CC08` in `.pdata 0x21CBD4–0x21CDA4` (one call). The same function contains `0x21CC2A: call 0x21D938` (new helper target), and `0x21CC90: call qword ptr [rip+0x915d62]`, resolving to IAT-like slot RVA `0xB329F8`. No claim yet about import name or actual ENC decryption.
+- `0x40E1FF`, `0x40E2F5`, `0x40E3F4`, `0x40E471`, `0x40E4E4` all in `.pdata 0x40E184–0x40E56D`. This large function repeatedly feeds selected filename into formatting routine `0x289A8` and diagnostic output paths. Likely diagnostics/message formatting rather than the primary decoder. *Exact semantics not proven*.
+
+Full owner-facing analysis `/mnt/data/CABAL_DIAMOND_V4_X64_CALLER_ANALYSIS.md` was created and GitHub summary saved at `diamond-insignia/client-codec/V4_X64_CALLERS_VERIFIED_AND_V5_GATE.md`.
+
+**Next CI-passed x64 V5 collector:** `diamond-insignia/client-codec/Inspect-Cabal291-MeritLoader-V5.ps1`, pinned to exact CABAL v291 x64 EXE and ENC SHA. It extracts full `.pdata` body of the selector wrapper (`0x21CBD4–0x21CDA4`) and the dynamically discovered `.pdata` body containing direct callee `0x21D938`, and finds relative E8/E9 candidates to both. It additionally parses native PE x64 import descriptors/IAT to try resolving exact slots `0xB329F8` (suspected file-related) and `0xB32C28` (diagnostic path). Unknown entries remain explicitly `UNRESOLVED`, rather than making up an API name. All data read-only; no x86, no live process, SQL, game patches or WorldSvr restart.
+
+GitHub Windows PowerShell 5.1 C# compilation + synthetic positive/negative x64 caller/PDATA/PE import tests **PASS**: https://github.com/patmalnieksgatis-netizen/CABAL-Downloads/actions/runs/44941880124. The earlier CI iteration had a C# UInt64 vs Int32 type mismatch; corrected and CI now green. **The user has NOT yet executed V5** against the real CABAL executable.
+
+One-line PowerShell (fetch checked-in code before executing):
+`$u='https://raw.githubusercontent.com/patmalnieksgatis-netizen/CABAL-Downloads/feature/diamond-insignia-v291-20261121/diamond-insignia/client-codec/Inspect-Cabal291-MeritLoader-V5.ps1'; $p="$env:USERPROFILE\Downloads\Inspect-Cabal291-MeritLoader-V5.ps1"; Invoke-WebRequest -UseBasicParsing -Uri $u -OutFile $p -ErrorAction Stop; if($?){powershell -NoProfile -ExecutionPolicy Bypass -File $p}`
+
+Next input: `UPLOAD_THIS_ZIP=...CABAL_DIAMOND_MERIT_X64_V5_*.zip` from that one targeted x64 run. It will establish whether `0x21D938` is file IO/decoding or other; **do not describe it as a known decoder before evidence**.
+
+Diamond is still not installed; Platinum for `wolverine` remains user-reported working and untouched.
