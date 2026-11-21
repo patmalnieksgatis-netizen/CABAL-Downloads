@@ -164,3 +164,29 @@ On user's machine save the new PS1 to `Downloads`, overwriting the old copy, the
 `powershell -NoProfile -ExecutionPolicy Bypass -File "$env:USERPROFILE\Downloads\Inspect-Cabal291-MeritCodeRefs.ps1"`
 
 Expected `PE_PARSER_NEGATIVE_TEST=PASS`, then `AUDITED=` for x64/x86 clients, and `UPLOAD_THIS_ZIP=...`. Inspect the ZIP to find actual Merit-loader code reference candidates. This does **not** identify the native packet codec or install Diamond. No production WorldSvr, SQL, game files or Platinum data touched.
+
+## Continuation: 2026-11-21 20:50, user uploaded actual Merit PE xref ZIP
+
+Uploaded ZIP `CABAL_DIAMOND_MERIT_REFS_20261121-205002_a91fc2da.zip` was parsed and independently verified (exact source EXE + ENC SHA pinned, source `schema=2`, read-only safety flags). The V2 scan's `code_xref_candidates=4` x64 count is inflated by one-byte overlapping RE​X and prefix-less hits: **x64 has only 2 distinct reference instructions**, x86 has 2, **4 total**. No pointer-table hits in either executable.
+
+Instruction sites and immediate branch landings:
+- x64 `meritsystem.enc`: LEA RIP-relative RVA `0x21C4A5`, E9 -> RVA `0x21C20A`.
+- x64 `meritsystem_msg.enc`: LEA RIP-relative RVA `0x21C564`, E9 -> RVA `0x21C37C`.
+- x86 `meritsystem.enc`: PUSH absolute VA RVA `0x1BCA96`, E9 -> RVA `0x1BCE38`.
+- x86 `meritsystem_msg.enc`: PUSH absolute VA RVA `0x1BCAA2`, E9 -> same RVA `0x1BCE38`.
+
+All source instructions re-decoded from bounded `BytesAroundInstructionHex`; RIP-relative/absolute targets match exact Merit string RVAs. All E9 destinations are inside executable `.text` sections. This demonstrates a **candidate resource/file dispatch table**, not a proven `.enc` decryptor or Diamond opcode, and it says nothing about Diamond UI capability. Verified analyzer `analyze_xref_v2.py` and 10/10 local mutation tests in user conversation artifact.
+
+Committed technical report: `diamond-insignia/client-codec/MERIT_XREF_VERIFIED_20261121.md`.
+
+### Next probe
+
+Committed read-only Windows PowerShell V3 `diamond-insignia/client-codec/Inspect-Cabal291-MeritDispatch-V3.ps1`, with SHA-256-locked EXEs and four exact opcode signatures. It samples bounded windows around the four instruction sites and **three** distinct branch destinations; obtains x64 `.pdata` function boundary hints. Does not run game, copy EXEs, access SQL/VM/process memory, or modify files. Has a synthetic `-SelfTestOnly` test gate.
+
+Windows PowerShell 5.1 GitHub CI **PASS** for V3 synthetic jump/context tests: https://github.com/patmalnieksgatis-netizen/CABAL-Downloads/actions/runs/44938288553 . This does NOT prove successful execution against the user's actual CABAL client yet.
+
+User can download the **committed CI-checked** PS1 from the GitHub branch; run:
+```powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File "$env:USERPROFILE\Downloads\Inspect-Cabal291-MeritDispatch-V3.ps1"
+```
+Output `UPLOAD_THIS_ZIP=...CABAL_DIAMOND_MERIT_DISPATCH_V3_*.zip`; inspect code windows at branch targets, identify the enclosing loader/decompressor call if possible, then determine target v291 Merit codec. No native install until proven. Keep `wolverine` Platinum intact.
