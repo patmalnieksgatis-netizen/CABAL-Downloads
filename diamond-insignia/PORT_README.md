@@ -452,3 +452,46 @@ Do NOT install the staged SCP: loaded old WorldSvr and EP36CostumeMileage.so do 
 Next required isolated proof is the already created read-only Audit-DiamondSqlDeep-v291.ps1, SHA256 f010b3fd8ff0dc76f6cf3a58454a19e3f5e57965811d9192c371c5a161128596. It inventories only SQL catalog (exact column lengths/nullable/defaults, keys/indexes, FKs, triggers, stored procedure names and parameter types). It has passed the embedded Python syntax and SQL static checks, not yet run on the private VM. Output in Downloads/CABAL_DIAMOND_SQL_DETAILS_*.json. Then prepare separate Diamond persistence adapter in an isolated VM, packet compatibility tests, and v291 client Merit serializer research.
 
 Order remains Platinum -> Diamond -> Anima Mastery. No server or client modifications in this update.
+
+
+## 2026-11-21 user's complete deep SQL audit integrated, clone-only Diamond LAB V1 built
+
+The attached verified JSON \`CABAL_DIAMOND_SQL_DETAILS_20261121_194146.json\`
+was programmatically inspected. **Actual counts**: 5 requested tables,
+34 columns, 4 PK indexes, 0 FK relationships, 0 triggers, 14 matched
+Merit/Platinum procedures, 50 parameter declarations. The SQL catalog query
+returned \`SERVER01_SQL_CATALOG_READ\`, no game/account rows and no changes.
+
+**Confirmed primary keys:** \`UserNum INT\` in \`cabal_merit_table\`,
+\`cabal_merit_platinum_table\`, \`cabal_merit_platinum_mastery_table\`
+(and \`cabal_honormedal_user_table\`). Platinum stores
+\`MeritPlatinumMastery VARBINARY(8000)\`, remaining points
+\`VARBINARY(128)\`, open slots \`VARBINARY(1024)\`, Special Mastery
+\`VARBINARY(1024)\`. Binary encodings remain unknown.
+There is no matching Diamond-named SQL table or stored procedure in the
+filtered catalog. Platinum \`cabal_tool_merit_platinum_get/set\` and
+\`cabal_tool_merit_platinum_mastery_get/set\` procedures exist.
+
+**Delivered ZIP:** \`CABAL_DIAMOND_SQL_LAB_V1_TEST_ONLY.zip\`,
+SHA256 \`2f949adac9969f9164a0bd846c58aca823208d9c25353ae6cd002be5d0004dd0\`.
+Contains \`01_install_TEST_CLONE_ONLY.sql\`, metadata verification,
+zero-row-only rollback, future get/set contract, user's SQL catalog
+(metadata only), offline validation script and six unit tests.
+All six offline tests pass on the uploaded report; SQL Server runtime
+execution has NOT been attempted.
+
+**Safety:** \`01_install_TEST_CLONE_ONLY.sql\` and rollback use a hard-coded
+\`USE [Server01_DiamondLab]\`, check \`DB_NAME()\`, validate existing
+Gold+Platinum source objects and \`UserNum\` PK, and only create/drop
+\`dbo.cabal_merit_diamond_lab_v1\`. They do NOT create test DB
+automatically; do NOT mutate production \`Server01\`, player data,
+Gold/Platinum tables or WorldSvr. The table is a persistence *prototype*,
+not the yet-missing Diamond runtime handler. It intentionally uses
+\`VARBINARY(MAX)\` for opaque future payloads rather than guessing actual
+Diamond packet sizes.
+
+SQL prototypes are checked into this branch in
+\`diamond-insignia/sql-lab/\` with README. Do not call it installed,
+functional in-game, or deployable until client codec, WorldSvr handler,
+server-authoritative validation and login/logout SQL persistence pass in
+an isolated full environment.
