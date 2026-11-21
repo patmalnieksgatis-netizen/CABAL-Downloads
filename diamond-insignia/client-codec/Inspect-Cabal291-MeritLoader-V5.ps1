@@ -52,7 +52,7 @@ public static class CabalMeritNativeV5 {
    uint span=Math.Max(virtualSize,rawSize);
    if(rva>=va && (ulong)rva<(ulong)va+span && rva-va<rawSize){
     ulong off=(ulong)rawPtr+(rva-va);
-    if(off<d.Length)return (int)off;
+    if(off<(ulong)d.Length)return (int)off;
    }
   }
   return -1;
