@@ -220,3 +220,24 @@ If any in-game upgrade or persistence test fails, revert using the rollback
 action. Because the old length-base is replaced, old 139-byte opcode-951
 clients may no longer work on this LAB WorldSvr. Force/Chaos/Divine use
 distinct handler code and remain unmodified, but require smoke tests.
+
+## 2026-11-21: V1 deployment attempt failed on supervisor restart; original restored
+
+The user executed \`CABAL_951_PATCH_TEST.ps1 -Action apply\` against the test VM.
+The exact 2-byte patch was installed on disk (verified SHA
+\`08b3316be18d1ffe57d7a88d35ea99e0e4e4b2c3687b5b1a1829512f53a5052f\`),
+but \`docker exec cabal_main supervisorctl restart WorldSvr_01_01\`
+returned **rc=7**. The script automatically restored the original and
+reported \`AUTO_ROLLBACK_VERIFIED_WORLD_PID=42062\`.
+**No working gameplay fix was confirmed.**
+
+V2 recovery candidate (\`CABAL_951_PATCH_TEST_V2.ps1\` with embedded
+\`CABAL_951_COMPAT_PATCH_V2.py\`) changes ONLY service management:
+supervisorctl **stop**, verify stopped; then stage + replace exact SHA-pinned
+2-byte patch; supervisorctl **start**, poll actual active and on-disk
+SHA; if any step fails, restore original and restart. It prints supervisor
+return codes and stdout/stderr for diagnostic visibility. V2 test suite:
+six Python mocked lifecycle tests passed, including failed-start recovery.
+The V2 script exists as a conversation download artifact; **it has not
+yet been exercised on the real VM**. Do not claim Upgrade Core / Perfect
+Core works until in-game acceptance and persistence tests pass.
