@@ -135,3 +135,17 @@ Use Windows PowerShell:
 The script creates a ZIP at `UPLOAD_THIS_ZIP=...` containing only static metadata/hit byte windows. Inspect it **before deciding whether** to obtain client module bytes, locate the true `.enc` codec or identify Diamond opcodes. No direct access to the user's private Windows client or VM exists from current connected tools; do not claim this probe has run.
 
 Platinum (wolverine) remains user-confirmed OK. Diamond **not yet installed**. Anima Mastery after Diamond.
+
+## 2026-11-21 20:23 client scanner report received — real results
+
+User uploaded ZIP `CABAL_DIAMOND_CLIENT_CODEC_20261121-202322_bcd9c114.zip`. All report source hashes and scan mode passed independent local validation. 18 EXE/DLL scans. Exact x64 CabalMain SHA `52e7956d4781fea1f0369cac8ab1eac4c3ddec2d1977c6557be53ec2b79885d9` has `meritsystem.enc`/`meritsystem_msg.enc` two file offsets 11917416 / 11917432; x86 CabalMain SHA `7f0aa64333d5c8e1e48c1e8e8512e45b6ea91ce3efee23d8cb7dbbc63f1feb26` has two offsets 8709276 / 8709292. No complete classic XOR key, and **291 short two-byte XOR patterns are not usable codec evidence**. All six Diamond/Insignia hits in the two d3d9 DLL copies are GPU vendor names (Diamond Computer Systems, Diamond Lane Comm., Insignia Solutions): not game features. The exact v291 41,368 byte merit ENC header declares unpacked size 663,334. We cannot conclude presence or absence of Diamond UI from the text scan.
+
+Prepared **read-only targeted PE xref auditor** `Inspect-Cabal291-MeritCodeRefs.ps1`, SHA256 `161c93bb1e2c267aa39809303dd0c6ce52c9e57ca8183c37468f52196c141f88`. It scans only both exact hash-pinned CabalMain EXEs, validates PE architecture/section bounds, locates Merit filenames, searches non-executable pointer tables and code-address references (x86 push/mov immediate and x64 RIP LEA/MOV). Produces bounded code-context metadata ZIP named `CABAL_DIAMOND_MERIT_REFS_*.zip`; no raw binary export, no process memory access, no client changes, no SQL/world restart. NOT YET RUN on user's Windows client; code xref is only a *candidate*, not proven decoder.
+
+Conversation package `CABAL_DIAMOND_CODEC_XREF_V2_BUNDLE.zip`, SHA256 `91b58245de8d0bf240a7a2b6c9a910f65b826c1f8fe9851e93d3da4d9ed4a52e` includes the next script, JSON analysis, independent report validator and tests. **11/11 local static/unit tests passed**, but PowerShell/C# native execution is still pending.
+
+PowerShell command: `powershell -NoProfile -ExecutionPolicy Bypass -File "$env:USERPROFILE\Downloads\Inspect-Cabal291-MeritCodeRefs.ps1"`.
+
+Repo includes `diamond-insignia/client-codec/REPORT_20261121_AND_NEXT_XREF.md` and `analyze_static_report_v2.py` for Codex. The **complete PowerShell scanner** is presently in the conversation artifact, not committed in the repo. Do not claim otherwise.
+
+Until the resulting XREF ZIP is inspected, no Diamond opcode or codec has been found. Keep Platinum, Gold and current 291 WorldSvr untouched. Anima follows after Diamond.
