@@ -63,6 +63,42 @@ def listening(process):
                 return True
     return False
 
+def channel_ready(name, process, expected):
+    if process <= 0:
+        return False
+    try:
+        if not listening(process):
+            return False
+        actual = digest(Path("/proc") / str(process) / "exe")
+    except (FileNotFoundError, ProcessLookupError):
+        return False
+    if actual is None or pid(name) != process:
+        return False
+    require(actual == expected, name + "_BINARY_CHANGED")
+    return True
+
+def log_position(path):
+    try:
+        info = path.stat()
+        return info.st_ino, info.st_size
+    except OSError:
+        return None, 0
+
+def report_start_errors(positions):
+    for path, (inode, offset) in positions.items():
+        try:
+            with path.open("rb") as stream:
+                info = os.fstat(stream.fileno())
+                start = offset if info.st_ino == inode and info.st_size >= offset else 0
+                stream.seek(max(start, info.st_size - 2 * 1024 * 1024))
+                lines = stream.read(2 * 1024 * 1024).decode(errors="replace").splitlines()
+            relevant = [line for line in lines if any(tag in line.upper() for tag in
+                        ("ASSERT", "INVALID", "FATAL", "SIGABRT", "SIGSEGV", "FAILED"))]
+            for line in relevant[:16]:
+                print(path.name, line[:700], flush=True)
+        except OSError as error:
+            print(path.name, "LOG_UNAVAILABLE", error, flush=True)
+
 def healthy(login, binaries):
     started = time.monotonic()
     stable = None
@@ -70,9 +106,7 @@ def healthy(login, binaries):
     while time.monotonic() - started < 65:
         processes = {name: pid(name) for name in binaries}
         require(pid("LoginSvr_01") == login, "LOGIN_PROCESS_CHANGED")
-        if all(process > 0 and listening(process) for process in processes.values()):
-            for name, process in processes.items():
-                require(digest(Path("/proc") / str(process) / "exe") == binaries[name], name + "_BINARY_CHANGED")
+        if all(channel_ready(name, process, binaries[name]) for name, process in processes.items()):
             if processes != stable:
                 stable = processes
                 stable_since = time.monotonic()
@@ -138,6 +172,7 @@ def main(body):
                 require(digest(destination) == saved[name]["sha256"], "BACKUP_HASH_FAILED")
         (backup / "original.json").write_text(json.dumps(saved, indent=2))
         touched = []
+        positions = {}
         stopped = False
         try:
             stopped = True
@@ -153,12 +188,16 @@ def main(body):
                 atomic(target, data, saved[name]["mode"])
                 require(digest(target) == manifest[name]["after"], "POST_WRITE_HASH_FAILED")
             for name in active:
+                path = Path("/var/log/cabal") / (name + ".log")
+                positions[path] = log_position(path)
+            for name in active:
                 control("start", name)
             new_pids = healthy(login, binaries)
         except BaseException:
             if stopped or touched:
                 for name in active:
                     control("stop", name)
+                report_start_errors(positions)
                 for name in reversed(touched):
                     target = DATA / name
                     if saved[name]["sha256"] is None:
