@@ -1,0 +1,24 @@
+name: Diamond Merit Dispatch V3 Windows PowerShell self-test
+on:
+  push:
+    branches:
+      - feature/diamond-insignia-v291-20261121
+    paths:
+      - diamond-insignia/client-codec/Inspect-Cabal291-MeritDispatch-V3.ps1
+      - .github/workflows/diamond-merit-dispatch-v3.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  pure-powershell:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Parse and execute synthetic PE / relative JMP tests with Windows PowerShell 5.1
+        shell: powershell
+        run: |
+          & .\diamond-insignia\client-codec\Inspect-Cabal291-MeritDispatch-V3.ps1 -SelfTestOnly
+      - name: Audit scope
+        shell: powershell
+        run: |
+          Write-Output 'NO GAME FILES, NO CLIENT EXECUTION, NO VM OR SQL'
