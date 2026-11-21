@@ -258,3 +258,17 @@ One-line PowerShell (fetch checked-in code before executing):
 Next input: `UPLOAD_THIS_ZIP=...CABAL_DIAMOND_MERIT_X64_V5_*.zip` from that one targeted x64 run. It will establish whether `0x21D938` is file IO/decoding or other; **do not describe it as a known decoder before evidence**.
 
 Diamond is still not installed; Platinum for `wolverine` remains user-reported working and untouched.
+
+## 2026-11-21 continuation: do more offline without rerunning user's V4
+
+Reopened the exact user-uploaded x64 V4 ZIP in the local workspace. The relevant 0x21CBD4 wrapper code from its source function entry was disassembled again with `objdump`. The confirmed instruction sequence calls the filename selector `0x21BB98` at `0x21CC08`, sets a destination string, calls helper `0x21D938` at `0x21CC2A`, checks boolean `AL`, and conditionally calls an IAT-like function at `0x21CC90` whose name remains unknown. The code strongly suggests a path/resource handling chain, **NOT a proven raw-deflate, XOR or file-decode routine**. There is no basis to patch or replace `meritsystem.enc` yet.
+
+Five V4 call contexts are distributed through the complete .pdata diagnostics function `0x40E184–0x40E56D`. Reassembled the function from the overlapping user-uploaded windows (1001/1001 bytes, zero mismatches). Native `objdump -M intel` confirms five instruction-aligned E8 CALLs to `0x21BB98` at `0x40E1FF`, `0x40E2F5`, `0x40E3F4`, `0x40E471`, `0x40E4E4`. All are filename formatting branches, not independent decoders. Wrapper snippet covers only its first 244 bytes of 464, so V5 remains necessary to inspect it fully.
+
+**Important newly verified EP45 donor linked skill topology:** each of 12 Diamond subcategories has exactly **9 LinkedMastery edges**: **6 toward the group's main category + 3 within the same subcategory**, for 108 total across 4 main category groups. The relationships always point backward to existing grade-2 mastery IDs. This structure mirrors grouping; the actual effect of the link on bonuses/unlocking remains unknown and is NOT to be guessed. Source-gated reusable checker committed at `diamond-insignia/policy/linked_mastery_topology.py`; seven synthetic mutation tests at `diamond-insignia/policy/test_linked_topology.py`. **GitHub CI PASSED 18/18 tests**, combining 11 prior purchase policy and 7 new graph tests: https://github.com/patmalnieksgatis-netizen/CABAL-Downloads/actions/runs/44943222823. Private donor XML remains local and is not checked in.
+
+Added `diamond-insignia/client-codec/analyze_v5_loader_report.py` to prevalidate next static evidence ZIP from x64 V5 (exact SHA, source call opcodes, function bounds, flags). This is preparation, not evidence that V5 ran on owner's machine.
+
+**Only missing proof for actual code path:** user has not supplied output ZIP from the already CI-checked V5 client scanner `Inspect-Cabal291-MeritLoader-V5.ps1` (see prior one-line command). No need to re-run V4 or earlier x86/full-DLL scans. Owner must run V5 on their x64 executable if full native loader/helper analysis is to continue. No direct access to owner's F: drive exists in available connector tools.
+
+Production server, client binaries, SQL, and Platinum for account wolverine remain unchanged; Diamond is staged, not installed. Anima follows Diamond.
