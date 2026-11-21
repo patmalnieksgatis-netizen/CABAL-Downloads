@@ -104,3 +104,34 @@ CI: https://github.com/patmalnieksgatis-netizen/cabal-ep36/actions/runs/44932875
 
 No live installation or gameplay claim. The pending hard blocker is the
 **actual v291 client/native Merit packet ABI**; SQL DDL alone cannot enable it.
+
+## Continuation: real client codec gate and rules evaluator (2026-11-21)
+
+Official EP38 patch introduced Diamond and official EP39 fixes mention its UI; the **particular user's modified v291 client remains unverified**, and EP45 .enc must not be copied over it. Sources: https://mrwormy.com/2024/04/05/cabal-online-episode-38-full-patch-notes/ and https://mrwormy.com/2024/08/01/cabal-online-episode-39-full-patch-notes/.
+
+### Confirmed from attached exact client files
+
+- EP45 `meritsystem.enc`: 42,290 bytes, SHA256 `74391c4317adb1dcd375de6097812f6fa57f3f52864d4f96c83c4e862de46ec1`, classic CABAL first-four-compressed-byte XOR `92 65 67 57` plus raw DEFLATE -> XML 660,148 bytes, SHA256 `297078e4cff0918280c824252c4b46e5b17e15a4c57b941b75e8d9f3081c1b9e`.
+- Actual v291 `meritsystem.enc`: 41,368 bytes, SHA256 `3d859032a8b42c3e011c6d7ff739c9ac088b7f63effbc8afbc7215e162c1b78a`, little-endian uncompressed size marker 663,334. **Same classic key fails**. Prior dynamic-header prefix brute force found no clean XML output, but that does NOT prove a particular alternate cipher or that all later data bytes are transformed.
+- Other v291 client locale `meritsystem_msg.enc` files are distinct sources; key MAY live in actual client DLL rather than CabalMain.exe (seen in community examples). Do not guess memory offsets or use old patch addresses.
+
+### New offline client probe and safe rule validator
+
+Prepared conversation artifact `CABAL_DIAMOND_CLIENT_CODEC_STATIC_AUDIT.zip` SHA256 `c07db87338c7b9e425bf2050dc3bbc128b62b65681f33490b299635d79234865`, containing:
+
+- `Inspect-Cabal291-MeritCodec.ps1`: read-only static SHA-gated scanner for *actual* `F:\CABAL_291_TEST` `Bin/x64` EXE/DLL; records limited byte-pattern context around Merit/Diamond/ENC/XOR candidate markers, no game process launch, binary export, account data, SQL or game file mutations. **Not yet executed on user's Windows client.**
+- `analyze_static_report.py` and 4 synthetic analyzer tests, plus 4 script static safety tests: **8/8 passed locally**. A pattern match is NOT proof of a working key or handler.
+- `verify_enc_codec.py`: independently validates the EP45 donor classic codec and reports the v291 variant as NOT decoded by that specific codec.
+- `DiamondPurchasePolicy_OFFLINE_REFERENCE.py` plus 13 tests run with private decoded EP45 XML. This is a prototype returning a proposed purchase state, **not** active WorldSvr, SQL, item handling or client packet code.
+
+**GitHub committed policy**: `diamond-insignia/policy/diamond_purchase_policy.py` plus 11 synthetic tests and `.github/workflows/diamond-purchase-policy.yml`. CI PASS: https://github.com/patmalnieksgatis-netizen/CABAL-Downloads/actions/runs/44934771665. It enforces authoritative state, grade2, category/verified slot, exact mastery prerequisite, point cost, revision and max level. It FAILS CLOSED on all 108 LinkedMastery relationships until their semantics are proven. It does not auto-activate categories or apply bonuses.
+
+### Immediate next gate
+
+Use Windows PowerShell:
+
+    powershell -NoProfile -ExecutionPolicy Bypass -File "$env:USERPROFILE\Downloads\Inspect-Cabal291-MeritCodec.ps1"
+
+The script creates a ZIP at `UPLOAD_THIS_ZIP=...` containing only static metadata/hit byte windows. Inspect it **before deciding whether** to obtain client module bytes, locate the true `.enc` codec or identify Diamond opcodes. No direct access to the user's private Windows client or VM exists from current connected tools; do not claim this probe has run.
+
+Platinum (wolverine) remains user-confirmed OK. Diamond **not yet installed**. Anima Mastery after Diamond.
