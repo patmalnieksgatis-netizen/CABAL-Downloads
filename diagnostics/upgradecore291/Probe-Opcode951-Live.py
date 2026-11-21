@@ -94,13 +94,13 @@ break *0x7ac0f0
 commands
   silent
   printf "OPCODE_951_SHAPE actual_packet_len=%u escape_slot_count=%u expected_packet_len=%u core_slot_count=%u main_slot=%u\n", *(unsigned short*)($r15+2), *(unsigned short*)($r15+0x11), (139+2*(*(unsigned short*)($r15+0x11))), *(unsigned char*)($r15+0x10), *(unsigned short*)($r15+0x0e)
-  printf "OPCODE_951_HEADER_BEGIN\\n"
+  printf "OPCODE_951_HEADER_BEGIN\n"
   if *(unsigned short*)($r15+2) >= 48
     x/48xb $r15
   else
     x/19xb $r15
   end
-  printf "OPCODE_951_HEADER_END\\n"
+  printf "OPCODE_951_HEADER_END\n"
   detach
   quit
 end
