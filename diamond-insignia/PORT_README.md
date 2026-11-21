@@ -329,3 +329,42 @@ to query the active VM's WorldSvr module identities and available
 \`Server01.INFORMATION_SCHEMA.COLUMNS\` **only**; it does not read any
 player records, alter game files, SQL or restart WorldSvr. A remote SSH
 run by the Windows host is needed for actual runtime schema evidence.
+
+
+## 2026-11-21 live runtime preflight returned by user — SQL metadata available
+
+The user ran the previously prepared \`Audit-DiamondRuntime-v291.ps1\` on the
+private VM, with these exact read-only results:
+
+\`\`\`
+WORLD_INNER_PID=64516
+MODULE=WorldSvr_01_01;SHA256=caec7772acd22fd8918cfac386845c644451781e48c51975eaefed334c6705c3;HAS_DIAMOND_LITERAL=False
+MODULE=EP36CostumeMileage.so;SHA256=5d50a5b0f8c7b7d522631138750ef134c19c9ce909339e673a6d1bec8d0e2007;HAS_DIAMOND_LITERAL=False
+SQL_METADATA_STATUS=SERVER01_METADATA_READ
+SQL_MATCHING_COLUMNS=74
+SERVER_SQL_AND_CLIENT_UNMODIFIED=YES
+\`\`\`
+
+**Important scope:** \`SQL_MATCHING_COLUMNS=74\` is a count from a
+\`Server01.INFORMATION_SCHEMA.COLUMNS\` query where table or column names
+match Merit/Mastery/Insignia/Diamond/Medal. It does **NOT** establish that
+Diamond persistence exists. The report contains the exact 74 rows, but the
+user's pasted shell output does not display them. Do not guess table names or
+write migrations until the report has been obtained.
+
+The authoritative local report path is
+\`C:\Users\patma\Downloads\CABAL_DIAMOND_RUNTIME_AUDIT.json\`.
+Ask the user to attach this **already existing JSON** only; no further
+SSH or VM reads are needed to determine the returned table/column names.
+
+The repository now includes \`diamond-insignia/analyze_runtime_schema.py\`
+and \`test_analyze_runtime_schema.py\`. The offline analyzer groups all
+returned columns by schema/table, surfaces possible but **unconfirmed**
+character keys, and marks missing PK/FK/constraints/packet evidence. It
+rejects missing/unsafe read-only markers. Both tests pass on synthetic
+metadata, but **actual live column names cannot be analyzed until the
+saved JSON is supplied**.
+
+Next work: inspect the report; then, if needed, perform a narrow read-only
+PK/FK/constraint audit of exactly the observed Merit tables. Preserve
+Platinum and Gold, and keep Anima Mastery as a separate future milestone.
