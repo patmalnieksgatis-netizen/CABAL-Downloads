@@ -135,3 +135,47 @@ https://github.com/patmalnieksgatis-netizen/cabal-ep36/actions/runs/44899777807
 The historical VPS archive contained **50 archived WorldSvr_01_01 / _01_16 log files** in the bounded scan. **156** log lines matched broad upgrade-related terms across **3** files; **zero** of those lines matched error/disconnect categories. No exact `OnCSC...` normal-upgrade handler trace or actionable crash signature was recovered. These are **historical October logs, not the active November v291 disconnect**. They do not justify an opcode remap or binary patch.
 
 The only missing decisive evidence is a reproduced request/reply trace or current WorldSvr error log from the reachable Windows-hosted VM. The ChatGPT connector environment has **no TCP/SSH route** to VirtualBox host-only `192.168.56.101` or to `F:\\CABAL_291_TEST`. GitHub-hosted Actions cannot reach those private hosts either. Use the existing read-only collector on the local VM and do not deploy any speculative binary patch.
+
+## 2026-11-21 LIVE ROOT-CAUSE EVIDENCE — OPCODE 951
+
+User supplied an authentic WorldSvr_01_01 stderr trace at 11:38:01:
+\`OnCSCUpgradeCoreEnchant(): Invalid recvPacket->wPayLoadLen or recvPacket->escapeSlotCount\`,
+\`'OnCSCUpgradeCoreEnchant' fail (Proc/Enchant.cpp:1664)\`,
+\`UsrMap Fail : MainCmd(951)\`, followed by explicit \`close()\`.
+This proves the server receives the 951 packet and aborts that client session at its
+**input packet shape validator**, not at success odds or upgrade item effects.
+
+The archived native \`home/data_main/cabal_bin/WorldSvr\` has SHA256
+\`caec7772acd22fd8918cfac386845c644451781e48c51975eaefed334c6705c3\`,
+matching the previously observed WorldSvr binary identity. Static disassembly:
+https://github.com/patmalnieksgatis-netizen/cabal-ep36/actions/runs/44900466989
+
+The error string VA is \`0xC17798\`, exact line-1664 branch is around
+\`0x7AC0F0..0x7AC215\`. **Proven validator input contract**:
+
+- \`WORD [C2S_packet + 0x02]\` is declared packet length.
+- \`WORD [C2S_packet + 0x11]\` is \`escapeSlotCount\`.
+- Declared length **must equal** \`0x8B + 2 * escapeSlotCount\` (139 + 2N).
+- \`escapeSlotCount <= 0x209\` (521).
+- \`BYTE [C2S_packet + 0x10]\` (coreSlotCount) is constrained to 1..60.
+- \`WORD [C2S_packet + 0x0E]\` main inventory slot is constrained to <=521.
+- A closely related second handler at 0x7ADA70 uses the same length formula,
+  but its main-slot upper bound differs (0x2E = 46).
+
+The user-observed error is specifically the first length/count check, **before**
+the later core-slot and item-grade logic.
+
+**Concrete next step to fix**: capture only the live numeric packet shape once
+at breakpoint \`0x7AC0F0\` on an exact SHA-matched test WorldSvr, using
+\`Probe-Opcode951-Live.py\`. It prints **actual declared length**, **escape count**,
+**expected length**, **core count**, **main slot**; it detaches immediately.
+This is enough to tell whether the v291 client emits a different 951 body
+shape or has a shifted count/length field. Then apply a narrow **verified**
+normalizer to the LAB client's outbound packet or server's C2S handler,
+preserving item/slot validation and all working upgrade paths. Do not just
+remove the server's rejection branch or fake upgrade success.
+
+No game patch deployed yet: the connected ChatGPT environment cannot reach the
+VM's host-only network. An exact source-safe packet guard with eight synthetic
+test cases was saved as \`Opcode951-Contract.py\` and
+\`tests/test_opcode951_contract.py\`; these are *not* functional upgrade patches.
