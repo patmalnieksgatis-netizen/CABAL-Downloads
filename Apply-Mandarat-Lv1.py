@@ -29,9 +29,9 @@ def pid(service):
     require(result.stdout.strip().isdigit(), "SERVICE_PID_UNAVAILABLE_" + service)
     return int(result.stdout.strip())
 
-def control(action):
-    result = subprocess.run(["supervisorctl", action, WORLD], capture_output=True, text=True, timeout=50)
-    require(result.returncode == 0 or (action == "stop" and pid(WORLD) == 0), "WORLD_" + action.upper() + "_FAILED")
+def control(action, service):
+    result = subprocess.run(["supervisorctl", action, service], capture_output=True, text=True, timeout=50)
+    require(result.returncode == 0 or (action == "stop" and pid(service) == 0), service + "_" + action.upper() + "_FAILED")
 
 def atomic(path, data, mode):
     fd, name = tempfile.mkstemp(prefix=".mandarat-", dir=path.parent)
@@ -63,20 +63,21 @@ def listening(process):
                 return True
     return False
 
-def healthy(login):
+def healthy(login, binaries):
     started = time.monotonic()
     stable = None
     stable_since = started
     while time.monotonic() - started < 65:
-        process = pid(WORLD)
+        processes = {name: pid(name) for name in binaries}
         require(pid("LoginSvr_01") == login, "LOGIN_PROCESS_CHANGED")
-        if process > 0 and listening(process):
-            require(digest(Path("/proc") / str(process) / "exe") == WORLD_SHA, "WORLD_BINARY_CHANGED")
-            if process != stable:
-                stable = process
+        if all(process > 0 and listening(process) for process in processes.values()):
+            for name, process in processes.items():
+                require(digest(Path("/proc") / str(process) / "exe") == binaries[name], name + "_BINARY_CHANGED")
+            if processes != stable:
+                stable = processes
                 stable_since = time.monotonic()
             if time.monotonic() - stable_since >= 20:
-                return process
+                return processes
         else:
             stable = None
             stable_since = time.monotonic()
@@ -113,8 +114,13 @@ def main(body):
         require(status.returncode in (0, 3), "SUPERVISOR_STATUS_FAILED")
         rows = [line.split() for line in status.stdout.splitlines()]
         active = [row[0] for row in rows if len(row) >= 2 and row[0].startswith("WorldSvr_") and row[1] == "RUNNING"]
-        require(len(active) == 1 and active[0] == WORLD, "OTHER_WORLD_CHANNEL_RUNNING")
+        require(WORLD in active and set(active) <= {WORLD, "WorldSvr_01_16"}, "OTHER_WORLD_CHANNEL_RUNNING")
+        require(all(row[1] in ("RUNNING", "STOPPED", "EXITED", "FATAL") for row in rows
+                    if len(row) >= 2 and row[0].startswith("WorldSvr_")), "WORLD_CHANNEL_TRANSITION")
+        binaries = {name: digest(Path("/proc") / str(pid(name)) / "exe") for name in active}
+        require(all(binaries.values()), "WORLD_BINARY_UNAVAILABLE")
         if all(digest(DATA / name) == row["after"] for name, row in manifest.items()):
+            healthy(login, binaries)
             print("MANDARAT_ALREADY_APPLIED; GAMEPLAY_PENDING", flush=True)
             return
         backup = Path(tempfile.mkdtemp(prefix="backup-", dir=ROOT))
@@ -135,8 +141,9 @@ def main(body):
         stopped = False
         try:
             stopped = True
-            control("stop")
-            require(pid(WORLD) == 0, "WORLD_STILL_RUNNING")
+            for name in active:
+                control("stop", name)
+                require(pid(name) == 0, name + "_STILL_RUNNING")
             for name, row in saved.items():
                 require(digest(DATA / name) == row["sha256"], "DATA_CHANGED_DURING_STOP_" + name)
             for name, data in payload.items():
@@ -145,12 +152,13 @@ def main(body):
                 touched.append(name)
                 atomic(target, data, saved[name]["mode"])
                 require(digest(target) == manifest[name]["after"], "POST_WRITE_HASH_FAILED")
-            control("start")
-            new_pid = healthy(login)
+            for name in active:
+                control("start", name)
+            new_pids = healthy(login, binaries)
         except BaseException:
             if stopped or touched:
-                if pid(WORLD) > 0:
-                    control("stop")
+                for name in active:
+                    control("stop", name)
                 for name in reversed(touched):
                     target = DATA / name
                     if saved[name]["sha256"] is None:
@@ -158,12 +166,13 @@ def main(body):
                     else:
                         atomic(target, (backup / name).read_bytes(), saved[name]["mode"])
                     require(digest(target) == saved[name]["sha256"], "ROLLBACK_HASH_FAILED_" + name)
-                control("start")
-                healthy(login)
+                for name in active:
+                    control("start", name)
+                healthy(login, binaries)
                 print("MANDARAT_ROLLED_BACK; BACKUP=" + str(backup), flush=True)
             raise
-        (backup / "applied.json").write_text(json.dumps({"pid": new_pid, "files": manifest}, indent=2))
-        print("MANDARAT_FILES_APPLIED; WORLD_PID=" + str(new_pid) + "; LISTENER_STABLE_20_SECONDS; GAMEPLAY_PENDING", flush=True)
+        (backup / "applied.json").write_text(json.dumps({"pids": new_pids, "files": manifest}, indent=2))
+        print("MANDARAT_FILES_APPLIED; WORLD_PIDS=" + str(new_pids) + "; LISTENER_STABLE_20_SECONDS; GAMEPLAY_PENDING", flush=True)
 '''
 
 def main():
