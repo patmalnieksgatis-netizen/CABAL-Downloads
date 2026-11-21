@@ -103,3 +103,31 @@ Optional \`-ClientRoot 'D:\path\to\game'\` narrows the local file search
 to the actual v291 client root.
 
 **No feature files have been merged into the v291 client/server yet.**
+
+## Active-v291 user preflight and exact next source collection (2026-11-21)
+
+The user ran the initial read-only preflight. Active VM:
+- \`/etc/cabal/Data/MeritSystem.scp\` SHA256 \`307fc981ec3efe66f6cc1b0606ed7d86cd9e5a6e46205769a9bb34b012464295\`, 54,866 bytes.
+- \`[MeritMastery_Base]\` contains exactly 158 rows: Badge_Grade 0 (64 rows), Badge_Grade 1 (94 rows), **no Diamond grade**; \`[MeritMastery_Value]\` has 840 rows.
+- \`Common.ini\` loads \`MeritSystem=Data/MeritSystem.scp\`.
+- Archived baseline \`MeritSystem.scp\` SHA \`c32dd3aa8cd4...\`, 54,899 bytes, same Gold/Platinum grade counts. It is not identical to the active VM; **do not replace the active copy**.
+
+Windows Downloads matches (none yet verified as the active v291 game):
+- EP45 \`CABAL Transcendence (UTS)/CABAL Transcendence (UTS)/data/meritsystem.enc\`: **42,290 bytes**, SHA256 \`74391c4317adb1dcd375de6097812f6fa57f3f52864d4f96c83c4e862de46ec1\`.
+- CABALOnline_20251008 \`Data/meritsystem.enc\`: 42,231 bytes, SHA256 \`eb00cfdf8e54aabeaabfbff025dc837468039b6aa0127ba8dee62b84b498855d\`. Similar size/header is not proof this is the target v291 client.
+- EP275 and EP35 have older, smaller variants (26,122 and 20,205 bytes).
+
+**Critical target root** from existing v291 project tool \`Collect-Client291-WorldDefinitions-v1_1.ps1\` is \`F:\CABAL_291_TEST\`. The original preflight scanned Downloads, hence **missed the active v291 Merit file**.
+
+Created \`diamond-insignia/Collect-DiamondInsignia-Sources.ps1\` (SHA256 \`267c5a81a6125c64165671dfc824a67ecf457b37b1677363fd1571fed80329fd\`, 6,963 bytes), a standalone PowerShell 5.1 **read-only collector** that copies ONLY:
+1. Actual \`F:\CABAL_291_TEST\Data\meritsystem.enc\` and optional Merit message files.
+2. EP45 donor \`data\meritsystem.enc\` and optional Korean Merit message file.
+3. Active Docker \`/etc/cabal/Data/MeritSystem.scp\` via SSH; base64 transport plus SHA256 integrity.
+
+Writes one small \`CABAL-DIAMOND-SOURCES-<nonce>.zip\` in Windows Downloads; neither client files, VM, WorldSvr, SQL nor player records are modified. Does not substitute EP275/EP35.
+
+\`\`\`powershell
+powershell -NoProfile -ExecutionPolicy Bypass -File "$env:USERPROFILE\Downloads\Collect-DiamondInsignia-Sources.ps1"
+\`\`\`
+
+If target v291 directory changed, pass \`-ClientRoot 'F:\real\client\path'\`. User should upload just this archive in the conversation for direct byte-level .enc inspection. This is needed before any actual port or SQL migration. No feature has been enabled yet.
