@@ -4,8 +4,6 @@ $exe = Join-Path $root 'Bin\x64\CabalMain.exe'
 $enc = Join-Path $root 'Data\costume.enc'
 if ((Get-FileHash -LiteralPath $enc).Hash -ne '880fd140066cf0c30977aa0ae7f8fbf58181b0b81932380f50b80c84a186322f') { throw 'COSTUME_ENC_DIFFERS' }
 if ((Get-FileHash -LiteralPath $exe).Hash -ne '52e7956d4781fea1f0369cac8ab1eac4c3ddec2d1977c6557be53ec2b79885d9') { throw 'CLIENT_BUILD_DIFFERS' }
-$clients = @(Get-Process -Name CabalMain -ErrorAction SilentlyContinue | Where-Object { $_.Path -eq $exe })
-if ($clients.Count -ne 1) { throw 'Atver vienu CABAL_291_TEST klientu un Costume Manager.' }
 Add-Type -TypeDefinition @'
 // Read known original resource-cache records. No process writes or hooks.
 using System;
@@ -76,11 +74,43 @@ public static class Client291ResourceCacheRead {
     }
 }
 '@
-$client = $clients[0]
+'GAIDU_KATALOGU: palaid CABAL_291_TEST ar savu palaideju un atver Costume Manager.'
+$timer = [Diagnostics.Stopwatch]::StartNew()
+$client = $null
+$record = $null
+$last = 'WAIT_CLIENT'
 try {
-    [Client291ResourceCacheRead]::CheckNativeCacheContract($client.Handle)
-    $record = [Client291ResourceCacheRead]::ReadDefinition($client.Handle,112)
-    if ($record.Status -ne 'STABLE_ORIGINAL_SDK_DECODED_RESOURCE') { throw ('Katalogs nav pieejams. Status=' + $record.Status) }
+    while ($timer.Elapsed.TotalSeconds -lt 180) {
+        if ($null -ne $client -and $client.HasExited) {
+            $client.Dispose()
+            $client = $null
+        }
+        if ($null -eq $client) {
+            $clients = @(Get-Process -Name CabalMain -ErrorAction SilentlyContinue | Where-Object { $_.Path -eq $exe })
+            if ($clients.Count -gt 1) { throw 'MULTIPLE_TEST_CLIENTS' }
+            if ($clients.Count -eq 0) {
+                $last = 'WAIT_CLIENT'
+                Start-Sleep -Milliseconds 250
+                continue
+            }
+            $client = $clients[0]
+            $checked = $false
+        }
+        try {
+            if (!$checked) {
+                [Client291ResourceCacheRead]::CheckNativeCacheContract($client.Handle)
+                $checked = $true
+            }
+            $record = [Client291ResourceCacheRead]::ReadDefinition($client.Handle,112)
+            $last = $record.Status
+            if ($last -eq 'STABLE_ORIGINAL_SDK_DECODED_RESOURCE') { break }
+        } catch {
+            if (!$client.HasExited) { throw }
+            $last = 'CLIENT_EXITED'
+        }
+        Start-Sleep -Milliseconds 100
+    }
+    if ($last -ne 'STABLE_ORIGINAL_SDK_DECODED_RESOURCE') { throw ('COSTUME_EXPORT_TIMEOUT=' + $last) }
     $stream = [IO.MemoryStream]::new($record.Data)
     try {
         $xml = [Xml.XmlDocument]::new()
@@ -94,4 +124,4 @@ try {
     [IO.File]::WriteAllBytes($file,$record.Data)
     "PET_COUNT=$($pets.Count)"
     "UPLOAD=$file"
-} finally { $client.Dispose() }
+} finally { if ($null -ne $client) { $client.Dispose() } }
