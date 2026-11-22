@@ -200,7 +200,7 @@ void verify_after_restart(const std::string& path,int expected_points){
   require(q.step()==SQLITE_ROW,"restart: missing account");
   require(sqlite3_column_int(q.p,0)==900001 &&
           sqlite3_column_int64(q.p,1)==439041101ll &&
-          sqlite3_column_int(q.p,2)==13 &&
+          sqlite3_column_int(q.p,2)==14 &&
           sqlite3_column_int(q.p,3)==2 &&
           sqlite3_column_int64(q.p,4)==10000 &&
           sqlite3_column_int(q.p,5)==20 &&
@@ -211,8 +211,11 @@ void verify_after_restart(const std::string& path,int expected_points){
   Statement q(db.get(),"SELECT usernum,mastery_id,level FROM test_mastery");
   require(q.step()==SQLITE_ROW && sqlite3_column_int(q.p,0)==900001 &&
           sqlite3_column_int(q.p,1)==159 &&
-          sqlite3_column_int(q.p,2)==2 &&
-          q.step()==SQLITE_DONE,"restart: missing/extra mastery progression");
+          sqlite3_column_int(q.p,2)==2,"restart: Mastery 159 mismatch");
+  require(q.step()==SQLITE_ROW && sqlite3_column_int(q.p,0)==900001 &&
+          sqlite3_column_int(q.p,1)==319 &&
+          sqlite3_column_int(q.p,2)==1 &&
+          q.step()==SQLITE_DONE,"restart: Mastery 319 missing or extra");
  }
  {
   Statement q(db.get(),"SELECT name FROM sqlite_master WHERE type='table' "
@@ -238,7 +241,7 @@ int main(int argc,char**argv){
   std::string cfg((std::istreambuf_iterator<char>(input)),std::istreambuf_iterator<char>());
   const auto costs=first_two_costs(cfg);
   if(mode=="--verify-restart"){
-    verify_after_restart(path,100-costs.first-costs.second);
+    verify_after_restart(path,100-costs.first-costs.second-5);
     std::cout<<"DIAMOND_SEPARATE_PROCESS_RESTART_VERIFICATION=PASS\\n"
              <<"MERIT_WALLET_ITEMS_WEXP_REVISION_MASTERY=PERSISTED\\n";
     return 0;
@@ -256,7 +259,7 @@ int main(int argc,char**argv){
     auto crash_cb=callbacks();
     cabal_diamond_world_result crash_result{};
     const cabal_diamond_request third_level{
-      1,CABAL_DIAMOND_MASTERY_LEVEL_UP,13,159
+      1,CABAL_DIAMOND_MASTERY_LEVEL_UP,14,159
     };
     (void)cabal_diamond_world_execute(
       crash_engine,&crash_host.session,crash_host.session.uid,
@@ -372,6 +375,32 @@ int main(int argc,char**argv){
   });for(auto& t:threads)t.join();
   require(applied==1 && rejected==3 && other==0,"concurrent duplicate transaction check failed");
   state_check(path,13,2,100-costs.first-costs.second,2);
+  // Another Diamond Mastery, outside the original single-ID test.
+  // Fixture 319 is category 11, unlinked, max-level 1, cost 5.
+  std::vector<std::uint8_t> next_c2s=c2s;
+  next_c2s[10]=static_cast<std::uint8_t>(319);
+  next_c2s[11]=static_cast<std::uint8_t>(319>>8);
+  cabal_diamond_merit_server_proof second_proof{
+    CABAL_DIAMOND_MERIT_PROOF_VERSION,1,1,1,1,1,
+    &host.session,host.session.uid,13,319,kUnknownPayload
+  };
+  require(cabal_diamond_merit_verified_shadow_route(
+      engine,next_c2s.data(),next_c2s.size(),&host.session,host.session.uid,
+      13,&second_proof,&c,&host,1,&result,&route)==0 &&
+      route==CABAL_MERIT_ROUTE_SHADOW_APPLIED &&
+      result.status==CABAL_DIAMOND_WORLD_APPLIED,
+      "second independent Diamond mastery purchase failed");
+  require(result.evaluated.changed_mastery_id==319 &&
+          result.evaluated.changed_mastery_level==1 &&
+          result.evaluated.new_free_points==100-costs.first-costs.second-5,
+          "second Diamond mastery progression mismatch");
+  state_check(path,14,2,100-costs.first-costs.second-5,2);
+  // Replaying 319 must not create another Mastery level or debit.
+  require(cabal_diamond_merit_verified_shadow_route(
+      engine,next_c2s.data(),next_c2s.size(),&host.session,host.session.uid,
+      13,&second_proof,&c,&host,1,&result,&route)==0 &&
+      route==CABAL_MERIT_ROUTE_SHADOW_REJECTED,
+      "duplicate independent Diamond mastery accepted");
   cabal_diamond_engine_destroy(engine);
   std::cout<<"DIAMOND_SQLITE_DURABLE_BRIDGE=PASS\n"
            <<"RESTART_PERSISTENCE=PASS\nROLLBACK=PASS\nCONCURRENT_REPLAY=PASS\n"
