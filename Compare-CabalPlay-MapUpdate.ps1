@@ -20,7 +20,11 @@ function Files([string]$root) {
     $data = Join-Path $root 'Data'
     if (!(Test-Path -LiteralPath $data -PathType Container)) { throw ('DATA_FOLDER_MISSING='+$data) }
     Get-ChildItem -LiteralPath $data -File -Recurse -ErrorAction Stop
-    foreach ($name in @('Bin/x64/CabalMain.exe','CabalMain.exe')) {
+    $bin = Join-Path $root 'Bin/x64'
+    if (Test-Path -LiteralPath $bin -PathType Container) {
+        Get-ChildItem -LiteralPath $bin -File -Recurse -ErrorAction Stop | Where-Object {$_.Extension -in '.exe','.dll'}
+    }
+    foreach ($name in @('CabalMain.exe','Launcher.exe')) {
         $path = Join-Path $root $name
         if (Test-Path -LiteralPath $path -PathType Leaf) { Get-Item -LiteralPath $path }
     }
@@ -100,7 +104,7 @@ $target.Keys | Sort-Object | ForEach-Object {[pscustomobject]@{RelativePath=$_}}
     Export-Csv -LiteralPath (Join-Path $folder 'Only-In-Test.csv') -NoTypeInformation -Encoding UTF8
 $errors | Export-Csv -LiteralPath (Join-Path $folder 'Errors.csv') -NoTypeInformation -Encoding UTF8
 $summary = [ordered]@{
-    Scope='READ_ONLY_DATA_AND_CABALMAIN_COMPARISON'
+    Scope='READ_ONLY_DATA_AND_CLIENT_BINARIES_COMPARISON'
     SourceRoot=$SourceRoot
     TestRoot=$TestRoot
     UTC=[DateTime]::UtcNow.ToString('o')
