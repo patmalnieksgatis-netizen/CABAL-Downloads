@@ -5,6 +5,8 @@ on:
       - feature/diamond-insignia-v291-20261121
     paths:
       - diamond-insignia/native/**
+      - diamond-insignia/client291-real-resource/**
+      - diamond-insignia/client-codec/**
       - .github/workflows/diamond-native-rules.yml
   workflow_dispatch:
 permissions:
