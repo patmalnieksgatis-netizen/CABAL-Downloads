@@ -1,0 +1,71 @@
+#!/usr/bin/env python3
+"""Hash-pinned two-stage binding into a COPY of archived WorldSvr lib source.
+
+Never alters original source, game process, SQL server, binary, VM or game data.
+The installed default build can only observe; writing synthetic shadow SQL is
+possible only after a separate deliberate lab build and trusted resolver binding.
+"""
+import argparse
+import hashlib
+import pathlib
+import shutil
+import subprocess
+import sys
+import tempfile
+
+ROOT=pathlib.Path(__file__).resolve().parent
+PASSIVE_PROC_SHA="56d8c200fcdd0c215426e77cba6c5bd4df93536b5d341ff788a3b54252abdb06"
+PASSIVE_TYPES_SHA="5718170c4ecd957ab3e3cc4ba4db3ff48273bd7d4a0caf6ee860f8f98776b47f"
+
+def sha(p):return hashlib.sha256(p.read_bytes()).hexdigest()
+def one(data,old,new):
+    if data.count(old)!=1:
+        raise RuntimeError("STOP: ambiguous / changed original ProcSystem marker: "+repr(old[:65]))
+    return data.replace(old,new)
+
+def run(original,output):
+    original=original.resolve();output=output.resolve()
+    if not original.is_dir():raise RuntimeError("STOP: original source absent")
+    if output.exists():raise RuntimeError("STOP: output already exists; no overwrite")
+    if original==output or original in output.parents or output in original.parents:
+        raise RuntimeError("STOP: source/output paths overlap")
+    output.parent.mkdir(parents=True,exist_ok=True)
+    with tempfile.TemporaryDirectory(prefix="diamond-world-pre-",dir=str(output.parent)) as tmp:
+        staged=pathlib.Path(tmp)/"passive"
+        subprocess.run([sys.executable,str(ROOT/"Apply-DiamondIngressClone.py"),
+                        "--source",str(original),"--output",str(staged)],check=True)
+        proc=staged/"hooks/Handlers/ProcSystem.cpp"
+        types=staged/"include/Types.h"
+        if sha(proc)!=PASSIVE_PROC_SHA or sha(types)!=PASSIVE_TYPES_SHA:
+            raise RuntimeError("STOP: passive stage hash changed; no compatible binding")
+        data=proc.read_bytes()
+        data=one(data,b'#include "DiamondIngress.h"\r\n',
+                    b'#include "DiamondIngress.h"\r\n#include "DiamondBoundIngress.h"\r\n')
+        marker=b'''        if (sample.candidate && DiamondIngress::ShouldLog()) {\r\n'''
+        replacement=b'''        if (sample.candidate) {\r\n            // Source-level native link: read-only in default builds; strictly\r\n            // shadow-test-only in DIAMOND_ENABLE_SHADOW_TRIAL clone builds.\r\n            // Original WorldSvr dispatcher is invoked afterwards in all cases.\r\n            const auto trial=DiamondBoundIngress::Process(\r\n                pProcessDataCtx->pUserCtx, pProcessDataCtx->cpPacket,\r\n                pProcessDataCtx->iLen);\r\n            if (trial==DiamondBoundIngress::Result::ShadowApplied &&\r\n                DiamondIngress::ShouldLog()) {\r\n                Log::Print(LOG_INFO,"DiamondIngress",__LINE__,\r\n                           "SYNTHETIC SHADOW COMMIT; game packet remains original");\r\n            }\r\n        }\r\n        if (sample.candidate && DiamondIngress::ShouldLog()) {\r\n'''
+        data=one(data,marker,replacement)
+        data+=b'''\r\n#if defined(DIAMOND_ENABLE_SHADOW_TRIAL)\r\n// Explicit authenticated adapter registration for isolated synthetic clone.\r\n// This symbol is ABSENT from default builds. No host binding => fail closed.\r\nextern "C" __attribute__((visibility("default")))\r\nint cabal_diamond_proc_bind_shadow_clone_v1(\r\n    const DiamondBoundIngress::Binding* binding) {\r\n    return DiamondBoundIngress::InstallOnce(binding) ? 0 : -1;\r\n}\r\n#endif\r\n'''
+        proc.write_bytes(data)
+        dest=proc.parent
+        for name in ("DiamondBoundIngress.h","diamond_abi.h",
+                     "diamond_world_bridge.h","diamond_merit_world_entry.h"):
+            if (dest.joinpath(name).exists()) or not ROOT.joinpath(name).is_file():
+                raise RuntimeError("STOP: missing or already installed header: "+name)
+            shutil.copy2(ROOT/name,dest/name)
+        shutil.copytree(staged,output,symlinks=False)
+        assert sha(original/"hooks/Handlers/ProcSystem.cpp")== \
+               "b687c3bb9607aa886f37bcf203dcf4fb1a315cf6e9a23d4e67adea69e1486d88"
+    print("DIAMOND_BOUND_CLONE_SOURCE_PATCH=PASS")
+    print("CLONE_PATH="+str(output))
+    print("DEFAULT_BUILD_HAS_NO_DB_WRITES=YES")
+    print("ACTIVE_WORLDSVR_OR_LIBSO_CHANGED=NO")
+
+if __name__=="__main__":
+    ap=argparse.ArgumentParser(description=__doc__)
+    ap.add_argument("--source",type=pathlib.Path,required=True)
+    ap.add_argument("--output",type=pathlib.Path,required=True)
+    args=ap.parse_args()
+    try:run(args.source,args.output)
+    except Exception as e:
+        print("DIAMOND_BOUND_CLONE_SOURCE_PATCH=STOP: "+str(e),file=sys.stderr)
+        sys.exit(1)
