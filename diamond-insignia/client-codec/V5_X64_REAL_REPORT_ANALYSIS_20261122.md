@@ -29,9 +29,9 @@ The two 32-bit jump destinations stored at `0x21D964` are `0x21D95E` and `0x21D9
 
 ## VERIFIED: wrapper behavior
 
-`0x21CC08` calls `0x21BB98` (path/name selector). `0x21CC2A` calls the boolean classifier, branches on `AL` at `0x21CC34..0x21CC36`. The true branch assembles a candidate path (`0x17464`/`0x27350`) and calls via import slot `0xB329F8` at `0x21CC90`: **`DINPUT8.dll!PathFileExistsA`** according to PE import names (DLL label may reflect this client's import redirection/proxy and should not be treated as actual Windows DLL ownership). If path is absent, fallback at `0x217244`; false branch at `0x21CCF2` calls `0x216FAC`. Wrapper returns a string-like path object in `RAX`. This is **resource path resolution**, not a demonstrated `meritsystem.enc` loader.
+`0x21CC08` calls `0x21BB98` (path/name selector). `0x21CC2A` calls the boolean classifier, branches on `AL` at `0x21CC34..0x21CC36`. The true branch assembles a candidate path (`0x17464`/`0x27350`) and calls via import slot `0xB329F8` at `0x21CC90`: **V5 candidate `DINPUT8.dll!PathFileExistsA`**, NOT YET independently verified: V5's import-name helper did not stop at a per-descriptor terminating zero thunk, so it could incorrectly attribute both the DLL and function to that IAT slot. The called routine's identity must be confirmed by the improved V6 bounded import lookup. If path is absent, fallback at `0x217244`; false branch at `0x21CCF2` calls `0x216FAC`. Wrapper returns a string-like path object in `RAX`. The wrapper's surrounding path construction and existence/fallback branches indicate **resource path resolution**, not a demonstrated `meritsystem.enc` loader. The exact identity of the imported existence-check API remains provisional pending V6.
 
-The second import in V5 is `DINPUT8.dll!MessageBoxA` at slot `0xB32C28`.
+V5 also reported candidate `DINPUT8.dll!MessageBoxA` for `0xB32C28`; this has the same unverified-descriptor caveat.
 
 ## VERIFIED callers
 
