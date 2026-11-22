@@ -54,3 +54,19 @@ Another found file \`/etc/cabal/migration_tools/ep36-costume-trial-v1/build.sh\`
 Live status in that query: WorldSvr_01_01 RUNNING pid 41752 and WorldSvr_01_16 RUNNING pid 35626. Original \`lib.so\` was rolled back after failed v14 SONAME candidate. No sidecar deployed.
 
 Next: read-only inspect main \`/etc/supervisord.conf\` [include] stanza and full live program block, as well as paths containing \`EP36CostumeMileage.so\`, then build minimal reversible override. Continue with original \`lib.so\` unchanged.
+
+
+## Guarded VM sidecar installer artifact (prepared, not yet run), 2026-11-22
+
+The user confirmed that the running process \`WorldSvr_01_01\` uses the full Mileage/lib.so/Chilkat/PolyHook/Zycore/Zydis/Guardian/SkillBook/CashShop chain, while the persisted \`/etc/cabal_scripts/cabal_services/cabal_server1.conf:75\` is **stale**, currently pointing to original lib.so/Chilkat/.../\`EP36CostumeCore_v1_5_3020fix.so\`. User also confirmed \`/etc/supervisord.conf\` includes both \`/etc/supervisor/conf.d/*.conf\` and \`/etc/cabal_scripts/cabal_services/*.conf\`. Actual active config source remains unproven until \`supervisorctl reread\` returns \`WorldSvr_01_01: changed\`.
+
+A self-contained user-facing, VM-host-only archive was created locally:
+
+- \`CABAL_v291_Diamond_Sidecar_VM_Guarded_20261122.tar.gz\` SHA256 \`6c442345606d22940e9a76cd2cede86cc50cabc2bb0c944633ae37fed1c40a9c\`.
+- Contains \`diamond-sidecar-deploy-v1/deploy_sidecar.py\`, read-only ELF \`libdiamond_v291_sidecar.so\`, \`DiamondSidecarProbe.cpp\`, and Latvian README.
+- \`preflight\`: NO changes; checks VM host PID 3414, live original \`lib.so\` SHA, sidecar SHA, 01/16 RUNNING, actual host PID and \`LD_PRELOAD\`, current plugin path existence, stale on-disk command structure, preservation of additional critical runtime feature flags.
+- \`activate\`: backup exact stale disk conf, preserve actual live preload, install a NEW sidecar .so without touching lib.so, reconstruct only \`WorldSvr_01_01\`'s stored \`LD_PRELOAD\` from actual running process (insert sidecar immediately before original lib.so; keep Mileage and the other plugins), check sidecar can load via target chroot Python, call \`supervisorctl reread\` and require 01 change, perform \`supervisorctl update WorldSvr_01_01\` only, start if autostart=false, verify new PID RUNNING and sidecar present in env/maps, original lib.so SHA unchanged, and all old preload entries preserved.
+- Any deployment failure after mutation captures \`/root/cabal_diamond_sidecar_v291_attempt_diagnostic.txt\` and immediately attempts target-only rollback to the previously **running** preload chain. Original historical on-disk config backup preserved at \`/root/cabal_diamond_sidecar_v291_state_20261122.disk-original.conf.bak\`; rollback reconciles disk to original *running* version, rather than reintroducing stale stored command.
+- \`status\` and \`rollback\` supported.
+- Script syntax and exact-config transformation unit tests PASS locally. **The script has NOT been run on the owner's VM**, so expect possible environment errors; do not assert installed success.
+- This is only passive C2S observation for 0x09F3/0x0B10 (client packet identity and length); no real Diamond UI, inventory, WExp, MSSQL, payment, S2C data implemented.
