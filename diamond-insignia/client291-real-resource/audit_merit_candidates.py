@@ -44,7 +44,7 @@ def inspect_payload(raw):
         if len(result) > expected or dec.unconsumed_tail:
             info["reason"] = "output_limit_or_unconsumed_input"
             return info
-        tail = dec.flush(expected + 1 - len(result))
+        tail = dec.flush()
         result += tail
         if not dec.eof or len(result) != expected or dec.unused_data:
             info["reason"] = "stream_not_exact_or_trailing_data"
