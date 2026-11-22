@@ -25,15 +25,28 @@ jobs:
             diamond-insignia/worldsvr-ingress/tests/test_diamond_ingress_enabled.cpp \
             -o /tmp/diamond_passive_ingress_enabled
           CABAL_DIAMOND_PASSIVE_OBSERVE=1 /tmp/diamond_passive_ingress_enabled
+      - name: Verify default plugin binding cannot write and opt-in synthetic WorldBridge
+        run: |
+          set -eux
+          g++ -std=c++17 -O2 -Wall -Wextra -Werror -pedantic             -Idiamond-insignia/native             diamond-insignia/worldsvr-ingress/tests/test_diamond_bound_default.cpp             -o /tmp/diamond_bound_default_test
+          /tmp/diamond_bound_default_test
+          g++ -std=c++17 -O2 -Wall -Wextra -Werror -pedantic             -DDIAMOND_ENABLE_SHADOW_TRIAL -Idiamond-insignia/native             diamond-insignia/worldsvr-ingress/tests/test_diamond_bound_bridge.cpp             diamond-insignia/native/diamond_merit_world_entry.cpp             diamond-insignia/native/diamond_abi.cpp             diamond-insignia/native/diamond_world_bridge.cpp             -o /tmp/diamond_bound_shadow_test
+          /tmp/diamond_bound_shadow_test
       - name: Verify patcher is syntactically valid and refuses unknown source
         run: |
           set -eux
           python3 -m py_compile diamond-insignia/worldsvr-ingress/Apply-DiamondIngressClone.py
+          python3 -m py_compile diamond-insignia/worldsvr-ingress/Apply-DiamondBoundClone.py
           if python3 diamond-insignia/worldsvr-ingress/Apply-DiamondIngressClone.py \
                 --source . --output /tmp/diamond_unsafe_source; then
             echo "ERROR: patcher accepted unverified source"
             exit 1
           fi
           test ! -e /tmp/diamond_unsafe_source
+          if python3 diamond-insignia/worldsvr-ingress/Apply-DiamondBoundClone.py --source . --output /tmp/diamond_unsafe_bound_source; then
+            echo 'ERROR: bound patcher accepted unverified original source'
+            exit 1
+          fi
+          test ! -e /tmp/diamond_unsafe_bound_source
       - name: No live hook, package or database deployment
         run: echo "READ_ONLY_INGRESS=PASS;ACTUAL_WORLDSVR_GAMEPLAY_TEST=NOT_PERFORMED"
