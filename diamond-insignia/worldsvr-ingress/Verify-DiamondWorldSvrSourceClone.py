@@ -7,7 +7,6 @@ the original source. The trial object is *not linked* to a game executable.
 import argparse
 import hashlib
 import pathlib
-import re
 import shutil
 import subprocess
 import sys
@@ -37,8 +36,12 @@ def insist_original(source):
 
 def object_symbols(obj):
     response=subprocess.run(["nm","-g",str(obj)],capture_output=True,text=True,check=True)
-    return set(re.findall(r"\\b[A-Za-z]\\s+([A-Za-z_][A-Za-z_0-9]*)\\s*$",
-                          response.stdout,re.MULTILINE))
+    defined=set()
+    for row in response.stdout.splitlines():
+        fields=row.split()
+        if len(fields)>=3 and fields[-2] in ("T","W"):
+            defined.add(fields[-1])
+    return defined
 
 def run(source,output,compiler):
     source=source.resolve()
