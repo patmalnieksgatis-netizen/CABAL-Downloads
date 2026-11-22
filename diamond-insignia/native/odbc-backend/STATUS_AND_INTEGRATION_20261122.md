@@ -42,10 +42,17 @@ AddressSanitizer and UndefinedBehaviorSanitizer: PASS.
 
 ## Where Codex should continue
 
-1. Import the full user-facing ZIP mentioned above (the source is in that archive; this GitHub note itself is **not** the complete source checkout).
+1. Use the complete ODBC implementation now committed at `diamond-insignia/native/world-session-bridge/deps/DiamondLabOdbcBackend.cpp`, plus existing `commit-gate` source; the original ZIP remains a historical reference.
 2. On a disposable database **clone**, install/verify SQL scripts 08/09/10/11 in the embedded order and connect the compiled ODBC adapter to a real SQL Server driver. Prove actual transaction rollback on receipt failure and concurrent exactly-once behavior.
 3. Authenticate actual \`WorldSvr\` session and map real game items/WExp and durable DBA ack/outbox; do NOT trust shadow wallet as game inventory.
 4. Prove client v291 Diamond request and response format; do not hijack existing Platinum opcode 0x0B10.
 5. Do not touch active v291 lib.so, LD_PRELOAD, or Supervisor. Previous direct lib.so and sidecar attempts failed with exit 78 and one rollback required manual config restoration; owner confirmed game is working after that restoration.
 
-**GitHub source files from previous stage remain in \`diamond-insignia/native/commit-gate/\`. The new ODBC adapter source is currently packaged in the downloadable artifact, not yet separately committed as GitHub text source files.**
+**Later update:** the complete clone-only ODBC C++ adapter is now committed
+to `native/world-session-bridge/deps/DiamondLabOdbcBackend.cpp`.
+`tests/FakeOdbc.cpp` and `tests/test_diamond_lab_odbc.cpp` use a
+freshly generated **synthetic** Merit SCP and exercise row locking,
+serializable wallet/mastery/receipt commit, rollback, duplicate replay and
+eight concurrent requests. GitHub Actions also compiles a shared object
+against **real** unixODBC headers/library. None of this connects to a
+real SQL Server, a production player account, GameData inventory or WorldSvr.
