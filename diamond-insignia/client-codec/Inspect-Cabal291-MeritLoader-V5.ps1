@@ -142,7 +142,7 @@ function Segment([byte[]]$B,[int]$Rva,[int]$RadiusBefore,[int]$RadiusAfter) {
  $s=[Math]::Max(1024,$Rva-3072-$RadiusBefore)
  $e=[Math]::Min(11733504,$Rva-3072+$RadiusAfter)
  Must ($s -le $e -and $e-$s -le 1024) 'Invalid snippet bounds'
- return [ordered]@{start_rva=('0x{0:x}' -f ($s+3072));bytes_hex=(H $B $s ($e-$s));
+ return [ordered]@{start_rva=('0x{0:x}' -f ($s+3072));bytes_hex=(Get-MeritHexBytesV5 $B $s ($e-$s));
   focus_index=($Rva-3072-$s)}
 }
 # No game files required for synthetic Windows CI tests.
@@ -162,6 +162,12 @@ Must ($bounds.Length -eq 2 -and $bounds[0] -eq 0x1100 -and
  $bounds[1] -eq 0x1200) 'Synthetic function-boundary failure'
 Must ([CabalMeritNativeV5]::FindCalls($t,0,128,4096,[int[]]@(0x1300)).Length -eq 0) 'Synthetic negative caller failure'
 Must ([CabalMeritNativeV5]::ImportParserSmoke()) 'Synthetic PE import slot name resolution failure'
+# Regression test: execute the Segment path in Windows PowerShell 5.1.
+# A one-letter "H" call resolves to the built-in Get-History alias, not our helper.
+$segmentProbe=New-Object byte[] 2048
+$segmentProbe[1024]=0x7a
+$segmentResult=Segment $segmentProbe 4096 0 1
+Must ($segmentResult.focus_index -eq 0 -and $segmentResult.bytes_hex -eq '7a') 'Segment byte extraction regression'
 Write-Host 'MERIT_X64_V5_WINDOWS_SELF_TEST=PASS'
 if($SelfTestOnly){Write-Host 'SELF_TEST_ONLY_NO_GAME_FILES_OPENED=YES';exit 0}
 
