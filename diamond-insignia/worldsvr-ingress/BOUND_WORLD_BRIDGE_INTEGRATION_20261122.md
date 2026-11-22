@@ -18,7 +18,7 @@ ProcSystem::DoProcessDataCtx (archived plugin, copy only)
    -> original WorldSvr dispatcher ALWAYS (no packet swallowed)
 ```
 
-**Two independent protections:** default-build code excludes all callable Diamond native/DB operations; the test build requires both `-DDIAMOND_ENABLE_SHADOW_TRIAL` and `CABAL_DIAMOND_SHADOW_TRIAL=ISOLATED_SYNTHETIC_USER_900001_ONLY`, an explicitly installed one-time server `TrustedResolver`, and returned trusted UserNum exactly **900001**. Neither the revision nor the user number is taken from a C2S packet. No resolver means no operation. All Game Gold/Platinum packets go to the original server handler.
+**Two independent protections:** default-build code excludes all callable Diamond native/DB operations; the test build requires both `-DDIAMOND_ENABLE_SHADOW_TRIAL` and `CABAL_DIAMOND_SHADOW_TRIAL=ISOLATED_SYNTHETIC_USER_900001_ONLY`, **plus `CABAL_DIAMOND_PASSIVE_OBSERVE=1` to enter the archived ProcSystem hook branch**, an explicitly installed one-time server `TrustedResolver`, and returned trusted UserNum exactly **900001**. Neither the revision nor the user number is taken from a C2S packet. No resolver means no operation. All Game Gold/Platinum packets go to the original server handler.
 
 ## Offline verification completed
 
