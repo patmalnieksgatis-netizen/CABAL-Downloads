@@ -1,0 +1,46 @@
+{
+  "analysis": "DIAMOND_V291_CLIENT_WORLD_MERIT_COMPATIBILITY",
+  "mode": "OFFLINE_STATIC_NO_PATCH",
+  "client_sha256": "52e7956d4781fea1f0369cac8ab1eac4c3ddec2d1977c6557be53ec2b79885d9",
+  "meritsystem_enc_sha256": "3d859032a8b42c3e011c6d7ff739c9ac088b7f63effbc8afbc7215e162c1b78a",
+  "worldsvr_sha256": "caec7772acd22fd8918cfac386845c644451781e48c51975eaefed334c6705c3",
+  "verified_client_machine_instructions": 15,
+  "verified_server_machine_instructions": 9,
+  "client_c2s": {
+    "command": "0x09F3",
+    "size": 18,
+    "header": "E2B7120000000000F309",
+    "state_offsets": [
+      "0x118",
+      "0x11C"
+    ],
+    "packet_offsets": [
+      10,
+      14
+    ],
+    "function_rva": "0x6FF14C"
+  },
+  "client_s2c": {
+    "handler_rva": "0x6F84FC",
+    "status_byte_offset": 6,
+    "conditional_dword_offset": 7,
+    "min_bytes_for_conditional_success": 11
+  },
+  "server_s2c": {
+    "observed_success_hex": "e2b70700f30901",
+    "observed_failure_hex": "e2b70700f30900"
+  },
+  "compatibility": {
+    "risk": "7B_SERVER_SUCCESS_MISSING_DWORD_AT_OFFSET_7_FOR_SOME_CLIENT_PATHS",
+    "root_cause_proven": false,
+    "diamond_action_proven": false,
+    "payload_semantics_known": false
+  },
+  "merit_data": {
+    "bytes": 41368,
+    "recognized_diamond_config_keyword": "dia_meritscore_fomula",
+    "resource_decrypted": false
+  },
+  "live_vm_modified": false,
+  "client_modified": false
+}
