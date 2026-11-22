@@ -18,5 +18,7 @@ jobs:
         run: |
           g++ -std=c++17 -O2 -Wall -Wextra -Werror -pedantic -o /tmp/diamond_rules_test diamond-insignia/native/test_diamond_rules.cpp
           /tmp/diamond_rules_test
+          g++ -std=c++17 -O2 -Wall -Wextra -Werror -pedantic -pthread -o /tmp/diamond_transaction_test diamond-insignia/native/test_diamond_transaction.cpp
+          /tmp/diamond_transaction_test
       - name: Confirm no server launch
         run: echo 'Pure transaction proposals only - no game binary, SQL, VM, or packet ABI touched.'
