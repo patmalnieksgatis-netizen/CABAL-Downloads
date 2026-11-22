@@ -16,6 +16,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Verify v14 inventory Record30 evidence cannot bypass durable-save barrier
+        run: |
+          set -euo pipefail
+          g++ -std=c++17 -O2 -Wall -Wextra -Werror -pedantic \
+            diamond-insignia/native/inventory-reconcile/tests/test_diamond_inventory_reconcile.cpp \
+            diamond-insignia/native/inventory-reconcile/DiamondInventoryReconcile.cpp \
+            diamond-insignia/native/world-save-barrier/DiamondWorldSaveBarrier.cpp \
+            -o /tmp/diamond_inventory_reconcile_test
+          /tmp/diamond_inventory_reconcile_test
       - name: Build native rules and execute gameplay-state invariants
         run: |
           g++ -std=c++17 -O2 -Wall -Wextra -Werror -pedantic -o /tmp/diamond_rules_test diamond-insignia/native/test_diamond_rules.cpp
