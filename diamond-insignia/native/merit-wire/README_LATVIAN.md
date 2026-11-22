@@ -8,7 +8,7 @@ Fiksētais WorldSvr SHA256: `caec7772acd22fd8918cfac386845c644451781e48c51975eae
 
 1. **0x09F3 (`a40d90`)**: pie `0xa40dc0` nolasa `DWORD [packet+0x0A]`, pie `0xa40dca` nolasa `DWORD [packet+0x0E]`; tātad 10-baitu CABAL C2S header un vismaz astoņi payload baiti. Šī disasemblēšana **nepierāda**, ko abi parametri nozīmē, vai Diamond rank-up izmanto tos pašus laukus, vai paketes precīzais garums vienmēr ir 18.
 2. **Viena 0x09F3 atbildes plūsma (`a3b2d0`)**: pie `0xa3b544`, `0xa3b549`, `0xa3b551`, `0xa3b562` redzams S2C header `E2 B7 07 00 F3 09 01` (success). Pie `0xa3b5ca`, `0xa3b5dd`, `0xa3b5e2`, `0xa3b5ec` ir tā pati pakete ar statusu `00` (failure). Šī ir esošā Merit atbilde, **nevis verificēta v291 Diamond atbilde**.
-3. **Cits Merit atjauninājums**: pirms šīs atbildes pie `0xa3b502` tiek sūtīta komanda `0x1030` ar astoņu argumentu kopu. Paketes baitu struktūra nav vēl noteikta, tādēļ šo datu atjauninājumu **nedrīkst izdomāt**.
+3. **`0x1030` NAV verificēta klienta pakete**: pirms statusa atbildes pie `0xa3b502` tiek padots ID `0x1030` funkcijai `0x527c70`; tā ar `std::ostream` formatē tekstu (redzams `|` atdalītājs un `_ZNSolsEi@plt` izsaukums). Šis ID var būt žurnāla/ziņojuma kods. Agrākā interpretācija kā S2C datu atjauninājums bija kļūdaina. Faktiskais atjaunināšanas ceļš vēl jāidentificē.
 4. **0x0B10 (`a40f00`)** ir atsevišķa esošā Platinum komanda. Neaizvietot vai neklausīt to kā Diamond ekskluzīvu pirkumu.
 
 ## Ko pievienojām
@@ -24,7 +24,7 @@ Fiksētais WorldSvr SHA256: `caec7772acd22fd8918cfac386845c644451781e48c51975eae
 
 **Būtiskākais trūkums:** vietējā arhīvā esošais `CabalMain.exe` SHA256 ir `b426a75abcfdd657f3d648a287fc3fbca7b3e58bddf1894a627899457e9c793a`, bet lietotāja aktīvā **v291 x64** klienta iepriekšējā V9 statiskajā atskaitē ir `52e7956d4781fea1f0369cac8ab1eac4c3ddec2d1977c6557be53ec2b79885d9`. Tas NAV tas pats fails. Tādēļ nevar pierādīt v291 klienta Diamond C2S/S2C formātus, balstoties tikai uz arhīvu un agrākajiem read-only V9 skeneriem (kuros `diamond_opcode_proven=false`).
 
-**Līdz uzstādāmam labojumam** vēl vajag precīzu v291 `CabalMain.exe`, Diamond vadības paketes, `0x1030` vai cita S2C atjauninājuma formātu un īstu, transakciju drošu servera inventāra/WExp/MSSQL sasaisti. **Neaizvietot oriģinālo `lib.so`, nemainīt Supervisor/LD_PRELOAD un nerestartēt WorldSvr.** Iepriekšējās šādas izmaiņas jau izraisīja `exit 78` un nepieciešamību atjaunot palaišanas konfigurāciju.
+**Līdz uzstādāmam labojumam** vēl vajag precīzu v291 `CabalMain.exe`, Diamond vadības paketes, faktisko S2C atjauninājuma formātu un īstu, transakciju drošu servera inventāra/WExp/MSSQL sasaisti. **Neaizvietot oriģinālo `lib.so`, nemainīt Supervisor/LD_PRELOAD un nerestartēt WorldSvr.** Iepriekšējās šādas izmaiņas jau izraisīja `exit 78` un nepieciešamību atjaunot palaišanas konfigurāciju.
 
 ## Testēšana
 
