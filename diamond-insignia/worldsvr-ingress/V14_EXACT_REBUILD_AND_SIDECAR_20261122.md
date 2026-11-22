@@ -70,3 +70,18 @@ A self-contained user-facing, VM-host-only archive was created locally:
 - \`status\` and \`rollback\` supported.
 - Script syntax and exact-config transformation unit tests PASS locally. **The script has NOT been run on the owner's VM**, so expect possible environment errors; do not assert installed success.
 - This is only passive C2S observation for 0x09F3/0x0B10 (client packet identity and length); no real Diamond UI, inventory, WExp, MSSQL, payment, S2C data implemented.
+
+
+## CRITICAL: Guarded sidecar deployment FAILED and automatic rollback FAILED (2026-11-22 13:05 UTC)
+
+Owner ran \`deploy_sidecar.py activate\` on active test VM. Preflight passed with original lib.so SHA \`6679e46a...\`, and both WorldSvrs running. The installer did \`supervisorctl reread\`, \`update WorldSvr_01_01\`, then target-only \`start\`; candidate sidecar launch produced repeated \`exit status 78\`. Auto rollback reconstructed prior LD_PRELOAD and selected flags but **the resulting WorldSvr_01_01 also exited 78**: \`DEPLOY_RESULT=FAIL;ROLLBACK=UNVERIFIED\`.
+
+- \`WorldSvr_01_16\` continued RUNNING PID 35626 (inside container).
+- \`WorldSvr_01_01\` repeatedly BACKOFF/FATAL with Supervisor PIDs 53367/53503/53525/53526 and rollback 53532 etc. No working new 01 confirmed.
+- stderr: \`CASHSHOP291_STOPPED=WORLD_DIFFERS\` repeated, not yet proven to cause 78.
+- Critical installer flaw: it relied on a reconstructed Supervisor command from disk and preserved a subset of env variables but **did not preserve the exact previously running in-memory Supervisor command/configuration**. Previous on-disk command already differed from runtime, so blindly overwriting and Supervisor update destroyed loaded known-good launch command. Need reconstitute from actual previous deployment receipts/launch manifests and/or prior process records.
+- The original intact stored disk configuration is saved by installer at \`/root/cabal_diamond_sidecar_v291_state_20261122.disk-original.conf.bak\`, and original \`lib.so\` remains SHA \`6679e46a...\`. User directed to preserve failed sidecar config at \`/root/cabal_server1.failed_sidecar.conf\`, copy exact original disk backup to \`/proc/3414/root/etc/cabal_scripts/cabal_services/cabal_server1.conf\`, reread/update only WorldSvr_01_01 and attempt one restart. **This historical disk configuration is known stale; success and restoration of all plugins NOT assured**.
+- Explicitly do **NOT** run previously created sidecar installer again (activate or rollback) or make global Supervisor changes. The immediate priority is restore WorldSvr_01_01 and reconstruct proper full CostumeMileage/GuardianArcana/SkillBook291/CashShop291 active launch.
+- ROOT CAUSE of exit status 78 has not been identified; it appeared in both replacement lib.so and sidecar activation attempts. Do not treat SONAME, sidecar dispatch, or plugin messages as proven root cause. The active prior script must be debugged before any additional Diamond deployment.
+
+Next recovery if original disk backup launch also fails: inspect exact prior live startup receipts \`/etc/cabal/migration_tools/**/launch.json\`, \`receipt.json\`, \`Install.py\` and saved installer backups; compare the two \`command=\` lines and current stderr/loader errors using targeted grep; avoid repeated restart loop. Test updates only on isolated snapshot copy.
