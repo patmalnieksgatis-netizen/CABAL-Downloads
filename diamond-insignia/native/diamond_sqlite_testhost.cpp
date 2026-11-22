@@ -211,7 +211,8 @@ int main(int argc,char**argv){
  try {
   require(argc==4,"usage: --selftest|--verify-restart <staged-scp> <isolated.db>");
   const std::string mode=argv[1];
-  require(mode=="--selftest" || mode=="--verify-restart","unknown mode");
+  require(mode=="--selftest" || mode=="--verify-restart" ||
+          mode=="--verify-reconnect","unknown mode");
   const std::string path=argv[3];
   require(path.size()>8 && path.substr(path.size()-8)==".sqlite3","test DB must end .sqlite3");
   std::ifstream input(argv[2],std::ios::binary);require(input.good(),"source staged SCP missing");
@@ -221,6 +222,44 @@ int main(int argc,char**argv){
     verify_after_restart(path,100-costs.first-costs.second);
     std::cout<<"DIAMOND_SEPARATE_PROCESS_RESTART_VERIFICATION=PASS\\n"
              <<"MERIT_WALLET_ITEMS_WEXP_REVISION_MASTERY=PERSISTED\\n";
+    return 0;
+  }
+  if(mode=="--verify-reconnect"){
+    // NEW PROCESS, new session object, existing persisted database.
+    // Reject stale rank-up and Mastery C2S without charging resources again.
+    verify_after_restart(path,100-costs.first-costs.second);
+    cabal_diamond_engine* restarted=nullptr;
+    require(cabal_diamond_engine_create(cfg.data(),cfg.size(),&restarted)==0,
+            "reconnect: unable to reload Diamond rules");
+    Host reconnect{path};
+    auto handlers=callbacks();
+    cabal_diamond_world_result reply{};
+    const cabal_diamond_request stale_rank{1,CABAL_DIAMOND_RANK_UP,10,0};
+    require(cabal_diamond_world_execute(
+      restarted,&reconnect.session,reconnect.session.uid,
+      &stale_rank,&handlers,&reconnect,&reply)==0 &&
+      reply.status==CABAL_DIAMOND_WORLD_REJECTED,
+      "reconnect: stale rank-up was accepted");
+    std::vector<std::uint8_t> stale_merit(18,0);
+    stale_merit[0]=0xE2;stale_merit[1]=0xB7;stale_merit[2]=18;
+    stale_merit[8]=0xF3;stale_merit[9]=0x09;stale_merit[10]=159;
+    stale_merit[14]=0xE7;stale_merit[15]=0x03;
+    cabal_diamond_merit_server_proof refreshed{
+      CABAL_DIAMOND_MERIT_PROOF_VERSION,1,1,1,1,1,
+      &reconnect.session,reconnect.session.uid,11,159,999
+    };
+    cabal_merit_route_result route=CABAL_MERIT_ROUTE_INVALID;
+    require(cabal_diamond_merit_verified_shadow_route(
+      restarted,stale_merit.data(),stale_merit.size(),
+      &reconnect.session,reconnect.session.uid,11,&refreshed,
+      &handlers,&reconnect,1,&reply,&route)==0 &&
+      route==CABAL_MERIT_ROUTE_SHADOW_REJECTED &&
+      reply.status==CABAL_DIAMOND_WORLD_REJECTED,
+      "reconnect: stale Merit purchase was accepted");
+    cabal_diamond_engine_destroy(restarted);
+    verify_after_restart(path,100-costs.first-costs.second);
+    std::cout<<"DIAMOND_NEW_PROCESS_RECONNECT_STALE_RANK_AND_MERIT=PASS\\n"
+             <<"DURABLE_WALLET_UNCHANGED_AFTER_REPLAY=PASS\\n";
     return 0;
   }
   {std::ifstream existing(path);require(!existing.good(),"refuse existing DB; do not overwrite");}
