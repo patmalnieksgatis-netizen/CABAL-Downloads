@@ -22,5 +22,7 @@ jobs:
           /tmp/diamond_transaction_test
           g++ -std=c++17 -O2 -Wall -Wextra -Werror -pedantic -o /tmp/diamond_catalog_test diamond-insignia/native/test_diamond_catalog.cpp
           /tmp/diamond_catalog_test
+          g++ -std=c++17 -O2 -Wall -Wextra -Werror -pedantic -fPIC -shared -o /tmp/libDiamondNative.so diamond-insignia/native/diamond_abi.cpp
+          nm -D /tmp/libDiamondNative.so | grep cabal_diamond_evaluate
       - name: Confirm no server launch
         run: echo 'Pure transaction proposals only - no game binary, SQL, VM, or packet ABI touched.'
