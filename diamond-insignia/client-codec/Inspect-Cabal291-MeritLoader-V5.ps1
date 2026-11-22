@@ -134,7 +134,7 @@ public static class CabalMeritNativeV5 {
 '@
 Add-Type -TypeDefinition $native -Language CSharp -ErrorAction Stop -WarningAction Stop
 function Must([bool]$OK,[string]$Why){if(-not $OK){throw ('STOP: '+$Why)}}
-function H([byte[]]$B,[int]$Start,[int]$Size) {
+function Get-MeritHexBytesV5([byte[]]$B,[int]$Start,[int]$Size) {
  Must ($Start -ge 0 -and $Size -ge 0 -and $Start+$Size -le $B.Length) 'Byte range outside client binary'
  return [BitConverter]::ToString($B,$Start,$Size).Replace('-','').ToLowerInvariant()
 }
@@ -184,8 +184,8 @@ Must ($pdataOff+$pdataLen -le $b.Length) 'PDATA not in executable'
 # 0x21CBD4 is caller of the filename selector. 0x21D938 is its direct callee.
 $wrapper=0x21cbd4
 $helper=0x21d938
-Must ((H $b (0x21cc08-$delta) 5) -eq 'e88befffff') 'Selector callsite changed'
-Must ((H $b (0x21cc2a-$delta) 5) -eq 'e8090d0000') 'Helper callsite changed'
+Must ((Get-MeritHexBytesV5 $b (0x21cc08-$delta) 5) -eq 'e88befffff') 'Selector callsite changed'
+Must ((Get-MeritHexBytesV5 $b (0x21cc2a-$delta) 5) -eq 'e8090d0000') 'Helper callsite changed'
 $targets=[ordered]@{selector_wrapper=$wrapper;selector_posthelper=$helper}
 $blocks=New-Object System.Collections.Generic.List[object]
 foreach($tgt in $targets.GetEnumerator()){
@@ -204,9 +204,9 @@ foreach($tgt in $targets.GetEnumerator()){
   name=$tgt.Key;requested_rva=('0x{0:x}' -f $tgt.Value);
   function_begin_rva=('0x{0:x}' -f $begin);
   function_end_rva=('0x{0:x}' -f $end);
-  total_bytes=$fullSize;leading_bytes_hex=(H $b ($begin-$delta) $firstSize);
+  total_bytes=$fullSize;leading_bytes_hex=(Get-MeritHexBytesV5 $b ($begin-$delta) $firstSize);
   trailing_bytes_start_rva=$(if($tailSize){'0x{0:x}' -f ($end-$tailSize)}else{$null});
-  trailing_bytes_hex=$(if($tailSize){H $b ($end-$delta-$tailSize) $tailSize}else{''});
+  trailing_bytes_hex=$(if($tailSize){Get-MeritHexBytesV5 $b ($end-$delta-$tailSize) $tailSize}else{''});
   code_complete=($firstSize -eq $fullSize)
  })
  Write-Host ('FUNCTION='+$tgt.Key+';rva=0x{0:x}-0x{1:x};bytes={2}' -f $begin,$end,$fullSize)
