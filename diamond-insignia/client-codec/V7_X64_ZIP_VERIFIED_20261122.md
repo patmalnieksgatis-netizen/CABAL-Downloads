@@ -14,7 +14,7 @@ V7's raw filename pool at 0xB5EB00 contains ASCII meritsystem.enc at **0xB5EE68*
     0x21C4A5 lea rdx,[rip+0x9429bc]  ; 0xB5EE68 = meritsystem.enc
     0x21C4AC jmp 0x21C20A             ; 15-byte assignment
 
-**Resource ID 0x34 (decimal 52) is meritsystem.enc.** It is included in the first startup loading loop at 0x21CE38 (IDs 0 to 132 inclusive), calling the wrapper at 0x21CDA4. V5's separate resource-type classifier entry 52 equals 1 (takes the file-existence check path). This is grounded in actual assembly, not guessed by filename ordering. The numeric ID for meritsystem_msg.enc still requires its own branch trace.
+**Resource ID 0x34 (decimal 52) is meritsystem.enc.** It is included in the first startup loading loop at 0x21CE38 (IDs 0 to 132 inclusive), calling the wrapper at 0x21CDA4. V5's separate resource-type classifier entry 52 equals 1 (takes the file-existence check path). This is grounded in actual assembly, not guessed by filename ordering. The adjacent message-file branch is also now cross-checked: 0x21C4C1 subtracts 0x35 from the incoming resource ID and 0x21C4C5 jumps to 0x21C564 on equality; 0x21C564 loads 0xB5EE78. Therefore **resource ID 0x35 (decimal 53) is meritsystem_msg.enc**. V5's resource-type table returns 0 for ID 53 (the resolver's non-existence-check branch), unlike 52.
 
 ## Finding 2: 0x2B7FAC is a processing/cleanup wrapper, not the codec
 
