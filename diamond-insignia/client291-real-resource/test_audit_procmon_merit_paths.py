@@ -39,6 +39,32 @@ class TestMeritRuntimePaths(unittest.TestCase):
             r=parse_csv(csvfile(d,[item("CabalMain.exe","CreateFile",r"C:\foo\meritsystem.enc","ACCESS DENIED")]))
             self.assertEqual(r["opened_path_count"],0)
             self.assertEqual(len(r["matched_paths"]),1)
+    def test_queryopen_is_only_a_probe(self):
+        with tempfile.TemporaryDirectory() as d:
+            p=csvfile(d,[
+                item("CabalMain.exe", "QueryOpen", r"F:\\CABAL_291_TEST\\Language\\meritsystem.enc"),
+                item("CabalMain.exe", "QueryOpen", r"F:\\CABAL_291_TEST\\Language\\meritsystem_msg.enc", "NAME NOT FOUND"),
+            ])
+            result=parse_csv(p)
+            self.assertEqual(result["opened_path_count"], 0)
+            self.assertEqual(result["read_path_count"], 0)
+            self.assertEqual(result["query_only_paths"], [r"F:\\CABAL_291_TEST\\Language\\meritsystem.enc"])
+            self.assertEqual(sum(x["query_failure"] for x in result["matched_paths"]), 1)
+
+    def test_query_and_actual_open_are_separate(self):
+        with tempfile.TemporaryDirectory() as d:
+            target=r"F:\\CABAL_291_TEST\\Data\\meritsystem.enc"
+            result=parse_csv(csvfile(d,[
+                item("CabalMain.exe", "QueryOpen", target),
+                item("CabalMain.exe", "CreateFile", target),
+                item("CabalMain.exe", "ReadFile", target),
+            ]))
+            self.assertEqual(result["opened_path_count"], 1)
+            self.assertEqual(result["read_path_count"], 1)
+            self.assertEqual(result["query_only_paths"], [])
+            m=result["matched_paths"][0]
+            self.assertEqual((m["query_success"],m["open_success"],m["read_success"]),(1,1,1))
+
     def test_invalid_headers(self):
         with tempfile.TemporaryDirectory() as d:
             p=Path(d)/"bad.csv";p.write_text("Path,Operation\na,b\n")
