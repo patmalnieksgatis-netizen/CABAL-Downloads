@@ -2,7 +2,7 @@
 
 ## Evidence scope
 
-User ran `Inspect-Cabal291-MeritTransform-V7.ps1` pinned at commit `5eda96431215b554453056621025cbe4783d07dd` and pasted the complete console output. The generated artifact `C:\Users\patma\Downloads\CABAL_DIAMOND_MERIT_X64_V7_20261122-093656.zip` **has not yet been uploaded to the conversation**. We only know function ranges and IAT assignments from stdout, **not the x64 machine-code bytes or filenames in .rdata**. Do not claim the transform is a decoder before inspecting that ZIP.
+User ran `Inspect-Cabal291-MeritTransform-V7.ps1` pinned at commit `5eda96431215b554453056621025cbe4783d07dd` and pasted the complete console output. **Historical stdout record:** the V7 ZIP has since been uploaded (twice; identical SHA256 `d3e2223506b482f9a6883a21c74b15147ddefd4914cdd2e454e3a9b1767f4220`) and independently disassembled. The verified actual byte-based analysis is in [V7_X64_ZIP_VERIFIED_20261122.md](./V7_X64_ZIP_VERIFIED_20261122.md), including Merit IDs 52/53 and the next worker `0x2B8B08`. Keep this stdout-only record as historical evidence, not the latest state.
 
 It reports `MERIT_X64_V7_WINDOWS_SELF_TEST=PASS`, read-only static audit of `F:\CABAL_291_TEST`, x64; no game launch, process memory, client edit, SQL or VM access. `CLIENT_AND_SERVER_UNMODIFIED=YES`.
 
@@ -45,9 +45,9 @@ The exact IAT assignments corroborate V6's file-mapping hypothesis for `0x2178E0
 
 ## Next evidence and decision gate
 
-**Upload existing ZIP** `CABAL_DIAMOND_MERIT_X64_V7_20261122-093656.zip` from Downloads. Do not rerun V7 or create V8 before examining the current export.
+**ZIP subsequently received and examined**, so do not rerun V7. Verified analysis and V8 next step are in [V7_X64_ZIP_VERIFIED_20261122.md](./V7_X64_ZIP_VERIFIED_20261122.md).
 
-Once uploaded:
+The investigation fulfilled these steps:
 1. Verify V7 JSON schema, SHA pins, target lengths and .rdata block.
 2. Disassemble `0x2B7FAC` 85-byte function, its calls and inbound/outbound dataflow. Classify actual operation; function **may be a wrapper**, not a codec.
 3. Decode .rdata strings and correlate actual `0x21BB98` branch references to filenames and IDs, especially `meritsystem.enc`.
