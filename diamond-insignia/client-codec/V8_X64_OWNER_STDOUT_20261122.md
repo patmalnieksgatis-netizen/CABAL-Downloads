@@ -2,7 +2,7 @@
 
 ## Evidence level
 
-Source: PowerShell stdout pasted by the owner from the pinned `Inspect-Cabal291-MeritWorker-V8.ps1` script (commit `cd78966800a7054bdabed4653d0664c8cfcd067b`). This is a console-only record. The generated V8 archive **has not been attached or independently inspected** yet, so no V8 worker semantics, codec, cipher or compression claims may be made from these function ranges alone.
+Source: PowerShell stdout pasted by the owner from the pinned `Inspect-Cabal291-MeritWorker-V8.ps1` script (commit `cd78966800a7054bdabed4653d0664c8cfcd067b`). This is a console-only record. **Historical stdout-only log.** The generated V8 ZIP has subsequently been attached and independently disassembled (SHA256 `9be302254f3b4c3c021cbf82a43842353776f57eb0f01bcee9edd3da817f3b26`). See [V8 independent machine-code analysis](./V8_X64_ZIP_DISASSEMBLY_20261122.md). The V8 worker is now known to be a processing/copy loop that calls `0x2B8004`, but the actual decoding algorithm remains unverified.
 
 The script reported:
 
@@ -35,6 +35,6 @@ Resource ID `0x34` (52) resolves to `meritsystem.enc`; ID `0x35` (53) resolves t
 
 ## Required next gate
 
-Use the **existing** owner's V8 ZIP `CABAL_DIAMOND_MERIT_X64_V8_20261122-094521.zip`; no repeat PowerShell execution is necessary. On receipt, verify schema 8 and SHA pins and independently disassemble the 105-byte worker and 40-byte helper. Trace actual worker calls/branches and pointer/size data flow, then decide whether an additional narrowly scoped static capture is necessary. Do not patch the executable, copy EP45 ENC, or touch SQL/server until the decoder and integration requirements are demonstrated.
+V8 ZIP has now been received and disassembled. Follow the [verified V8 source analysis](./V8_X64_ZIP_DISASSEMBLY_20261122.md); V9 read-only inspection of `0x2B8004` and related copy/free callees was implemented and passed Windows synthetic CI. No need to rerun V8. Do not patch the executable, copy EP45 ENC, or touch SQL/server until the decoder and integration requirements are demonstrated.
 
-No V9 inspector has been created as part of this stdout-only stage.
+V9 inspector is now committed at `diamond-insignia/client-codec/Inspect-Cabal291-MeritProcessing-V9.ps1`; source-only audit follows the V8 discovered callsites.
