@@ -178,7 +178,6 @@ int main(int argc,char**argv){
   state_check(path,11,2,100,0);
   require(cabal_diamond_world_execute(engine,&host.session,host.session.uid,&rank,&c,&host,&result)==0 &&
           result.status==CABAL_DIAMOND_WORLD_REJECTED,"rank replay accepted");
-  const cabal_diamond_request purchase{1,CABAL_DIAMOND_MASTERY_LEVEL_UP,11,159};
   // End-to-end CLONE TEST: exact 18-byte legacy Merit C2S shape, gated
   // by a host-supplied proof tied to this authenticated session/user/revision.
   // This proof is SYNTHETIC, NOT obtained from live WorldSvr.
