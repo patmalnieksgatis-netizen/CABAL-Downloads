@@ -77,6 +77,8 @@ int main(){
  binding.callbacks.version=1;binding.callbacks.begin_authenticated_locked=begin;
  binding.callbacks.load_trusted_state=load;binding.callbacks.commit_durable=commit;
  binding.callbacks.abort_transaction=abort_tx;
+ Binding oldAbi=binding;oldAbi.abi=1; // prior unsafe resolver signature
+ assert(!InstallOnce(&oldAbi));
  assert(InstallOnce(&binding));assert(!InstallOnce(&binding));
  assert(Process(&h.user,gold.data(),gold.size())==Result::Unchanged);
  assert(Process(&h.user,platinum.data(),platinum.size())==Result::Unchanged);
