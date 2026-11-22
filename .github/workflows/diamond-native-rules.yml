@@ -38,6 +38,15 @@ jobs:
           /tmp/diamond_sqlite_testhost --selftest /tmp/diamond_synthetic.scp /tmp/diamond_synthetic_durable.sqlite3
           /tmp/diamond_sqlite_testhost --verify-restart /tmp/diamond_synthetic.scp /tmp/diamond_synthetic_durable.sqlite3
           /tmp/diamond_sqlite_testhost --verify-reconnect /tmp/diamond_synthetic.scp /tmp/diamond_synthetic_durable.sqlite3
+          set +e
+          /tmp/diamond_sqlite_testhost --simulate-crash-before-commit /tmp/diamond_synthetic.scp /tmp/diamond_synthetic_durable.sqlite3
+          crash_rc=$?
+          set -e
+          if [ "$crash_rc" -ne 71 ]; then
+            echo "ERROR: crash fault injection returned $crash_rc instead of expected 71"; exit 1
+          fi
+          /tmp/diamond_sqlite_testhost --verify-restart /tmp/diamond_synthetic.scp /tmp/diamond_synthetic_durable.sqlite3
+          echo 'MID_COMMIT_PROCESS_CRASH_ROLLBACK=PASS'
           cp /tmp/diamond_synthetic_durable.sqlite3 /tmp/diamond_tampered_readonly_test.sqlite3
           python3 -c "import sqlite3; p='/tmp/diamond_tampered_readonly_test.sqlite3'; c=sqlite3.connect(p); c.execute('UPDATE test_account SET tickets=21'); c.commit(); c.close()"
           if /tmp/diamond_sqlite_testhost --verify-restart /tmp/diamond_synthetic.scp /tmp/diamond_tampered_readonly_test.sqlite3; then
