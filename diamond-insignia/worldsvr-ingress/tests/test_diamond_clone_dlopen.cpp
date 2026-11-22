@@ -91,7 +91,8 @@ int main(int argc,char**argv){
  using Handler=int (*)(const void*,const void*,std::size_t);
  auto bind=reinterpret_cast<Binder>(dlsym(handle,"cabal_diamond_proc_bind_shadow_clone_v3"));
  auto invoke=reinterpret_cast<Handler>(dlsym(handle,"cabal_diamond_proc_test_ingress_clone_v3"));
- assert(bind && invoke && !dlsym(handle,"cabal_diamond_proc_bind_shadow_clone_v1"));
+ assert(bind && invoke && !dlsym(handle,"cabal_diamond_proc_bind_shadow_clone_v1") &&
+        !dlsym(handle,"cabal_diamond_proc_bind_shadow_clone_v2"));
  auto process=[&](const void* ctx,const void* bytes,std::size_t n){
    return static_cast<Result>(invoke(ctx,bytes,n));
  };
