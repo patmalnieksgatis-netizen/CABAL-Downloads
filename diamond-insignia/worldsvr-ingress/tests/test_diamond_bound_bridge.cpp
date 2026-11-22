@@ -5,6 +5,7 @@
 #include <cstdint>
 #include <iostream>
 #include <mutex>
+#include <stdexcept>
 #include <string>
 #include <vector>
 using namespace DiamondBoundIngress;
@@ -15,6 +16,7 @@ struct Store {
  std::uint32_t revision=10,slot=159;
  int points=50,level=0,commits=0,aborts=0;
  bool fail=false;
+ bool throw_after_acquire=false;
  std::mutex session_mutex;
  int leases=0,releases=0;
  cabal_diamond_level_entry row{159,0};
@@ -54,6 +56,7 @@ int acquire(void* host,const void* user_context,
  if(user_context!=&h.user || h.user.secret!=4567 || !observed)return -1;
  h.session_mutex.lock();
  *lease=&h;++h.leases;
+ if(h.throw_after_acquire)throw std::runtime_error("synthetic lease failure");
  id->authenticated_session=&h.session;id->user_num=kSyntheticUserNum;
  id->expected_revision=h.revision;
  id->server_catalog_grade_two_confirmed=1;
@@ -96,9 +99,18 @@ int main(){
  binding.callbacks.abort_transaction=abort_tx;
  Binding oldAbi=binding;oldAbi.abi=2; // prior resolver-without-lease ABI
  assert(!InstallOnce(&oldAbi));
+ Binding missingAcquire=binding;missingAcquire.acquire_exclusive=nullptr;
+ assert(!InstallOnce(&missingAcquire));
+ Binding missingRelease=binding;missingRelease.release_exclusive=nullptr;
+ assert(!InstallOnce(&missingRelease));
  assert(InstallOnce(&binding));assert(!InstallOnce(&binding));
  assert(Process(&h.user,gold.data(),gold.size())==Result::Unchanged);
  assert(Process(&h.user,platinum.data(),platinum.size())==Result::Unchanged);
+ // Exceptions raised AFTER a lease was acquired must release it.
+ h.throw_after_acquire=true;
+ assert(Process(&h.user,diamond.data(),diamond.size())==Result::BadEngine);
+ assert(h.leases==h.releases && h.commits==0);
+ h.throw_after_acquire=false;
  UserContext attacker;assert(Process(&attacker,diamond.data(),diamond.size())==Result::AuthRefused);
  auto changedSecond=diamond;changedSecond[14]^=1;
  assert(Process(&h.user,changedSecond.data(),changedSecond.size())==Result::AuthRefused);
