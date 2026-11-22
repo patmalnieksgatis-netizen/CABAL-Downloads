@@ -112,7 +112,7 @@ function Get-MeritV6CheckedImport([byte[]]$Bytes,[int]$SlotRva) {
   $idx=[int](($SlotRva-$first)/8)
   if($idx -gt 16384){continue}
   $lookupBase=$(if($orig -ne 0){[long]$orig}else{[long]$first})
-  $entry=0UL
+  $entry=[uint64]0
   $isMember=$true
   for($i=0;$i -le $idx;$i++){
    $thunkRva=$lookupBase+8L*$i
@@ -127,8 +127,8 @@ function Get-MeritV6CheckedImport([byte[]]$Bytes,[int]$SlotRva) {
   $dllName=Get-MeritV6Ascii $Bytes $dllOff 256
   if(-not $dllName){continue}
   $funcName=$null
-  if(($entry -band 0x8000000000000000UL) -ne 0){
-   $funcName='ordinal_'+($entry -band 0xffffUL).ToString()
+  if($entry -ge [uint64]::Parse('9223372036854775808')){
+   $funcName='ordinal_'+($entry -band [uint64]65535).ToString()
   }elseif($entry -le [uint32]::MaxValue){
    $nameOff=Get-MeritV6PeFileOffset $Bytes $sections $n ([uint32]$entry)
    $funcName=Get-MeritV6Ascii $Bytes ($nameOff+2) 256
