@@ -2,6 +2,7 @@
 // It demonstrates real disk-backed atomic grade + points + item-count + revision
 // commits using the same cabal_diamond_world_execute ABI intended for WorldSvr.
 #include "diamond_world_bridge.h"
+#include "diamond_merit_world_entry.h"
 #include <sqlite3.h>
 #include <cstdint>
 #include <cstdio>
@@ -178,15 +179,53 @@ int main(int argc,char**argv){
   require(cabal_diamond_world_execute(engine,&host.session,host.session.uid,&rank,&c,&host,&result)==0 &&
           result.status==CABAL_DIAMOND_WORLD_REJECTED,"rank replay accepted");
   const cabal_diamond_request purchase{1,CABAL_DIAMOND_MASTERY_LEVEL_UP,11,159};
-  // Inject storage failure: no partial writes survive (account row + inventory fields).
+  // End-to-end CLONE TEST: exact 18-byte legacy Merit C2S shape, gated
+  // by a host-supplied proof tied to this authenticated session/user/revision.
+  // This proof is SYNTHETIC, NOT obtained from live WorldSvr.
+  std::vector<std::uint8_t> c2s(18,0);
+  c2s[0]=0xE2;c2s[1]=0xB7;c2s[2]=18;
+  c2s[8]=0xF3;c2s[9]=0x09;c2s[10]=159;
+  constexpr std::uint32_t kUnknownPayload=999;
+  c2s[14]=static_cast<std::uint8_t>(kUnknownPayload);
+  c2s[15]=static_cast<std::uint8_t>(kUnknownPayload>>8);
+  c2s[16]=static_cast<std::uint8_t>(kUnknownPayload>>16);
+  c2s[17]=static_cast<std::uint8_t>(kUnknownPayload>>24);
+  cabal_diamond_merit_server_proof proof{
+    CABAL_DIAMOND_MERIT_PROOF_VERSION,1,1,1,1,1,
+    &host.session,host.session.uid,11,159,kUnknownPayload
+  };
+  cabal_merit_route_result route=CABAL_MERIT_ROUTE_INVALID;
+  auto from_wire=[&](const cabal_diamond_merit_server_proof* attestation) {
+    return cabal_diamond_merit_verified_shadow_route(
+      engine,c2s.data(),c2s.size(),&host.session,host.session.uid,
+      11,attestation,&c,&host,1,&result,&route);
+  };
+  // Missing proof and unverified old API are incapable of a debit.
+  require(from_wire(nullptr)==0 && route==CABAL_MERIT_ROUTE_DISABLED,
+          "unauthenticated packet incorrectly entered Diamond route");
+  require(cabal_diamond_merit_shadow_route(
+      engine,c2s.data(),c2s.size(),&host.session,host.session.uid,
+      11,&c,&host,1,&result,&route)==0 &&
+      route==CABAL_MERIT_ROUTE_DISABLED,
+      "legacy ID-only packet incorrectly entered Diamond route");
+  state_check(path,11,2,100,0);
+  // Inject real SQLite transaction failure: row updates must rollback.
   host.fail_next_commit=true;
-  require(cabal_diamond_world_execute(engine,&host.session,host.session.uid,&purchase,&c,&host,&result)==0 &&
-          result.status==CABAL_DIAMOND_WORLD_COMMIT_FAILED && !result.evaluated.permitted,
-          "injected commit failure incorrectly approved");
-  host.fail_next_commit=false;state_check(path,11,2,100,0);
-  require(cabal_diamond_world_execute(engine,&host.session,host.session.uid,&purchase,&c,&host,&result)==0 &&
-          result.status==CABAL_DIAMOND_WORLD_APPLIED,"first purchase failed");
-  require(result.evaluated.new_free_points==100-costs.first,"mastery159 first cost mismatch");
+  require(from_wire(&proof)==0 && route==CABAL_MERIT_ROUTE_SHADOW_REJECTED &&
+          result.status==CABAL_DIAMOND_WORLD_COMMIT_FAILED &&
+          !result.evaluated.permitted,
+          "packet-gated injected commit failure incorrectly approved");
+  host.fail_next_commit=false;
+  state_check(path,11,2,100,0);
+  require(from_wire(&proof)==0 && route==CABAL_MERIT_ROUTE_SHADOW_APPLIED &&
+          result.status==CABAL_DIAMOND_WORLD_APPLIED,
+          "verified Merit C2S -> SQLite durable purchase failed");
+  require(result.evaluated.new_free_points==100-costs.first,
+          "Merit packet purchase cost mismatch");
+  state_check(path,12,2,100-costs.first,1);
+  // A repeat of the same attested revision cannot charge twice.
+  require(from_wire(&proof)==0 && route==CABAL_MERIT_ROUTE_SHADOW_REJECTED,
+          "stale Merit packet replay was accepted");
   state_check(path,12,2,100-costs.first,1);
   // Concurrent duplicate purchases with exactly the same revision -> only one.
   cabal_diamond_request next{1,CABAL_DIAMOND_MASTERY_LEVEL_UP,12,159};
@@ -203,7 +242,8 @@ int main(int argc,char**argv){
   std::cout<<"DIAMOND_SQLITE_DURABLE_BRIDGE=PASS\n"
            <<"RESTART_PERSISTENCE=PASS\nROLLBACK=PASS\nCONCURRENT_REPLAY=PASS\n"
            <<"REAL_SCP_MASTERIES=316;DATA_STORE=ISOLATED_SQLITE_TEST_ONLY\n"
-           <<"PRODUCTION_SQL_SERVER_OR_WORLDSVR=NO\n";
+           <<"PRODUCTION_SQL_SERVER_OR_WORLDSVR=NO\n"
+           <<"VERIFIED_MERIT_PACKET_TO_DURABLE_SQLITE=PASS\n";
   return 0;
  }catch(const std::exception& e){std::cerr<<"DIAMOND_SQLITE_DURABLE_BRIDGE=FAIL: "<<e.what()<<"\n";return 1;}
 }
