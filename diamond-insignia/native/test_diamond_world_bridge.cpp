@@ -18,6 +18,7 @@ struct Store {
   bool platinum_maxed=true,authoritative=true,fail_commit=false;
   int commits=0,rollbacks=0,auth_denied=0;
   uint32_t open_slot=159;
+  cabal_diamond_level_entry level_record{159,0};
 };
 struct LockedTransaction {
   Store* store;
@@ -48,6 +49,11 @@ static int load(void*,void* txp,cabal_diamond_state* state) {
     state->active_category_mask=1u;
     state->server_open_mastery_ids=&s.open_slot;
     state->server_open_count=1;
+    if (s.level159>0) {
+      s.level_record.level=s.level159;
+      state->server_levels=&s.level_record;
+      state->server_level_count=1;
+    }
   }
   return 0;
 }
