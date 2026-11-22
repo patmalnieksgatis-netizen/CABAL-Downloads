@@ -16,6 +16,7 @@ SONAME="libDiamondWorldCloneOffline.so"
 V2_BIND="cabal_diamond_proc_bind_shadow_clone_v2"
 V1_BIND="cabal_diamond_proc_bind_shadow_clone_v1"
 V2_MERIT="cabal_diamond_merit_verified_shadow_route"
+TEST_INGRESS="cabal_diamond_proc_test_ingress_clone_v2"
 
 def require(condition,message):
     if not condition:
@@ -43,7 +44,8 @@ def run(root: pathlib.Path,native_lib: pathlib.Path,merit_cpp: pathlib.Path,
     state=root/"include/Types.h"
     require(proc.is_file() and bind.is_file() and state.is_file(),
             "source clone missing critical files")
-    require(V2_BIND in proc.read_text() and V1_BIND not in proc.read_text() and
+    require(V2_BIND in proc.read_text() and TEST_INGRESS in proc.read_text() and
+            V1_BIND not in proc.read_text() and
             "kBindingABI=2u" in bind.read_text(),
             "source clone must use new WorldSvr ABI v2")
     require(V2_MERIT in merit_cpp.read_text() and
@@ -76,7 +78,8 @@ def run(root: pathlib.Path,native_lib: pathlib.Path,merit_cpp: pathlib.Path,
             text=True,capture_output=True,check=True).stdout
         deps=subprocess.run(["readelf","-d",str(output)],
                             text=True,capture_output=True,check=True).stdout
-        require(V2_BIND in symbols and V2_MERIT in symbols and V1_BIND not in symbols,
+        require(V2_BIND in symbols and V2_MERIT in symbols and
+                TEST_INGRESS in symbols and V1_BIND not in symbols,
                 "missing/new and stale exported ABI mismatch")
         require("Library soname: ["+SONAME+"]" in deps and
                 "Shared library: [libDiamondNative.so]" in deps and
@@ -88,6 +91,7 @@ def run(root: pathlib.Path,native_lib: pathlib.Path,merit_cpp: pathlib.Path,
         raise
     print("DIAMOND_OFFLINE_WORLDSVR_SOURCE_LINK=PASS")
     print("BINDER="+V2_BIND+";MERIT_ROUTE="+V2_MERIT)
+    print("SYNTHETIC_ONLY_DLOPEN_ENTRY="+TEST_INGRESS)
     print("STRICT_UNDEFINED_SYMBOL_CHECK=PASS;ODBC_LINKED=YES")
     print("SONAME="+SONAME+";PRODUCTION_LIB_SO=UNTOUCHED")
     print("WORLD_SERVER_EXECUTION=NO;CLIENT_MSSQL_INVENTORY=NO")
