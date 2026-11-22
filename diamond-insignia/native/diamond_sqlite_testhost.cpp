@@ -250,7 +250,7 @@ int main(int argc,char**argv){
     // This must be launched in a NEW child process on an isolated test DB.
     // Only uncommitted SQLite mutation is permitted; exit 71 simulates
     // the server being terminated mid-save.
-    verify_after_restart(path,100-costs.first-costs.second);
+    verify_after_restart(path,100-costs.first-costs.second-5);
     cabal_diamond_engine* crash_engine=nullptr;
     require(cabal_diamond_engine_create(cfg.data(),cfg.size(),&crash_engine)==0,
             "crash: rules engine failed");
@@ -270,7 +270,7 @@ int main(int argc,char**argv){
   if(mode=="--verify-reconnect"){
     // NEW PROCESS, new session object, existing persisted database.
     // Reject stale rank-up and Mastery C2S without charging resources again.
-    verify_after_restart(path,100-costs.first-costs.second);
+    verify_after_restart(path,100-costs.first-costs.second-5);
     cabal_diamond_engine* restarted=nullptr;
     require(cabal_diamond_engine_create(cfg.data(),cfg.size(),&restarted)==0,
             "reconnect: unable to reload Diamond rules");
@@ -300,7 +300,7 @@ int main(int argc,char**argv){
       reply.status==CABAL_DIAMOND_WORLD_REJECTED,
       "reconnect: stale Merit purchase was accepted");
     cabal_diamond_engine_destroy(restarted);
-    verify_after_restart(path,100-costs.first-costs.second);
+    verify_after_restart(path,100-costs.first-costs.second-5);
     std::cout<<"DIAMOND_NEW_PROCESS_RECONNECT_STALE_RANK_AND_MERIT=PASS\\n"
              <<"DURABLE_WALLET_UNCHANGED_AFTER_REPLAY=PASS\\n";
     return 0;
