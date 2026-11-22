@@ -66,4 +66,40 @@ class TestLabSafety(unittest.TestCase):
  def test_bad_rollback(self):self.assertBad(REQUIRED[5],'ROLLBACK TRANSACTION','COMMIT TRANSACTION')
  def test_missing_proc_drop(self):self.assertBad(REQUIRED[6],
    'DROP PROCEDURE dbo.cabal_diamond_lab_get_v1','PRINT 1')
+class TestMssqlShadowBridgeSafety(unittest.TestCase):
+ """Static clone-only guards for NEW ODBC shadow schema and test-wallet seed."""
+ @classmethod
+ def setUpClass(cls):
+  cls.install=(ROOT/'08_install_odbc_shadow_wallet_TEST_CLONE_ONLY.sql').read_text(encoding='utf8')
+  cls.seed=(ROOT/'09_seed_odbc_shadow_user_TEST_CLONE_ONLY.sql').read_text(encoding='utf8')
+ def test_clone_only_guards(self):
+  for doc in (self.install,self.seed):
+   s=compact(doc)
+   self.assertIn('use[server01_diamondlab];',s)
+   self.assertIn("ifdb_name()<>n'server01_diamondlab'",s)
+   self.assertNotIn('use[server01];',s)
+ def test_all_tables_are_isolated_shadow(self):
+  s=compact(self.install)
+  for tab in ('wallet','slot','mastery'):
+   self.assertIn('createtabledbo.cabal_diamond_bridge_'+tab+'_v2',s)
+  self.assertNotIn('altertabledbo.cabal_merit',s)
+  self.assertNotIn('droptable',s)
+  self.assertNotIn('grant',s)
+ def test_seed_only_synthetic_wallet(self):
+  s=compact(self.seed)
+  self.assertIn('whereusernum=900001',s)
+  self.assertIn('insertdbo.cabal_diamond_bridge_wallet_v2',s)
+  self.assertIn('insertdbo.cabal_diamond_bridge_slot_v2',s)
+  self.assertNotIn('updatedbo.cabal_merit',s)
+  self.assertNotIn('insertdbo.cabal_merit',s)
+ def test_no_original_merit_or_platinum_writes(self):
+  for doc in (self.install,self.seed):
+   s=compact(doc)
+   for prefix in ('insertdbo.cabal_merit_','updatedbo.cabal_merit_',
+                  'deletefromdbo.cabal_merit_','altertabledbo.cabal_merit_'):
+    self.assertNotIn(prefix,s)
+ def test_invalid_database_mutation_rejected(self):
+  mutated=self.seed.replace("IF DB_NAME()<>N'Server01_DiamondLab'","IF DB_NAME()<>N'Server01'")
+  self.assertNotIn("ifdb_name()<>n'server01_diamondlab'",compact(mutated))
+
 if __name__=='__main__':unittest.main(verbosity=2)
