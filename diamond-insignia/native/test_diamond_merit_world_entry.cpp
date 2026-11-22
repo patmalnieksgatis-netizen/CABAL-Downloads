@@ -71,10 +71,36 @@ int main(){
  cb.begin_authenticated_locked=begin;cb.load_trusted_state=load;
  cb.commit_durable=commit;cb.abort_transaction=abort_tx;
  cabal_merit_route_result route{};cabal_diamond_world_result world{};
- auto run=[&](const std::vector<uint8_t>& bytes,uint32_t rev,uint32_t enable) {
-  return cabal_diamond_merit_shadow_route(engine,bytes.data(),bytes.size(),
-    &f.session_token,f.user,rev,&cb,&f,enable,&world,&route);
+ cabal_diamond_merit_server_proof proof{
+   CABAL_DIAMOND_MERIT_PROOF_VERSION,1,1,1,1,1
  };
+ auto run=[&](const std::vector<uint8_t>& bytes,uint32_t rev,uint32_t enable) {
+  return cabal_diamond_merit_verified_shadow_route(
+    engine,bytes.data(),bytes.size(),&f.session_token,f.user,rev,
+    &proof,&cb,&f,enable,&world,&route);
+ };
+ // The old unverified ABI never routes by ID alone, even in trial builds.
+ assert(cabal_diamond_merit_shadow_route(engine,diamond.data(),diamond.size(),
+   &f.session_token,f.user,3,&cb,&f,1,&world,&route)==0);
+ assert(route==CABAL_MERIT_ROUTE_DISABLED && f.commits==0);
+ for(unsigned i=1;i<=5;i++){
+   auto changed=proof;
+   (&changed.authenticated_session)[i-1]=0;
+   assert(cabal_diamond_merit_verified_shadow_route(
+     engine,diamond.data(),diamond.size(),&f.session_token,f.user,3,
+     &changed,&cb,&f,1,&world,&route)==0);
+   assert(route==CABAL_MERIT_ROUTE_DISABLED && f.commits==0);
+ }
+ assert(cabal_diamond_merit_verified_shadow_route(
+   engine,diamond.data(),diamond.size(),&f.session_token,f.user,3,
+   nullptr,&cb,&f,1,&world,&route)==0);
+ assert(route==CABAL_MERIT_ROUTE_DISABLED && f.commits==0);
+ auto wrongVersion=proof;
+ wrongVersion.version=0;
+ assert(cabal_diamond_merit_verified_shadow_route(
+   engine,diamond.data(),diamond.size(),&f.session_token,f.user,3,
+   &wrongVersion,&cb,&f,1,&world,&route)==0);
+ assert(route==CABAL_MERIT_ROUTE_DISABLED && f.commits==0);
  assert(run(diamond,3,0)==0 && route==CABAL_MERIT_ROUTE_DISABLED);
  assert(run(legacy,3,1)==0 && route==CABAL_MERIT_ROUTE_ORIGINAL);
  assert(run(platinum,3,1)==0 && route==CABAL_MERIT_ROUTE_ORIGINAL);
@@ -91,5 +117,5 @@ int main(){
  assert(f.commits==2 && f.level==2 && f.revision==5 && f.points==85);
  cabal_diamond_engine_destroy(engine);
  std::cout<<"DIAMOND_MERIT_C2S_TO_NATIVE_SHADOW=PASS\n"
-          <<"PLATINUM_LEGACY_ROUTE_PRESERVED=PASS\n";
+          <<"PLATINUM_LEGACY_ROUTE_PRESERVED=PASS\n"\n          <<"UNVERIFIED_09F3_CANNOT_DEBIT=PASS\n";
 }
