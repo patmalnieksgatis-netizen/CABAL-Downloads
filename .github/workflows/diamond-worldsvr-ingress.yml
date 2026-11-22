@@ -38,7 +38,7 @@ jobs:
           /tmp/diamond_bound_default_test
           g++ -std=c++17 -O2 -Wall -Wextra -Werror -pedantic             -DDIAMOND_ENABLE_SHADOW_TRIAL -Idiamond-insignia/native             diamond-insignia/worldsvr-ingress/tests/test_diamond_bound_bridge.cpp             diamond-insignia/native/diamond_merit_world_entry.cpp             diamond-insignia/native/diamond_abi.cpp             diamond-insignia/native/diamond_world_bridge.cpp             -o /tmp/diamond_bound_shadow_test
           /tmp/diamond_bound_shadow_test
-      - name: Exercise dynamic loader and ABI-v2 synthetic ingress in a shared object
+      - name: Exercise dynamic loader and lease-bound ABI-v3 synthetic ingress in a shared object
         run: |
           set -eux
           mkdir -p /tmp/diamond-dlopen-ci
