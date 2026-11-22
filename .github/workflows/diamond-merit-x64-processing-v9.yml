@@ -1,0 +1,24 @@
+name: Diamond Merit x64 processing V9 Windows tests
+on:
+  push:
+    branches:
+      - feature/diamond-insignia-v291-20261121
+    paths:
+      - diamond-insignia/client-codec/Inspect-Cabal291-MeritProcessing-V9.ps1
+      - .github/workflows/diamond-merit-x64-processing-v9.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  windows-power-shell:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify V9 synthetic PDATA and PE import reader without client files
+        shell: powershell
+        run: |
+          & .\diamond-insignia\client-codec\Inspect-Cabal291-MeritProcessing-V9.ps1 -SelfTestOnly
+      - name: Confirm isolated read-only test
+        shell: powershell
+        run: |
+          Write-Output 'Synthetic test only. No CABAL game files, SQL, VM, or process memory accessed.'
