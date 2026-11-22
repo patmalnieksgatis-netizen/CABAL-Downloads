@@ -18,7 +18,7 @@ ORIGINAL={
     "include/Types.h":
         "c32a66118f439cf1a1279f703c3a9a1e272a4dfbb89a0745c93983ce5a2e3b61",
 }
-ABI_V2_SYMBOL="cabal_diamond_proc_bind_shadow_clone_v2"
+ABI_V2_SYMBOL="cabal_diamond_proc_bind_shadow_clone_v3"
 OLD_BIND_SYMBOL="cabal_diamond_proc_bind_shadow_clone_v1"
 
 def digest(path):
