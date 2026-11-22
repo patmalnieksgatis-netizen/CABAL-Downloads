@@ -159,15 +159,71 @@ void state_check(const std::string& path,int revision,int badge,int points,int m
  sqlite3_finalize(q);sqlite3_close(db);
 }
 }
+// Separate-process, READ-ONLY verification after the writer exits. This is
+// not an in-process reopen: CI launches this executable a second time.
+void verify_after_restart(const std::string& path,int expected_points){
+ sqlite3* raw=nullptr;
+ require(sqlite3_open_v2(path.c_str(),&raw,SQLITE_OPEN_READONLY|SQLITE_OPEN_FULLMUTEX,
+                         nullptr)==SQLITE_OK,"restart: existing SQLite database required");
+ std::unique_ptr<sqlite3,decltype(&sqlite3_close)> db(raw,&sqlite3_close);
+ {
+  Statement q(db.get(),"PRAGMA integrity_check");
+  require(q.step()==SQLITE_ROW &&
+          std::string(reinterpret_cast<const char*>(sqlite3_column_text(q.p,0)))=="ok" &&
+          q.step()==SQLITE_DONE,"restart: SQLite integrity failure");
+ }
+ {
+  Statement q(db.get(),"PRAGMA foreign_key_check");
+  require(q.step()==SQLITE_DONE,"restart: foreign key violation");
+ }
+ {
+  Statement q(db.get(),"SELECT usernum,nonce,revision,badge,wexp,tickets,points "
+                        "FROM test_account");
+  require(q.step()==SQLITE_ROW,"restart: missing account");
+  require(sqlite3_column_int(q.p,0)==900001 &&
+          sqlite3_column_int64(q.p,1)==439041101ll &&
+          sqlite3_column_int(q.p,2)==13 &&
+          sqlite3_column_int(q.p,3)==2 &&
+          sqlite3_column_int64(q.p,4)==10000 &&
+          sqlite3_column_int(q.p,5)==20 &&
+          sqlite3_column_int(q.p,6)==expected_points &&
+          q.step()==SQLITE_DONE,"restart: account wallet or revision mismatch");
+ }
+ {
+  Statement q(db.get(),"SELECT usernum,mastery_id,level FROM test_mastery");
+  require(q.step()==SQLITE_ROW && sqlite3_column_int(q.p,0)==900001 &&
+          sqlite3_column_int(q.p,1)==159 &&
+          sqlite3_column_int(q.p,2)==2 &&
+          q.step()==SQLITE_DONE,"restart: missing/extra mastery progression");
+ }
+ {
+  Statement q(db.get(),"SELECT name FROM sqlite_master WHERE type='table' "
+                        "AND name NOT LIKE 'sqlite_%' ORDER BY name");
+  require(q.step()==SQLITE_ROW &&
+          std::string(reinterpret_cast<const char*>(sqlite3_column_text(q.p,0)))=="test_account",
+          "restart: unexpected account schema");
+  require(q.step()==SQLITE_ROW &&
+          std::string(reinterpret_cast<const char*>(sqlite3_column_text(q.p,0)))=="test_mastery" &&
+          q.step()==SQLITE_DONE,"restart: unexpected tables");
+ }
+}
 int main(int argc,char**argv){
  try {
-  require(argc==4 && std::string(argv[1])=="--selftest","usage: --selftest <staged-scp> <new.db> ");
+  require(argc==4,"usage: --selftest|--verify-restart <staged-scp> <isolated.db>");
+  const std::string mode=argv[1];
+  require(mode=="--selftest" || mode=="--verify-restart","unknown mode");
   const std::string path=argv[3];
   require(path.size()>8 && path.substr(path.size()-8)==".sqlite3","test DB must end .sqlite3");
-  {std::ifstream existing(path);require(!existing.good(),"refuse existing DB; do not overwrite");}
   std::ifstream input(argv[2],std::ios::binary);require(input.good(),"source staged SCP missing");
   std::string cfg((std::istreambuf_iterator<char>(input)),std::istreambuf_iterator<char>());
   const auto costs=first_two_costs(cfg);
+  if(mode=="--verify-restart"){
+    verify_after_restart(path,100-costs.first-costs.second);
+    std::cout<<"DIAMOND_SEPARATE_PROCESS_RESTART_VERIFICATION=PASS\\n"
+             <<"MERIT_WALLET_ITEMS_WEXP_REVISION_MASTERY=PERSISTED\\n";
+    return 0;
+  }
+  {std::ifstream existing(path);require(!existing.good(),"refuse existing DB; do not overwrite");}
   cabal_diamond_engine* engine=nullptr;
   require(cabal_diamond_engine_create(cfg.data(),cfg.size(),&engine)==0,"native SCP catalog rejected");
   init_db(path.c_str());Host host{path};auto c=callbacks();
