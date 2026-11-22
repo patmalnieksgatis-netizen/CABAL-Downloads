@@ -72,7 +72,8 @@ int main(){
  cb.commit_durable=commit;cb.abort_transaction=abort_tx;
  cabal_merit_route_result route{};cabal_diamond_world_result world{};
  cabal_diamond_merit_server_proof proof{
-   CABAL_DIAMOND_MERIT_PROOF_VERSION,1,1,1,1,1
+   CABAL_DIAMOND_MERIT_PROOF_VERSION,1,1,1,1,1,
+   &f.session_token,f.user,3,159,999
  };
  auto run=[&](const std::vector<uint8_t>& bytes,uint32_t rev,uint32_t enable) {
   return cabal_diamond_merit_verified_shadow_route(
@@ -107,6 +108,37 @@ int main(){
    engine,diamond.data(),diamond.size(),&f.session_token,f.user,3,
    &wrongVersion,&cb,&f,1,&world,&route)==0);
  assert(route==CABAL_MERIT_ROUTE_DISABLED && f.commits==0);
+ // Every authority binding is checked against actual incoming values.
+ auto denied=[&](const cabal_diamond_merit_server_proof& candidate,
+                 const std::vector<uint8_t>& candidate_packet,
+                 const void* candidate_session,uint32_t candidate_user,
+                 uint32_t candidate_revision) {
+   assert(cabal_diamond_merit_verified_shadow_route(
+     engine,candidate_packet.data(),candidate_packet.size(),
+     candidate_session,candidate_user,candidate_revision,
+     &candidate,&cb,&f,1,&world,&route)==0);
+   assert(route==CABAL_MERIT_ROUTE_DISABLED && f.commits==0);
+ };
+ {
+   auto mismatch=proof;
+   mismatch.bound_world_session=reinterpret_cast<const void*>(0x1234);
+   denied(mismatch,diamond,&f.session_token,f.user,3);
+   mismatch=proof;mismatch.bound_user_num=71;
+   denied(mismatch,diamond,&f.session_token,f.user,3);
+   mismatch=proof;mismatch.bound_trusted_revision=4;
+   denied(mismatch,diamond,&f.session_token,f.user,3);
+   mismatch=proof;mismatch.bound_first_payload_dword=160;
+   denied(mismatch,diamond,&f.session_token,f.user,3);
+   mismatch=proof;mismatch.bound_second_payload_dword=1000;
+   denied(mismatch,diamond,&f.session_token,f.user,3);
+   auto altered=diamond;u32(altered,10,160);
+   denied(proof,altered,&f.session_token,f.user,3);
+   altered=diamond;u32(altered,14,1000);
+   denied(proof,altered,&f.session_token,f.user,3);
+   denied(proof,diamond,nullptr,f.user,3);
+   denied(proof,diamond,&f.session_token,71,3);
+   denied(proof,diamond,&f.session_token,f.user,4);
+ }
  assert(run(diamond,3,0)==0 && route==CABAL_MERIT_ROUTE_DISABLED);
  assert(run(legacy,3,1)==0 && route==CABAL_MERIT_ROUTE_ORIGINAL);
  assert(run(platinum,3,1)==0 && route==CABAL_MERIT_ROUTE_ORIGINAL);
@@ -116,6 +148,7 @@ int main(){
  assert(run(diamond,3,1)==0 && route==CABAL_MERIT_ROUTE_SHADOW_REJECTED);
  assert(f.commits==1);
  f.fail=true;
+ proof.bound_trusted_revision=4;
  assert(run(diamond,4,1)==0 && route==CABAL_MERIT_ROUTE_SHADOW_REJECTED);
  assert(world.evaluated.permitted==0 && f.commits==1);
  f.fail=false;
