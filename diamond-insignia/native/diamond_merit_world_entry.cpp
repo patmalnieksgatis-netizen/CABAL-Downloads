@@ -90,7 +90,12 @@ extern "C" int cabal_diamond_merit_verified_shadow_route(
     proof->server_catalog_grade_two_confirmed!=1 ||
     proof->server_selector_confirms_diamond!=1 ||
     proof->first_payload_dword_authoritatively_matched!=1 ||
-    proof->second_payload_dword_authoritatively_matched!=1) {
+    proof->second_payload_dword_authoritatively_matched!=1 ||
+    proof->bound_world_session!=session ||
+    proof->bound_user_num!=user || !user ||
+    proof->bound_trusted_revision!=trusted_revision || !trusted_revision ||
+    proof->bound_first_payload_dword!=packet.candidate_mastery_index ||
+    proof->bound_second_payload_dword!=packet.unknown_field_at_0x0e) {
    *route=CABAL_MERIT_ROUTE_DISABLED;
    return 0;
  }
