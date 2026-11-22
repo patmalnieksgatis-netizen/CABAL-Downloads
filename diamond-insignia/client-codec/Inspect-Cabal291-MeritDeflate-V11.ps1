@@ -285,7 +285,7 @@ try {
  [IO.File]::WriteAllText((Join-Path $temp 'MERIT_X64_V11_REPORT.json'),
   ($report|ConvertTo-Json -Depth 12),(New-Object Text.UTF8Encoding($false)))
  [IO.File]::WriteAllText((Join-Path $temp 'README.txt'),
-  'V9 static x64 callee code from proven V8 instructions; names are hypotheses, not game symbols. No binaries, ENC, memory or server.',
+  'V11 follow-up: exact V9-confirmed DEFLATE byte reader and block-specific handlers. Function labels provisional; no game binaries, ENC or server state.',
   (New-Object Text.UTF8Encoding($false)))
  Add-Type -AssemblyName System.IO.Compression.FileSystem
  [IO.Compression.ZipFile]::CreateFromDirectory($temp,$zip)
