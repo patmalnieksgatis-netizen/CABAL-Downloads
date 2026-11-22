@@ -29,6 +29,10 @@ jobs:
           g++ -std=c++17 -O2 -Wall -Wextra -Werror -pedantic -pthread -o /tmp/diamond_world_bridge_test diamond-insignia/native/test_diamond_world_bridge.cpp -L/tmp -lDiamondNative -Wl,-rpath,/tmp
           /tmp/diamond_world_bridge_test
           nm -D /tmp/libDiamondNative.so | grep cabal_diamond_world_execute
+          g++ -std=c++17 -O2 -Wall -Wextra -Werror -pedantic -o /tmp/diamond_synthetic_catalog diamond-insignia/native/test_emit_synthetic_scp.cpp
+          /tmp/diamond_synthetic_catalog > /tmp/diamond_synthetic.scp
+          g++ -std=c++17 -O2 -Wall -Wextra -Werror -pedantic -pthread -o /tmp/diamond_sqlite_testhost diamond-insignia/native/diamond_sqlite_testhost.cpp -L/tmp -lDiamondNative -lsqlite3 -Wl,-rpath,/tmp
+          /tmp/diamond_sqlite_testhost --selftest /tmp/diamond_synthetic.scp /tmp/diamond_synthetic_durable.sqlite3
       - name: Publish tested native library (OFFLINE ONLY, not a WorldSvr drop-in)
         uses: actions/upload-artifact@v4
         with:
