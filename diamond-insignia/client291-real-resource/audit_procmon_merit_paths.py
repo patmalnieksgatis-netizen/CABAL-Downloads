@@ -11,7 +11,8 @@ import json
 from pathlib import Path, PureWindowsPath
 
 TARGETS = {"meritsystem.enc", "meritsystem_msg.enc"}
-OPEN_EVENTS = {"CreateFile", "QueryOpen"}
+OPEN_EVENTS = {"CreateFile"}
+QUERY_EVENTS = {"QueryOpen"}
 READ_EVENTS = {"ReadFile"}
 MAX_LOG_BYTES = 100 * 1024 * 1024
 MAX_ROWS = 800000
@@ -42,7 +43,7 @@ def parse_csv(path):
             if norm(row.get("Process Name")) != "cabalmain.exe":
                 continue
             operation = (row.get("Operation") or "").strip()
-            if operation not in OPEN_EVENTS | READ_EVENTS:
+            if operation not in OPEN_EVENTS | QUERY_EVENTS | READ_EVENTS:
                 continue
             filename = (row.get("Path") or "").strip()
             if not is_target(filename):
@@ -54,10 +55,12 @@ def parse_csv(path):
                 "pid": pid or "UNKNOWN", "path": filename,
                 "open_success": 0, "read_success": 0,
                 "open_failure": 0, "read_failure": 0,
+                "query_success": 0, "query_failure": 0,
                 "first_time": (row.get("Time of Day") or "").strip()
             })
             ok = norm(status) == "success"
-            kind = "open" if operation in OPEN_EVENTS else "read"
+            kind = ("open" if operation in OPEN_EVENTS else
+                    "query" if operation in QUERY_EVENTS else "read")
             item[kind + ("_success" if ok else "_failure")] += 1
     results = sorted(observations.values(), key=lambda x: (x["pid"], x["path"].casefold()))
     confirmed = [x for x in results if x["open_success"]]
@@ -69,10 +72,13 @@ def parse_csv(path):
         "matched_paths": results,
         "opened_path_count": len(confirmed),
         "read_path_count": len(read),
+        "query_only_paths": [x["path"] for x in results if x["query_success"] and not x["open_success"] and not x["read_success"]],
         "opened_by_cabalmain": [x["path"] for x in confirmed],
         "read_by_cabalmain": [x["path"] for x in read],
         "not_proven": [
             "which resource ID triggered any particular open",
+            "QueryOpen SUCCESS is only a metadata probe, not a successful CreateFile",
+            "ReadFile SUCCESS does not establish a completed decode",
             "whether a successful file read produced a valid decoded Merit resource",
             "Diamond UI, C2S opcode, gameplay or persistence"
         ],
