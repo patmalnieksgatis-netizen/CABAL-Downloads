@@ -57,3 +57,33 @@ receipt and v291 S2C Diamond success serializer are NOT connected.
 
 **Absolutely no active VM/WorldSvr/LD_PRELOAD/Supervisor/SQL or client
 modification was made.** Do not copy the offline .so to any game directory.
+
+
+## WorldSessionBridge → ingress port (later 2026-11-22)
+
+The new `DiamondV14SessionLeasePort.h/.cpp` now connects
+`DiamondBoundIngress`'s ABI-v3 callback shape to the pre-existing
+`WorldSessionAuthority` and the actual `ProveWorldSessionV14` identity
+validation routine. It checks the independently registered session generation,
+`USERCONTEXT+0xE8` data pointer, UserNum at `USERDATACONTEXT+0x890`
+and CharacterIdx at `+0xA24` **while the host owns an exclusive lease**.
+
+A separate `MeritCatalogAuthority` still must supply the server-owned
+selector and both expected 0x09F3 payload values under that same lease;
+the code refuses mismatches instead of inventing packet semantics.
+When the last check passes, the same owned lease spans the entire
+`cabal_diamond_world_execute` commit/abort, including its failure path.
+
+`tests/test_diamond_v14_session_lease_port.cpp` compiles the real existing
+v14 identity reader and WorldSessionBridge source against an independent
+synthetic registry and synthetic catalog. CI verifies forged owner/character
+identities, session generation 0, swapped `+0xE8` pointer, incorrect
+server catalog selection and changed packet values cannot debit points.
+The test also pauses a purchase inside the commit callback and independently
+confirms that a concurrent disconnect cannot acquire the registry mutex until
+the commit completes.
+
+**Boundaries remain strict:** this host port does not invent a WorldSvr
+registry, login/disconnect hook, SQL/DBAgent inventory port, or client S2C
+response. The current running game binary has not been modified. It is a
+tested adapter to a future *real authoritative registry*, not that registry.
