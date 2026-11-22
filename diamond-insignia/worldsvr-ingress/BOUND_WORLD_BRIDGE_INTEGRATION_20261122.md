@@ -11,7 +11,7 @@ ProcSystem::DoProcessDataCtx (archived plugin, copy only)
    -> DiamondIngress::Inspect (C2S 0x09F3; Mastery 159..474)
    -> DiamondBoundIngress::Process
    -> TrustedResolver (HOST-supplied, exact pUserCtx / UserNum / revision)
-   -> cabal_diamond_merit_shadow_route (built with DIAMOND_ENABLE_SHADOW_TRIAL)
+   -> cabal_diamond_merit_verified_shadow_route (built with DIAMOND_ENABLE_SHADOW_TRIAL)
    -> cabal_diamond_world_execute
    -> cabal_diamond_evaluate (316 real SCP Masteries)
    -> callback begin/load/commit-or-rollback (synthetic shadow data only)
@@ -44,7 +44,7 @@ The patcher refuses any original source that differs from the archived two-file 
 The default object calls only a **nonwriting** inline gate. For synthetic offline clone proof, also compile the object with `-DDIAMOND_ENABLE_SHADOW_TRIAL` and **link** the `diamond_merit_world_entry.cpp` built with the same macro and the existing `libDiamondNative.so`. The only exported bind symbol in this deliberately dangerous TEST-ONLY build is:
 
 ```cpp
-extern "C" int cabal_diamond_proc_bind_shadow_clone_v1(
+extern "C" int cabal_diamond_proc_bind_shadow_clone_v2(
     const DiamondBoundIngress::Binding*);
 ```
 
@@ -57,6 +57,35 @@ This is an actual source-level, native API linkage **on an archived plugin sourc
 Also: there is no independently verified per-command replay/idempotency token in the current 0x09F3 packet. When a host supplies a *fresh* revision for two identical requests, two Mastery levels may be purchased. That makes the existing packet **unsafe for a live purchase hook** until client packet semantics, duplicate suppression, and actual WorldSvr atomic persistence/response behavior are proved.
 
 **Do not deploy `libDiamondNative.so`, `libDiamondMeritGate.so`, or this patched `lib.so` to the active game.** Reconcile the patch with exact currently loaded custom source in an isolated VM, verify the real session resolver and packet behavior, then complete response/SQL/inventory integration. Preserving working Gold, Platinum, Costume and dungeons takes priority.
+
+## 2026-11-22: ABI-v2 source bridge reconciliation
+
+The prior `DiamondBoundIngress` invoked `cabal_diamond_merit_shadow_route`,
+which is permanently classification-only after the 2026-11-22 native gate
+hardening. That meant the archived source binding could no longer produce even
+a synthetic shadow commit. The source bridge now calls
+`cabal_diamond_merit_verified_shadow_route` **only** after its trusted resolver
+attests both payload DWORDs, the authenticated session pointer, expected
+revision, UserNum, and the server-owned Grade-2/Merit selector. The resolver
+cannot infer these assertions merely from `0x09F3` or ID 159–474.
+
+The resolver function signature changed. To avoid stale-host ABI corruption,
+`DiamondBoundIngress::kBindingABI` was bumped from 1 to 2 and the clone-only
+C export was renamed `cabal_diamond_proc_bind_shadow_clone_v2`. Any previous
+host binding must be recompiled against the new header; old symbol/bindings
+must be refused.
+
+The source clone patcher also now copies its three actual ABI dependencies
+from `../native` (instead of the non-existent files under the ingress folder),
+with a fail-closed preflight. A GitHub workflow builds the synthetic bound
+host, rejects modified packet fields, and tests isolated source header copying.
+
+**Still not a production implementation:** the test resolver returns synthetic
+catalog proofs, not real WorldSvr Merit catalog evidence; there is no verified
+game inventory/DBAgent atomic transaction nor v291 Diamond S2C update. The
+archived source is not automatically compatible with the currently loaded
+customized `lib.so` (previous experiments caused `exit 78`). Its original
+WorldSvr packet dispatcher still runs after the passive observation.
 
 ## Files
 
