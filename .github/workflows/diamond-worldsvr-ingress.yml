@@ -5,6 +5,12 @@ on:
       - feature/diamond-insignia-v291-20261121
     paths:
       - diamond-insignia/worldsvr-ingress/**
+      - diamond-insignia/native/diamond_merit_world_entry.cpp
+      - diamond-insignia/native/diamond_merit_world_entry.h
+      - diamond-insignia/native/diamond_abi.cpp
+      - diamond-insignia/native/diamond_abi.h
+      - diamond-insignia/native/diamond_world_bridge.cpp
+      - diamond-insignia/native/diamond_world_bridge.h
       - .github/workflows/diamond-worldsvr-ingress.yml
   workflow_dispatch:
 permissions:
