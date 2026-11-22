@@ -41,10 +41,11 @@ class ClonePatcherHeaderTests(unittest.TestCase):
             self.assertEqual([x.name for x in dest.iterdir()],["diamond_abi.h"])
             self.assertEqual((dest/"diamond_abi.h").read_text(),"preexisting")
 
-    def test_bind_symbol_is_v2_only(self):
+    def test_bind_symbol_is_v3_only(self):
         script=(HERE/"Apply-DiamondBoundClone.py").read_text()
         self.assertIn("cabal_diamond_proc_bind_shadow_clone_v3",script)
         self.assertNotIn("cabal_diamond_proc_bind_shadow_clone_v1",script)
+        self.assertNotIn("cabal_diamond_proc_bind_shadow_clone_v2",script)
 
 if __name__=="__main__":
     unittest.main()
