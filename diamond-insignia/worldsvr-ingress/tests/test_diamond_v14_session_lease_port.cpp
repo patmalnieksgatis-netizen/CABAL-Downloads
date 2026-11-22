@@ -110,7 +110,7 @@ int main() {
     cabal_diamond_engine* engine=nullptr;
     assert(cabal_diamond_engine_create(scp.data(),scp.size(),&engine)==0);
     const auto candidate=request();
-    assert(Process(state.userContext.data(),candidate.data(),candidate.size())==Result::Disabled);
+    assert(Process(state.userContext.data(),candidate.data(),candidate.size())==DiamondBoundIngress::Result::Disabled);
     setenv("CABAL_DIAMOND_SHADOW_TRIAL","ISOLATED_SYNTHETIC_USER_900001_ONLY",1);
     Binding b{};b.engine=engine;
     b.acquire_exclusive=&DiamondV14SessionLeasePort::Acquire;
@@ -124,7 +124,7 @@ int main() {
     const auto rejected=[&] {
         const unsigned before=state.commits;
         assert(Process(state.userContext.data(),candidate.data(),candidate.size())==
-               Result::AuthRefused);
+               DiamondBoundIngress::Result::AuthRefused);
         assert(state.acquired==state.released && state.commits==before);
     };
     state.connected=false;rejected();state.connected=true;
@@ -135,24 +135,24 @@ int main() {
     state.gradeTwo=false;rejected();state.gradeTwo=true;
     state.selector=false;rejected();state.selector=true;
     auto altered=request(159,1000);
-    assert(Process(state.userContext.data(),altered.data(),altered.size())==Result::AuthRefused);
+    assert(Process(state.userContext.data(),altered.data(),altered.size())==DiamondBoundIngress::Result::AuthRefused);
     assert(state.acquired==state.released);
     altered=request(160,999);
-    assert(Process(state.userContext.data(),altered.data(),altered.size())==Result::AuthRefused);
+    assert(Process(state.userContext.data(),altered.data(),altered.size())==DiamondBoundIngress::Result::AuthRefused);
     assert(state.acquired==state.released);
-    assert(Process(state.userContext.data(),candidate.data(),candidate.size())==Result::ShadowApplied);
+    assert(Process(state.userContext.data(),candidate.data(),candidate.size())==DiamondBoundIngress::Result::ShadowApplied);
     assert(state.points==45 && state.level==1 && state.revision==12 &&
            state.commits==1 && state.acquired==state.released);
     state.commitFails=true;
-    assert(Process(state.userContext.data(),candidate.data(),candidate.size())==Result::ShadowRejected);
+    assert(Process(state.userContext.data(),candidate.data(),candidate.size())==DiamondBoundIngress::Result::ShadowRejected);
     assert(state.level==1 && state.commits==1 &&
            state.acquired==state.released && state.aborts>=1);
     state.commitFails=false;
-    assert(Process(state.userContext.data(),candidate.data(),candidate.size())==Result::ShadowApplied);
+    assert(Process(state.userContext.data(),candidate.data(),candidate.size())==DiamondBoundIngress::Result::ShadowApplied);
     assert(state.points==35 && state.level==2 && state.revision==13 &&
            state.commits==2 && state.acquired==state.released);
     unsetenv("CABAL_DIAMOND_SHADOW_TRIAL");
-    assert(Process(state.userContext.data(),candidate.data(),candidate.size())==Result::Disabled);
+    assert(Process(state.userContext.data(),candidate.data(),candidate.size())==DiamondBoundIngress::Result::Disabled);
     cabal_diamond_engine_destroy(engine);
     std::cout<<"DIAMOND_V14_SESSION_POINTER_OWNER_AND_GENERATION=PASS\n"
              <<"AUTHORITY_LOCK_HELD_ACROSS_COMMIT=PASS\n"
