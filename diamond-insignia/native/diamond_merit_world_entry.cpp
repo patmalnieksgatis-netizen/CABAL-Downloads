@@ -82,3 +82,37 @@ extern "C" int cabal_diamond_merit_shadow_route(
  return 0;
 #endif // DIAMOND_ENABLE_SHADOW_TRIAL
 }
+
+extern "C" int cabal_diamond_merit_verified_shadow_route(
+ const cabal_diamond_engine* engine,const void* bytes,size_t len,
+ const void* session,uint32_t user,uint32_t trusted_revision,
+ const cabal_diamond_merit_server_proof* proof,
+ const cabal_diamond_world_callbacks* callbacks,void* callback_context,
+ uint32_t enabled,cabal_diamond_world_result* world,
+ cabal_merit_route_result* route) {
+ if(!world || !route)return -1;
+ *world={};
+ *route=CABAL_MERIT_ROUTE_INVALID;
+ cabal_merit_packet_view packet{};
+ if(cabal_diamond_merit_classify_c2s(bytes,len,&packet)!=0)return -2;
+ if(packet.kind==CABAL_MERIT_PACKET_INVALID)return 0;
+ if(packet.kind!=CABAL_MERIT_PACKET_DIAMOND_CANDIDATE) {
+   *route=CABAL_MERIT_ROUTE_ORIGINAL;
+   return 0;
+ }
+ // The numeric 159..474 boundary only selects candidates; the real WorldSvr
+ // uses a server-owned Merit selector and potentially two distinct handlers.
+ // No automatic Diamond intercept is permitted absent independent attestation.
+ if(!proof || proof->version!=CABAL_DIAMOND_MERIT_PROOF_VERSION ||
+    proof->authenticated_session!=1 ||
+    proof->server_catalog_grade_two_confirmed!=1 ||
+    proof->server_selector_confirms_diamond!=1 ||
+    proof->first_payload_dword_authoritatively_matched!=1 ||
+    proof->second_payload_dword_authoritatively_matched!=1) {
+   *route=CABAL_MERIT_ROUTE_DISABLED;
+   return 0;
+ }
+ return cabal_diamond_merit_shadow_route(
+   engine,bytes,len,session,user,trusted_revision,
+   callbacks,callback_context,enabled,world,route);
+}
