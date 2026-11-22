@@ -47,11 +47,19 @@ def run(original,output):
         data+=b'''\r\n#if defined(DIAMOND_ENABLE_SHADOW_TRIAL)\r\n// Explicit authenticated adapter registration for isolated synthetic clone.\r\n// This symbol is ABSENT from default builds. No host binding => fail closed.\r\nextern "C" __attribute__((visibility("default")))\r\nint cabal_diamond_proc_bind_shadow_clone_v1(\r\n    const DiamondBoundIngress::Binding* binding) {\r\n    return DiamondBoundIngress::InstallOnce(binding) ? 0 : -1;\r\n}\r\n#endif\r\n'''
         proc.write_bytes(data)
         dest=proc.parent
-        for name in ("DiamondBoundIngress.h","diamond_abi.h",
-                     "diamond_world_bridge.h","diamond_merit_world_entry.h"):
-            if (dest.joinpath(name).exists()) or not ROOT.joinpath(name).is_file():
+        # The ABI and WorldBridge headers live in ../native, NOT in this
+        # patcher's directory. Previously this stage always failed with
+        # missing diamond_abi.h, even against the correct archived source.
+        headers={
+            "DiamondBoundIngress.h": ROOT/"DiamondBoundIngress.h",
+            "diamond_abi.h": ROOT.parent/"native"/"diamond_abi.h",
+            "diamond_world_bridge.h": ROOT.parent/"native"/"diamond_world_bridge.h",
+            "diamond_merit_world_entry.h": ROOT.parent/"native"/"diamond_merit_world_entry.h",
+        }
+        for name,origin in headers.items():
+            if dest.joinpath(name).exists() or not origin.is_file():
                 raise RuntimeError("STOP: missing or already installed header: "+name)
-            shutil.copy2(ROOT/name,dest/name)
+            shutil.copy2(origin,dest/name)
         shutil.copytree(staged,output,symlinks=False)
         assert sha(original/"hooks/Handlers/ProcSystem.cpp")== \
                "b687c3bb9607aa886f37bcf203dcf4fb1a315cf6e9a23d4e67adea69e1486d88"
