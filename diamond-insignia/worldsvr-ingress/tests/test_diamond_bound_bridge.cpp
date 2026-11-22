@@ -41,17 +41,29 @@ int commit(void*,void* token,const cabal_diamond_request* request,
  h.level=proposal->changed_mastery_level;++h.commits;delete tx;return 0;
 }
 void abort_tx(void*,void* token){auto* tx=static_cast<Tx*>(token);++tx->store->aborts;delete tx;}
-int resolve(void* host,const void* user_context,VerifiedIdentity* id){
+int resolve(void* host,const void* user_context,
+            const DiamondIngress::Observation* observed,VerifiedIdentity* id){
  auto& h=*static_cast<Store*>(host);
- if(user_context!=&h.user || h.user.secret!=4567)return -1;
+ if(!observed || user_context!=&h.user || h.user.secret!=4567)return -1;
+ // Synthetic host only: explicitly match BOTH legacy payload fields. This
+ // deliberately does not constitute evidence of the real game's ABI.
+ if(observed->mastery_id!=159 || observed->second_field!=999)return -1;
  id->authenticated_session=&h.session;id->user_num=kSyntheticUserNum;
- id->expected_revision=h.revision;return 0;
+ id->expected_revision=h.revision;
+ id->server_catalog_grade_two_confirmed=1;
+ id->server_selector_confirms_diamond=1;
+ id->first_payload_dword_authoritatively_matched=1;
+ id->second_payload_dword_authoritatively_matched=1;
+ id->matched_first_payload_dword=159;
+ id->matched_second_payload_dword=999;
+ return 0;
 }
 std::vector<std::uint8_t> packet(unsigned opcode,unsigned mastery){
  std::vector<std::uint8_t> p(18,0);
  p[0]=0xe2;p[1]=0xb7;p[2]=18;p[8]=static_cast<std::uint8_t>(opcode);
  p[9]=static_cast<std::uint8_t>(opcode>>8);
  for(unsigned j=0;j<4;++j)p[10+j]=static_cast<std::uint8_t>(mastery>>(j*8));
+ p[14]=0xE7;p[15]=0x03; // synthetic second DWORD=999
  return p;
 }
 int main(){
@@ -69,6 +81,11 @@ int main(){
  assert(Process(&h.user,gold.data(),gold.size())==Result::Unchanged);
  assert(Process(&h.user,platinum.data(),platinum.size())==Result::Unchanged);
  UserContext attacker;assert(Process(&attacker,diamond.data(),diamond.size())==Result::AuthRefused);
+ auto changedSecond=diamond;changedSecond[14]^=1;
+ assert(Process(&h.user,changedSecond.data(),changedSecond.size())==Result::AuthRefused);
+ auto changedFirst=packet(0x09f3,319);
+ assert(Process(&h.user,changedFirst.data(),changedFirst.size())==Result::AuthRefused);
+ assert(h.commits==0);
  assert(Process(&h.user,diamond.data(),diamond.size())==Result::ShadowApplied);
  assert(h.level==1 && h.points==45 && h.revision==11 && h.commits==1);
  h.fail=true;
