@@ -11,7 +11,7 @@ def make_enc(payload):
     assert len(stream) >= 4
     for i in range(4):
         stream[i] ^= XOR4[i]
-    return len(payload).to_bytes(4, "little") + bytes(stream)
+    return b"HEAD" + bytes(stream) + len(payload).to_bytes(4, "little")
 
 def fixture(raw, path="Language/English/meritsystem.enc", *, sha_override=None, extra=False):
     manifest = {
@@ -38,6 +38,8 @@ class MeritCandidateTests(unittest.TestCase):
         item = inspect_payload(enc)
         self.assertTrue(item["success"])
         self.assertEqual(item["output_sha256"], hashlib.sha256(payload).hexdigest())
+        self.assertEqual(item["loader_trailer_uncompressed_size"], len(payload))
+        self.assertEqual(item["prefix_le32_observed"], int.from_bytes(b"HEAD", "little"))
         with fixture(enc) as _:  # BytesIO accepts context management
             pass
 
@@ -46,6 +48,7 @@ class MeritCandidateTests(unittest.TestCase):
         result = audit(fixture(enc))
         self.assertFalse(result["runtime_opened_path_proven"])
         self.assertFalse(result["diamond_ui_or_packet_proven"])
+        self.assertFalse(result["loader_binding_to_these_assets_proven"])
         self.assertTrue(result["candidates"][0]["success"])
         self.assertEqual(result["candidates"][0]["path"], "Language/English/meritsystem.enc")
 
@@ -63,10 +66,10 @@ class MeritCandidateTests(unittest.TestCase):
 
     def test_invalid_codec_and_bounded_output(self):
         self.assertEqual(inspect_payload(b"")["reason"], "invalid_input_size")
-        forbidden = (100).to_bytes(4, "little") + bytes(
-            [0x07 ^ XOR4[0], 0 ^ XOR4[1], 0 ^ XOR4[2], 0 ^ XOR4[3]]) + b"123456"
+        forbidden = b"HEAD" + bytes(
+            [0x07 ^ XOR4[0], 0 ^ XOR4[1], 0 ^ XOR4[2], 0 ^ XOR4[3]]) + b"123456" + (100).to_bytes(4, "little")
         self.assertEqual(inspect_payload(forbidden)["reason"], "reserved_deflate_btype_3")
-        over = (9 * 1024 * 1024).to_bytes(4, "little") + b"abcdefgh"
+        over = b"HEADabcdefgh" + (9 * 1024 * 1024).to_bytes(4, "little")
         self.assertEqual(inspect_payload(over)["reason"], "uncompressed_size_out_of_bounds")
 
 if __name__ == "__main__":
