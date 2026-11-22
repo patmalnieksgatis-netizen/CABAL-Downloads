@@ -1,0 +1,39 @@
+name: Diamond v291 passive WorldSvr ingress safety
+on:
+  push:
+    branches:
+      - feature/diamond-insignia-v291-20261121
+    paths:
+      - diamond-insignia/worldsvr-ingress/**
+      - .github/workflows/diamond-worldsvr-ingress.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  observe-only:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build and test packet gate, with default NO-OP and explicit observation
+        run: |
+          set -eux
+          g++ -std=c++17 -O2 -Wall -Wextra -Werror -pedantic \
+            diamond-insignia/worldsvr-ingress/tests/test_diamond_ingress.cpp \
+            -o /tmp/diamond_passive_ingress_test
+          /tmp/diamond_passive_ingress_test
+          g++ -std=c++17 -O2 -Wall -Wextra -Werror -pedantic \
+            diamond-insignia/worldsvr-ingress/tests/test_diamond_ingress_enabled.cpp \
+            -o /tmp/diamond_passive_ingress_enabled
+          CABAL_DIAMOND_PASSIVE_OBSERVE=1 /tmp/diamond_passive_ingress_enabled
+      - name: Verify patcher is syntactically valid and refuses unknown source
+        run: |
+          set -eux
+          python3 -m py_compile diamond-insignia/worldsvr-ingress/Apply-DiamondIngressClone.py
+          if python3 diamond-insignia/worldsvr-ingress/Apply-DiamondIngressClone.py \
+                --source . --output /tmp/diamond_unsafe_source; then
+            echo "ERROR: patcher accepted unverified source"
+            exit 1
+          fi
+          test ! -e /tmp/diamond_unsafe_source
+      - name: No live hook, package or database deployment
+        run: echo "READ_ONLY_INGRESS=PASS;ACTUAL_WORLDSVR_GAMEPLAY_TEST=NOT_PERFORMED"
