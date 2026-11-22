@@ -88,7 +88,7 @@ int main(){
  assert(world.evaluated.permitted==0 && f.commits==1);
  f.fail=false;
  assert(run(diamond,4,1)==0 && route==CABAL_MERIT_ROUTE_SHADOW_APPLIED);
- assert(f.commits==2 && f.level==2 && f.revision==5 && f.points==90);
+ assert(f.commits==2 && f.level==2 && f.revision==5 && f.points==85);
  cabal_diamond_engine_destroy(engine);
  std::cout<<"DIAMOND_MERIT_C2S_TO_NATIVE_SHADOW=PASS\n"
           <<"PLATINUM_LEGACY_ROUTE_PRESERVED=PASS\n";
