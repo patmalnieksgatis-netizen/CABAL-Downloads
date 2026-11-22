@@ -91,7 +91,7 @@ inline TransactionProposal mastery_level_up(const TrustedState& s,
                        const std::map<int,Mastery>& specs, int id, uint32_t expected_revision) {
   TransactionProposal r; r.after=s; r.expected_revision=expected_revision;
   if (!s.authoritative){r.result=Error::Untrusted;return r;}
-  if (s.revision!=expected_revision || s.revision==std::numeric_limits<uint32_t>::max())
+  if (s.revision!=expected_revision || s.revision>=static_cast<uint32_t>(std::numeric_limits<int32_t>::max()))
     {r.result=Error::Stale;return r;}
   if (s.badge_grade!=2){r.result=Error::NotDiamond;return r;}
   if (!valid_categories(s.active_categories) || !valid_levels(s,specs) || s.free_points<0)
