@@ -1,0 +1,22 @@
+name: Diamond native rules C++17 tests
+on:
+  push:
+    branches:
+      - feature/diamond-insignia-v291-20261121
+    paths:
+      - diamond-insignia/native/**
+      - .github/workflows/diamond-native-rules.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  native-rules:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build native rules and execute gameplay-state invariants
+        run: |
+          g++ -std=c++17 -O2 -Wall -Wextra -Werror -pedantic -o /tmp/diamond_rules_test diamond-insignia/native/test_diamond_rules.cpp
+          /tmp/diamond_rules_test
+      - name: Confirm no server launch
+        run: echo 'Pure transaction proposals only - no game binary, SQL, VM, or packet ABI touched.'
