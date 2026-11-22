@@ -54,7 +54,7 @@ int cabal_diamond_merit_shadow_route(
 // session + server catalog, not from packet fields or a guessed ID range.
 // The exact meanings of 0x09F3 payload DWORDs are not yet established.
 // Production builds still do not execute Diamond effects.
-#define CABAL_DIAMOND_MERIT_PROOF_VERSION 1u
+#define CABAL_DIAMOND_MERIT_PROOF_VERSION 2u
 typedef struct {
  uint32_t version;
  uint32_t authenticated_session;
@@ -62,6 +62,13 @@ typedef struct {
  uint32_t server_selector_confirms_diamond;
  uint32_t first_payload_dword_authoritatively_matched;
  uint32_t second_payload_dword_authoritatively_matched;
+ // Host-attested binding, not packet-supplied identity or an authorization token.
+ // The host still MUST hold an authenticated WorldSvr session lock.
+ const void* bound_world_session;
+ uint32_t bound_user_num;
+ uint32_t bound_trusted_revision;
+ uint32_t bound_first_payload_dword;
+ uint32_t bound_second_payload_dword;
 } cabal_diamond_merit_server_proof;
 int cabal_diamond_merit_verified_shadow_route(
  const cabal_diamond_engine*,const void*,size_t,
