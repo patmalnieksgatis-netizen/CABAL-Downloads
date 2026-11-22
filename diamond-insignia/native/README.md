@@ -25,6 +25,22 @@ Compared exact private uploaded files in the authorized conversation work contai
 
 **The staged SCP is not installed**, and private game content should not be pushed to a public GitHub repository.
 
+## Authenticated native WorldSvr C callback bridge (2026-11-22)
+
+`diamond_world_bridge.h/.cpp` adds an exported `cabal_diamond_world_execute` C ABI to the **compiled** `libDiamondNative.so`. WorldSvr's future verified Merit handler can call it with an authenticated session pointer and a trusted user ID; the native bridge then:
+
+1. Calls `begin_authenticated_locked` to validate that exact live session/user pairing and lock a user-scoped transaction.
+2. Calls `load_trusted_state` to read current Platinum/Diamond levels, WExp, actual inventory item 33554961, unlocked categories, and revision.
+3. Executes the real 316-Mastery rules engine from the verified `MeritSystem.scp`.
+4. Calls `commit_durable` only on approval; this callback MUST write every inventory/WExp/SQL change atomically, checking revision, before a success response may be sent.
+5. Calls `abort_transaction` on any rejected request, invalid state, save error or exception. The bridge explicitly clears the approval flag if the storage commit fails.
+
+`test_diamond_world_bridge.cpp` exercises unauthorized sessions, load rejection, injected save failure/rollback, replay, purchased levels and **four concurrent duplicate same-revision requests (one winner)**. All compile/execute in GitHub Actions, not in the user's live WorldSvr. A local Python `ctypes` callback test also ran the *same compiled bridge* with the owner's exact staged 116,812-byte SCP; rank-up, duplicate rejection and mastery 159 level 1 and 2 returned expected values in mock memory. **No actual SQL Server, game account, or VM was changed.**
+
+**What is still NOT implemented:** the authenticated WorldSvr Merit packet dispatch entrypoint and real `begin/load/commit/abort` game/SQL callbacks. The repository contains packet-hook examples for other tasks, but no verified Diamond opcode or live server session ABI. Plugging in guessed addresses would risk the currently working Platinum and other game functions.
+
+**Artifact and test:** https://github.com/patmalnieksgatis-netizen/CABAL-Downloads/actions/runs/45001854068 . Source code is retained permanently; CI artifact is expiring offline-only .so, not a game mod.
+
 ## Actual integration still required
 
 The confirmed original `WorldSvr` is a proprietary/stripped binary; the available `EP36Compat_v282 (1).c` source is a packet-translation/unicast hook, **not** a Diamond Merit server handler and not a safe native hook address for this feature.
