@@ -101,3 +101,36 @@ jobs:
           retention-days: 7
       - name: Confirm no server launch
         run: echo 'Offline tests only - no game binary, production SQL database, VM, or packet ABI touched.'
+      - name: Verify restored clone-only ODBC backend and receipt replay
+        run: |
+          set -euo pipefail
+          test -f /usr/include/sql.h || (sudo apt-get update -qq && sudo apt-get install -y unixodbc-dev)
+          g++ -std=c++17 -O2 -Wall -Wextra -Werror -pedantic -fPIC -shared \
+            diamond-insignia/native/diamond_abi.cpp \
+            diamond-insignia/native/diamond_world_bridge.cpp \
+            -o /tmp/libDiamondNativeOdbcTest.so
+          ln -sf /tmp/libDiamondNativeOdbcTest.so /tmp/libDiamondNative.so
+          g++ -std=c++17 -O2 -Wall -Wextra -Werror -pedantic \
+            -o /tmp/diamond_emit_synthetic_scp \
+            diamond-insignia/native/test_emit_synthetic_scp.cpp
+          /tmp/diamond_emit_synthetic_scp > /tmp/diamond_odbc_synthetic.scp
+          g++ -std=c++17 -O2 -Wall -Wextra -Werror -pedantic -pthread \
+            -Idiamond-insignia/native \
+            -Idiamond-insignia/native/commit-gate \
+            -Idiamond-insignia/native/world-session-bridge/deps \
+            diamond-insignia/native/world-session-bridge/tests/FakeOdbc.cpp \
+            diamond-insignia/native/world-session-bridge/tests/test_diamond_lab_odbc.cpp \
+            diamond-insignia/native/world-session-bridge/deps/DiamondLabOdbcBackend.cpp \
+            diamond-insignia/native/commit-gate/DiamondCommitGate.cpp \
+            -L/tmp -lDiamondNative -Wl,-rpath,/tmp \
+            -o /tmp/diamond_odbc_fake_driver_test
+          /tmp/diamond_odbc_fake_driver_test /tmp/diamond_odbc_synthetic.scp
+          g++ -std=c++17 -O2 -Wall -Wextra -Werror -pedantic -fPIC -shared \
+            -Idiamond-insignia/native \
+            -Idiamond-insignia/native/commit-gate \
+            -Idiamond-insignia/native/world-session-bridge/deps \
+            diamond-insignia/native/world-session-bridge/deps/DiamondLabOdbcBackend.cpp \
+            diamond-insignia/native/commit-gate/DiamondCommitGate.cpp \
+            -L/tmp -lDiamondNative -lodbc -Wl,-rpath,/tmp -Wl,-z,defs \
+            -o /tmp/libDiamondLabOdbcCloneOnly.so
+          echo 'CLONE_ONLY_REAL_ODBC_LINK=PASS;ACTUAL_MSSQL=NOT_TESTED'
