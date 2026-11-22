@@ -33,7 +33,7 @@ struct Statement {
 };
 void sql(sqlite3* db,const char* q){char* err=nullptr;int r=sqlite3_exec(db,q,nullptr,nullptr,&err);if(r!=SQLITE_OK){std::string s=err?err:"SQL failure";sqlite3_free(err);throw std::runtime_error(s);}}
 struct Session {std::uint32_t uid;std::uint64_t nonce;};
-struct Host {std::string path;Session session{900001,0x1A2B3C4Dull};bool fail_next_commit=false;};
+struct Host {std::string path;Session session{900001,0x1A2B3C4Dull};bool fail_next_commit=false;bool crash_before_commit=false;};
 struct Tx {
  sqlite3* db=nullptr;
  Host* host=nullptr;
@@ -106,6 +106,9 @@ int commit(void*,void* opaque,const cabal_diamond_request* request,const cabal_d
   }
   // Simulate a fatal storage failure between row update and durable commit.
   if(tx->host->fail_next_commit) return fail();
+  // Only synthetic crash-test mode sets this. Terminate after mutations,
+  // before COMMIT and before destructors: SQLite must recover atomically.
+  if(tx->host->crash_before_commit)std::_Exit(71);
   sql(tx->db,"COMMIT");return 0;
  }catch(...){return fail();}
 }
@@ -212,7 +215,8 @@ int main(int argc,char**argv){
   require(argc==4,"usage: --selftest|--verify-restart <staged-scp> <isolated.db>");
   const std::string mode=argv[1];
   require(mode=="--selftest" || mode=="--verify-restart" ||
-          mode=="--verify-reconnect","unknown mode");
+          mode=="--verify-reconnect" || mode=="--simulate-crash-before-commit",
+          "unknown mode");
   const std::string path=argv[3];
   require(path.size()>8 && path.substr(path.size()-8)==".sqlite3","test DB must end .sqlite3");
   std::ifstream input(argv[2],std::ios::binary);require(input.good(),"source staged SCP missing");
@@ -223,6 +227,27 @@ int main(int argc,char**argv){
     std::cout<<"DIAMOND_SEPARATE_PROCESS_RESTART_VERIFICATION=PASS\\n"
              <<"MERIT_WALLET_ITEMS_WEXP_REVISION_MASTERY=PERSISTED\\n";
     return 0;
+  }
+  if(mode=="--simulate-crash-before-commit"){
+    // This must be launched in a NEW child process on an isolated test DB.
+    // Only uncommitted SQLite mutation is permitted; exit 71 simulates
+    // the server being terminated mid-save.
+    verify_after_restart(path,100-costs.first-costs.second);
+    cabal_diamond_engine* crash_engine=nullptr;
+    require(cabal_diamond_engine_create(cfg.data(),cfg.size(),&crash_engine)==0,
+            "crash: rules engine failed");
+    Host crash_host{path};
+    crash_host.crash_before_commit=true;
+    auto crash_cb=callbacks();
+    cabal_diamond_world_result crash_result{};
+    const cabal_diamond_request third_level{
+      1,CABAL_DIAMOND_MASTERY_LEVEL_UP,13,159
+    };
+    (void)cabal_diamond_world_execute(
+      crash_engine,&crash_host.session,crash_host.session.uid,
+      &third_level,&crash_cb,&crash_host,&crash_result);
+    cabal_diamond_engine_destroy(crash_engine);
+    throw std::runtime_error("crash: did not reach pre-COMMIT failpoint");
   }
   if(mode=="--verify-reconnect"){
     // NEW PROCESS, new session object, existing persisted database.
