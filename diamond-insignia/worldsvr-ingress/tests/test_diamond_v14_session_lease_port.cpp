@@ -130,7 +130,20 @@ int main() {
     state.connected=false;rejected();state.connected=true;
     state.generation=0;rejected();state.generation=19;
     state.swapData=true;rejected();state.swapData=false;
+    // Trust must match the real +0xE8 user data pointer, not just plausible
+    // UserNum bytes in an otherwise valid USERDATACONTEXT buffer.
+    const void* wrongData=state.userContext.data();
+    std::memcpy(state.userContext.data()+0xE8,&wrongData,sizeof(wrongData));
+    rejected();
+    void* actualData=state.userData.data();
+    std::memcpy(state.userContext.data()+0xE8,&actualData,sizeof(actualData));
     state.wrongOwner=true;rejected();state.wrongOwner=false;
+    // Tampering a character identity behind a valid account must be refused.
+    const std::uint32_t otherCharacter=7003;
+    std::memcpy(state.userData.data()+0x0A24,&otherCharacter,sizeof(otherCharacter));
+    rejected();
+    const std::uint32_t expectedCharacter=7002;
+    std::memcpy(state.userData.data()+0x0A24,&expectedCharacter,sizeof(expectedCharacter));
     state.permit=false;rejected();state.permit=true;
     state.gradeTwo=false;rejected();state.gradeTwo=true;
     state.selector=false;rejected();state.selector=true;
