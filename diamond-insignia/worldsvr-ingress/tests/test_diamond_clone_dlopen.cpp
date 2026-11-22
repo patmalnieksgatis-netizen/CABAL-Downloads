@@ -76,11 +76,14 @@ int main(int argc,char**argv){
  auto bind=reinterpret_cast<Binder>(dlsym(handle,"cabal_diamond_proc_bind_shadow_clone_v2"));
  auto invoke=reinterpret_cast<Handler>(dlsym(handle,"cabal_diamond_proc_test_ingress_clone_v2"));
  assert(bind && invoke && !dlsym(handle,"cabal_diamond_proc_bind_shadow_clone_v1"));
+ auto process=[&](const void* ctx,const void* bytes,std::size_t n){
+   return static_cast<Result>(invoke(ctx,bytes,n));
+ };
 
  const std::string scp=fixture();cabal_diamond_engine* engine=nullptr;
  assert(cabal_diamond_engine_create(scp.data(),scp.size(),&engine)==0);
  Store h;auto diamond=packet(0x09f3,159),gold=packet(0x09f3,158),platinum=packet(0x0b10,159);
- assert(invoke(&h.user,diamond.data(),diamond.size())==Result::Disabled);
+ assert(process(&h.user,diamond.data(),diamond.size())==Result::Disabled);
  setenv("CABAL_DIAMOND_SHADOW_TRIAL","ISOLATED_SYNTHETIC_USER_900001_ONLY",1);
  Binding binding{};binding.engine=engine;binding.backend_context=&h;
  binding.resolve=resolve;binding.resolver_context=&h;
@@ -88,26 +91,26 @@ int main(int argc,char**argv){
  binding.callbacks.load_trusted_state=load;binding.callbacks.commit_durable=commit;
  binding.callbacks.abort_transaction=abort_tx;
  Binding oldAbi=binding;oldAbi.abi=1; // prior unsafe resolver signature
- assert(!bind(&oldAbi));
- assert(bind(&binding));assert(!bind(&binding));
- assert(invoke(&h.user,gold.data(),gold.size())==Result::Unchanged);
- assert(invoke(&h.user,platinum.data(),platinum.size())==Result::Unchanged);
- UserContext attacker;assert(invoke(&attacker,diamond.data(),diamond.size())==Result::AuthRefused);
+ assert(bind(&oldAbi)!=0);
+ assert(bind(&binding)==0);assert(bind(&binding)!=0);
+ assert(process(&h.user,gold.data(),gold.size())==Result::Unchanged);
+ assert(process(&h.user,platinum.data(),platinum.size())==Result::Unchanged);
+ UserContext attacker;assert(process(&attacker,diamond.data(),diamond.size())==Result::AuthRefused);
  auto changedSecond=diamond;changedSecond[14]^=1;
- assert(invoke(&h.user,changedSecond.data(),changedSecond.size())==Result::AuthRefused);
+ assert(process(&h.user,changedSecond.data(),changedSecond.size())==Result::AuthRefused);
  auto changedFirst=packet(0x09f3,319);
- assert(invoke(&h.user,changedFirst.data(),changedFirst.size())==Result::AuthRefused);
+ assert(process(&h.user,changedFirst.data(),changedFirst.size())==Result::AuthRefused);
  assert(h.commits==0);
- assert(invoke(&h.user,diamond.data(),diamond.size())==Result::ShadowApplied);
+ assert(process(&h.user,diamond.data(),diamond.size())==Result::ShadowApplied);
  assert(h.level==1 && h.points==45 && h.revision==11 && h.commits==1);
  h.fail=true;
- assert(invoke(&h.user,diamond.data(),diamond.size())==Result::ShadowRejected);
+ assert(process(&h.user,diamond.data(),diamond.size())==Result::ShadowRejected);
  assert(h.level==1 && h.points==45 && h.revision==11 && h.commits==1 && h.aborts>0);
  h.fail=false;
- assert(invoke(&h.user,diamond.data(),diamond.size())==Result::ShadowApplied);
+ assert(process(&h.user,diamond.data(),diamond.size())==Result::ShadowApplied);
  assert(h.level==2 && h.points==35 && h.revision==12 && h.commits==2);
  unsetenv("CABAL_DIAMOND_SHADOW_TRIAL");
- assert(invoke(&h.user,diamond.data(),diamond.size())==Result::Disabled);
+ assert(process(&h.user,diamond.data(),diamond.size())==Result::Disabled);
  cabal_diamond_engine_destroy(engine);
  dlclose(handle);
  std::cout<<"DIAMOND_LINKED_OFFLINE_CLONE_DLOPEN=PASS\n"
