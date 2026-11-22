@@ -53,9 +53,10 @@ AuditStatus Parse(PersistedBlob blob,QuantityDecoder decoder,void* context,
     return AuditStatus::Verified;
 }
 }
-Audit VerifyPersistedTicketDebit(PersistedBlob before,PersistedBlob after,
+namespace {
+Audit VerifyInternal(PersistedBlob before,PersistedBlob after,
      std::uint64_t expectedBeforeUnits,std::uint64_t expectedAfterUnits,
-     QuantityDecoder decoder,void* decoderContext) noexcept {
+     QuantityDecoder decoder,void* decoderContext,bool requireUnchanged) noexcept {
     Audit result{};
     if(!before.independentGameDataRead || !after.independentGameDataRead)
         return result;
@@ -112,8 +113,20 @@ Audit VerifyPersistedTicketDebit(PersistedBlob before,PersistedBlob after,
                 return result;
             }
         }
-        // Rank-up must actually decrease independent persisted game resources.
-        if(expectedBeforeUnits<=expectedAfterUnits ||
+        // Mastery changes no tickets. Any change to ticket row bytes or
+        // serial layout is NOT a valid no-op even if quantities decode equal.
+        if(requireUnchanged) {
+            for(const auto& entry:original.records) {
+                if(entry.second.itemId!=kExchangeTicketItemId)continue;
+                const auto found=saved.records.find(entry.first);
+                if(found==saved.records.end() || !Equal(found->second,entry.second)){
+                    result.status=AuditStatus::TicketIdentityChanged;
+                    return result;
+                }
+            }
+        }
+        if((requireUnchanged && expectedBeforeUnits!=expectedAfterUnits) ||
+           (!requireUnchanged && expectedBeforeUnits<=expectedAfterUnits) ||
            original.units!=expectedBeforeUnits ||
            saved.units!=expectedAfterUnits) {
             result.status=AuditStatus::TicketTotalsMismatch;
@@ -125,6 +138,19 @@ Audit VerifyPersistedTicketDebit(PersistedBlob before,PersistedBlob after,
         result.status=AuditStatus::MalformedSnapshot;
         return result;
     }
+}
+} // namespace
+Audit VerifyPersistedTicketDebit(PersistedBlob before,PersistedBlob after,
+     std::uint64_t expectedBeforeUnits,std::uint64_t expectedAfterUnits,
+     QuantityDecoder decoder,void* decoderContext) noexcept {
+    return VerifyInternal(before,after,expectedBeforeUnits,expectedAfterUnits,
+                          decoder,decoderContext,false);
+}
+Audit VerifyPersistedTicketsUnchanged(PersistedBlob before,PersistedBlob after,
+     std::uint64_t expectedUnits,QuantityDecoder decoder,
+     void* decoderContext) noexcept {
+    return VerifyInternal(before,after,expectedUnits,expectedUnits,
+                          decoder,decoderContext,true);
 }
 const char* Name(AuditStatus s) noexcept {
     switch(s) {
