@@ -18,8 +18,9 @@ ORIGINAL={
     "include/Types.h":
         "c32a66118f439cf1a1279f703c3a9a1e272a4dfbb89a0745c93983ce5a2e3b61",
 }
-ABI_V2_SYMBOL="cabal_diamond_proc_bind_shadow_clone_v3"
+ABI_V3_SYMBOL="cabal_diamond_proc_bind_shadow_clone_v3"
 OLD_BIND_SYMBOL="cabal_diamond_proc_bind_shadow_clone_v1"
+UNSAFE_V2_SYMBOL="cabal_diamond_proc_bind_shadow_clone_v2"
 
 def digest(path):
     value=hashlib.sha256()
@@ -75,13 +76,13 @@ def run(source,output,compiler):
         build+=["-c",str(proc),"-o",str(target)]
         subprocess.run(build,check=True)
         symbols=object_symbols(target)
-        if (ABI_V2_SYMBOL in symbols)!=enabled or OLD_BIND_SYMBOL in symbols:
+        if (ABI_V3_SYMBOL in symbols)!=enabled or OLD_BIND_SYMBOL in symbols or UNSAFE_V2_SYMBOL in symbols:
             raise RuntimeError("STOP: wrong default/clone binder ABI: "+label)
         objects[label]=target.name
     insist_original(source)
     print("DIAMOND_EXACT_ARCHIVED_SOURCE_CLONE_BUILD=PASS")
     print("DEFAULT_BIND_EXPORT=ABSENT")
-    print("TRIAL_BIND_EXPORT="+ABI_V2_SYMBOL)
+    print("TRIAL_BIND_EXPORT="+ABI_V3_SYMBOL)
     print("ORIGINAL_SOURCE_HASHES=UNCHANGED")
     print("LIVE_WORLDSVR_CLIENT_SQL=UNTOUCHED")
     print("LINK_OR_GAMEPLAY_TEST=NOT_PERFORMED")
