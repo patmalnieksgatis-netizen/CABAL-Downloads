@@ -103,7 +103,7 @@ inline NativeCatalog read_native_catalog(std::istream& stream) {
           throw std::invalid_argument("DIAMOND_UPGRADE_COST_MISMATCH");
         ++validUpgrades;
       }
-    } else if (section=="SpecialCategory_Active") {
+    } else if (section=="SpecialMastery_Active") {
       if (f.size()!=3)throw std::invalid_argument("CATEGORY_ACTIVE_COLUMNS");
       const int id=strict_decimal(f[1]);
       const int category=strict_decimal(f[2]);
@@ -116,7 +116,7 @@ inline NativeCatalog read_native_catalog(std::istream& stream) {
   if (!stream.eof() && stream.fail())throw std::invalid_argument("SCP_STREAM_READ_FAILED");
   if (grade0!=64 || grade1!=94 || grade2!=316 || out.diamond.size()!=316 ||
       validUpgrades!=1 || out.imported_value_rows!=1096 ||
-      out.activation_edges.size()!=12)
+      out.activation_edges.size()!=4)
     throw std::invalid_argument("SCP_DIAMOND_ROW_COUNTS_DIFFER");
   for (int id=159;id<=474;++id) {
     auto it=out.diamond.find(id);
@@ -129,8 +129,8 @@ inline NativeCatalog read_native_catalog(std::istream& stream) {
       m.level_cost[static_cast<std::size_t>(level-1)]=v->second;
     }
     if (m.linked_id) {
-      auto linked=out.diamond.find(m.linked_id);
-      if (linked==out.diamond.end())
+      auto linked_target=out.diamond.find(m.linked_id);
+      if (linked_target==out.diamond.end())
         throw std::invalid_argument("SCP_LINKED_MASTERY_INVALID");
       ++linked;
     }
