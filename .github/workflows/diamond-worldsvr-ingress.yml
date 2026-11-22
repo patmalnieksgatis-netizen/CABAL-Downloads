@@ -63,6 +63,8 @@ jobs:
             /tmp/diamond-dlopen-ci/diamond_clone_dlopen_smoke \
             /tmp/diamond-dlopen-ci/libDiamondSyntheticIngress.so
           echo 'CI_SHARED_OBJECT_IS_SYNTHETIC_NOT_ARCHIVED_WORLDSVR=YES'
+      - name: Install C++ SQL header dependency for WorldSessionBridge
+        run: test -f /usr/include/sql.h || (sudo apt-get update -qq && sudo apt-get install -y unixodbc-dev)
       - name: Prove v14 authenticated owner and catalog lease through Diamond WorldBridge
         run: |
           set -eux
