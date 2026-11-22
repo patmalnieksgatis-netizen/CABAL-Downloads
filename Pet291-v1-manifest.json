@@ -1,0 +1,23 @@
+{
+  "mileage_sha256": "30d3d872efb1d205351198f4fdb8833da387c0eb1cacdc0e9aa7db4af78ff5a5",
+  "guardian_sha256": "3857479ca23dfc08b4b75dfb587156ec06c3acdeea0ba034dab40157a255b346",
+  "source_sha256": "a0bd45872d7aa3b17ef06bff053f43d47d58c372ce58b609b3a06074aea96d25",
+  "host_sha256": "1663b884e963abe42eedc52c2eaa7e384e045e1e4bbebf74964301501d6d4026",
+  "host_bytes": 505264,
+  "player_sql_changes_in_installer": false,
+  "legacy_account": 1002,
+  "client291_account": 1004,
+  "live_run": "PENDING",
+  "installer_sha256": "b8fc3b9681a6499cc7cd05c5fc871163f7f51d520e43126918828f9ae210c02f",
+  "installer_bytes": 730419,
+  "source_commit": "d8df5cf45aab23505c2e1e5b7b74afec15a05423",
+  "client_sha256": "658a5ca2722201a3df991949b023f7159b379cc0627bf79bbe80c2a4fc03c442",
+  "scope": "TEST_VM_192.168.56.101_ACCOUNT1004",
+  "price_mileage": 50,
+  "purchase_and_self_appearance": "CANDIDATE_GAMEPLAY_PENDING",
+  "physical_registration": "PENDING",
+  "peer_pet_appearance": "PENDING",
+  "sql_engine_test": "IMAGE_REGISTRY_FORBIDDEN",
+  "sql_grammar_batches": 21,
+  "bridge_fixture_checks": 904
+}
