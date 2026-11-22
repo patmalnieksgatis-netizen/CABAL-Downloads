@@ -125,6 +125,20 @@ jobs:
             -L/tmp -lDiamondNative -Wl,-rpath,/tmp \
             -o /tmp/diamond_odbc_fake_driver_test
           /tmp/diamond_odbc_fake_driver_test /tmp/diamond_odbc_synthetic.scp
+          g++ -std=c++17 -O2 -Wall -Wextra -Werror -pedantic -pthread \
+            -Idiamond-insignia/native \
+            -Idiamond-insignia/native/commit-gate \
+            -Idiamond-insignia/native/world-session-bridge \
+            -Idiamond-insignia/native/world-session-bridge/deps \
+            diamond-insignia/native/world-session-bridge/tests/FakeOdbc.cpp \
+            diamond-insignia/native/world-session-bridge/tests/test_diamond_session_odbc_endtoend.cpp \
+            diamond-insignia/native/world-session-bridge/DiamondWorldSessionBridge.cpp \
+            diamond-insignia/native/world-session-bridge/deps/EventPassOwnerV282.cpp \
+            diamond-insignia/native/world-session-bridge/deps/DiamondLabOdbcBackend.cpp \
+            diamond-insignia/native/commit-gate/DiamondCommitGate.cpp \
+            -L/tmp -lDiamondNative -Wl,-rpath,/tmp \
+            -o /tmp/diamond_v14_session_odbc_endtoend
+          /tmp/diamond_v14_session_odbc_endtoend /tmp/diamond_odbc_synthetic.scp
           g++ -std=c++17 -O2 -Wall -Wextra -Werror -pedantic -fPIC -shared \
             -Idiamond-insignia/native \
             -Idiamond-insignia/native/commit-gate \
