@@ -49,6 +49,28 @@ int cabal_diamond_merit_shadow_route(
  const cabal_diamond_world_callbacks*,void* backend_context,
  uint32_t execute_shadow_trial,
  cabal_diamond_world_result*,cabal_merit_route_result*);
+
+// Clone-only gate: caller MUST obtain this proof from a trusted WorldSvr
+// session + server catalog, not from packet fields or a guessed ID range.
+// The exact meanings of 0x09F3 payload DWORDs are not yet established.
+// Production builds still do not execute Diamond effects.
+#define CABAL_DIAMOND_MERIT_PROOF_VERSION 1u
+typedef struct {
+ uint32_t version;
+ uint32_t authenticated_session;
+ uint32_t server_catalog_grade_two_confirmed;
+ uint32_t server_selector_confirms_diamond;
+ uint32_t first_payload_dword_authoritatively_matched;
+ uint32_t second_payload_dword_authoritatively_matched;
+} cabal_diamond_merit_server_proof;
+int cabal_diamond_merit_verified_shadow_route(
+ const cabal_diamond_engine*,const void*,size_t,
+ const void* authenticated_session,uint32_t authenticated_user,
+ uint32_t caller_expected_revision,
+ const cabal_diamond_merit_server_proof*,
+ const cabal_diamond_world_callbacks*,void* backend_context,
+ uint32_t execute_shadow_trial,
+ cabal_diamond_world_result*,cabal_merit_route_result*);
 #ifdef __cplusplus
 }
 #endif
