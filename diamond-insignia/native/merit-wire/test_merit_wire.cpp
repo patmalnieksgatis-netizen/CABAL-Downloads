@@ -27,6 +27,6 @@ int main() {
         assert(ParseLegacyRequest(valid.data(),i,parsed)==ParseStatus::WrongLength);
     }
     std::cout<<"WORLD_V14_LEGACY_MERIT_WIRE_TEST=PASS\n";
-    std::cout<<"0x09F3_REQUEST_18B_RESPONSE_7B=SOURCE_GROUNDED\n";
+    std::cout<<"0x09F3_FIELDS_PROVEN_18B_EXACT_SIZE_UNVERIFIED;S2C_7B=PROVEN\n";
     std::cout<<"DIAMOND_V291_OPCODE_AND_REPLY=NOT_YET_PROVEN\n";
 }
