@@ -7,6 +7,7 @@ required native library is an already built synthetic/offline Diamond engine.
 Output is deliberately NOT named lib.so and has a clone-only SONAME.
 """
 import argparse
+import hashlib
 import pathlib
 import shutil
 import subprocess
@@ -16,14 +17,22 @@ SONAME="libDiamondWorldCloneOffline.so"
 V2_BIND="cabal_diamond_proc_bind_shadow_clone_v2"
 V1_BIND="cabal_diamond_proc_bind_shadow_clone_v1"
 V2_MERIT="cabal_diamond_merit_verified_shadow_route"
+CURRENT_LIB_SO_SHA256="6679e46aa2ee915d97de9501ba027cae3eec153f1cd82e7c16ed47221c63ecab"
 TEST_INGRESS="cabal_diamond_proc_test_ingress_clone_v2"
+
+def exports(path):
+    output=subprocess.run(["nm","-D","--defined-only",str(path)],
+                          text=True,capture_output=True,check=True).stdout
+    return {fields[-1] for row in output.splitlines()
+            if (fields:=row.split()) and len(fields)>=3 and
+               fields[-2] in ("T","W","D","B","V","u")}
 
 def require(condition,message):
     if not condition:
         raise RuntimeError("STOP: "+message)
 
 def run(root: pathlib.Path,native_lib: pathlib.Path,merit_cpp: pathlib.Path,
-        output: pathlib.Path,compiler="g++"):
+        output: pathlib.Path,compiler="g++",baseline_lib=None):
     root=root.resolve()
     native_lib=native_lib.resolve()
     merit_cpp=merit_cpp.resolve()
@@ -33,6 +42,11 @@ def run(root: pathlib.Path,native_lib: pathlib.Path,merit_cpp: pathlib.Path,
     require(not output.exists(),"refuse overwrite")
     require(output!=native_lib and output!=merit_cpp and output not in root.parents
             and root not in output.parents,"output must be outside input trees")
+    if baseline_lib is not None:
+        baseline_lib=baseline_lib.resolve()
+        require(baseline_lib.is_file(),"baseline lib.so absent")
+        require(hashlib.sha256(baseline_lib.read_bytes()).hexdigest()==
+                CURRENT_LIB_SO_SHA256,"baseline current lib.so SHA changed")
     require(native_lib.is_file() and native_lib.name=="libDiamondNative.so",
             "offline native library not found")
     require(merit_cpp.is_file(),"native verified Merit entry source absent")
@@ -87,6 +101,10 @@ def run(root: pathlib.Path,native_lib: pathlib.Path,merit_cpp: pathlib.Path,
             text=True,capture_output=True,check=True).stdout
         deps=subprocess.run(["readelf","-d",str(output)],
                             text=True,capture_output=True,check=True).stdout
+        if baseline_lib is not None:
+            missing=exports(baseline_lib)-exports(output)
+            require(not missing,"candidate loses current v291 extension exports: "+
+                    ",".join(sorted(missing)[:12]))
         require(V2_BIND in symbols and V2_MERIT in symbols and
                 TEST_INGRESS in symbols and V1_BIND not in symbols,
                 "missing/new and stale exported ABI mismatch")
@@ -102,6 +120,8 @@ def run(root: pathlib.Path,native_lib: pathlib.Path,merit_cpp: pathlib.Path,
     print("BINDER="+V2_BIND+";MERIT_ROUTE="+V2_MERIT)
     print("SYNTHETIC_ONLY_DLOPEN_ENTRY="+TEST_INGRESS)
     print("STRICT_UNDEFINED_SYMBOL_CHECK=PASS;ODBC_LINKED=YES")
+    print("CURRENT_EXTENSION_EXPORTED_ABI_PRESERVED="+
+          ("PASS" if baseline_lib is not None else "NOT_CHECKED"))
     print("SONAME="+SONAME+";PRODUCTION_LIB_SO=UNTOUCHED")
     print("WORLD_SERVER_EXECUTION=NO;CLIENT_MSSQL_INVENTORY=NO")
     print("OUTPUT="+str(output))
@@ -113,9 +133,11 @@ if __name__=="__main__":
     ap.add_argument("--merit-cpp",type=pathlib.Path,required=True)
     ap.add_argument("--output",type=pathlib.Path,required=True)
     ap.add_argument("--compiler",default="g++")
+    ap.add_argument("--baseline-current-lib",type=pathlib.Path,default=None)
     args=ap.parse_args()
     try:
-        run(args.clone_source,args.native_lib,args.merit_cpp,args.output,args.compiler)
+        run(args.clone_source,args.native_lib,args.merit_cpp,args.output,
+            args.compiler,args.baseline_current_lib)
     except (Exception,subprocess.CalledProcessError) as exc:
         print("DIAMOND_OFFLINE_WORLDSVR_SOURCE_LINK=STOP: "+str(exc),file=sys.stderr)
         sys.exit(1)
