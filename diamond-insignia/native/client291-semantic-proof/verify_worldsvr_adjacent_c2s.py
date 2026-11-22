@@ -66,10 +66,9 @@ def elf_reader(exe):
         off=phoff+i*entsize
         typ=struct.unpack_from("<I",exe,off)[0]
         if typ==1:
-            fileoff,va,filesize=struct.unpack_from("<QQxxxx",b"") if False else (
-                struct.unpack_from("<Q",exe,off+8)[0],
-                struct.unpack_from("<Q",exe,off+16)[0],
-                struct.unpack_from("<Q",exe,off+32)[0])
+            fileoff=struct.unpack_from("<Q",exe,off+8)[0]
+            va=struct.unpack_from("<Q",exe,off+16)[0]
+            filesize=struct.unpack_from("<Q",exe,off+32)[0]
             if fileoff+filesize>len(exe):raise ValueError("invalid PT_LOAD")
             segments.append((va,fileoff,filesize))
     def read(va,size):
