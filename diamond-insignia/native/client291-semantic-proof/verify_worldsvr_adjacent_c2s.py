@@ -51,6 +51,37 @@ def verify_entry(read,opcode,entry):
     return {"opcode":hex(opcode),"slot_va":hex(slot),"handler_va":hex(handler),
             "handler_label":expected_label,"registration_va":hex(compare_site)}
 
+def verify_merit_dispatch(read):
+    """Proof that legacy 0x09F3 has TWO server-side Merit paths."""
+    anchors={
+        0xa40dc0:"8b700a",       # first C2S DWORD
+        0xa40dca:"8b400e",       # second C2S DWORD
+        0xa40dda:"488d4de8",     # pass two local fields
+        0xa40deb:"7513",         # branch based on server selector
+        0xa3ca58:"488b9730010000", # manager's search-tree root
+        0xa3ca8c:"394820",       # compare manager key to first DWORD
+        0xa3caef:"83782401",     # compare selected entry metadata to 1
+    }
+    for site,expected in anchors.items():
+        want=bytes.fromhex(expected)
+        if read(site,len(want))!=want:
+            raise ValueError("Merit branch instruction changed at "+hex(site))
+    for site,dst in ((0xa40dd3,0xa3ca50),(0xa40ded,0xa3b2d0),
+                     (0xa40e00,0xa3c3a0)):
+        b=read(site,5)
+        if b[0]!=0xe8 or site+5+struct.unpack_from("<i",b,1)[0]!=dst:
+            raise ValueError("Merit dispatch CALL changed at "+hex(site))
+    return {
+        "incoming_opcode":"0x09f3",
+        "payload_dword_offsets":["0x0a","0x0e"],
+        "server_selector_rva":"0xa3ca50",
+        "branch_if_selector_zero":"0xa3b2d0",
+        "branch_if_selector_nonzero":"0xa3c3a0",
+        "selector_lookup":"tree keyed from first C2S DWORD, value flag compared with 1",
+        "mastery_159_474_accepted_proven":False,
+        "diamond_rankup_semantics_proven":False
+    }
+
 def elf_reader(exe):
     if exe[:4]!=b"\x7fELF" or exe[4]!=2 or exe[5]!=1:
         raise ValueError("not ELF64 little-endian")
@@ -84,10 +115,12 @@ def inspect(exe):
         raise ValueError("wrong exact WorldSvr binary")
     reader=elf_reader(exe)
     entries=[verify_entry(reader,opcode,entry) for opcode,entry in ENTRIES.items()]
+    merit_dispatch=verify_merit_dispatch(reader)
     return {
         "mode":"EXACT_WORLDSVR_C2S_REGISTRY_STATIC",
         "worldsvr_sha256":SHA,
         "registration_evidence":entries,
+        "merit_dispatch_evidence":merit_dispatch,
         "dimension_inventory_not_diamond":[hex(x) for x in (0x09f9,0x09fb,0x09fd)],
         "client_ui_event_mapping_correlated":True,
         "diamond_rankup_opcode_proven":False,
