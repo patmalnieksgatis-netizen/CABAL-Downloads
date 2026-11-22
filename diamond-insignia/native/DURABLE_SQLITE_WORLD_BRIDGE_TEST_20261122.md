@@ -4,7 +4,7 @@
 
 A native C++17 **disk-backed SQLite test host** has been compiled and executed against the exact private, staged 116,812-byte `MeritSystem.scp` and the previously built `libDiamondNative.so` with the authenticated `cabal_diamond_world_execute` C ABI.
 
-The complete tested source `diamond_sqlite_testhost.cpp`, Linux x64 executable, tested `.so`, private add-only staged SCP, synthetic-user SQLite DB, manifest, and usage notes are in the conversation artifact **`CABAL_Diamond_Durable_TestHost_20261122.zip`**, SHA256 `319ce5c9db54337f5503d6416d4e9addc3567d9f0517789a3ad179ba475a7389`. The **private SCP is not committed to public GitHub**.
+The complete tested source is **also permanently committed** at [`diamond_sqlite_testhost.cpp`](./diamond_sqlite_testhost.cpp); a synthetic full-catalog emitter is committed at [`test_emit_synthetic_scp.cpp`](./test_emit_synthetic_scp.cpp). Linux CI rebuilds the host from these exact files, links `libDiamondNative.so` and real SQLite, and verifies disk persistence/rollback/concurrent replay **using synthetic config**: https://github.com/patmalnieksgatis-netizen/CABAL-Downloads/actions/runs/45003138779 (PASS). The Linux binary, source, `.so`, user's private staged SCP, synthetic-user SQLite DB, manifest, and usage notes are also in the conversation artifact **`CABAL_Diamond_Durable_TestHost_20261122.zip`**, SHA256 `319ce5c9db54337f5503d6416d4e9addc3567d9f0517789a3ad179ba475a7389`. The **private SCP is not committed to public GitHub**.
 
 ### Exact actual execution
 
@@ -41,3 +41,7 @@ Recovered actual user-provided `CABAL_EXTRA_SOURCE.tar.gz` (10,715,254 bytes) an
 To make this playable, we need the verified **current** WorldSvr Merit opcode registration and native authenticated session context, plus inventory and WExp storage and MSSQL transaction ABI, not another generic .enc/client hex collector. No active WorldSvr, Docker, `Server01`, original MeritSystem.scp, or Gold/Platinum player data was touched.
 
 **Do not install this SQLite/GLIBC_2.38 test binary into the game container.** This test proves durable transaction logic with real rules, not real client->WorldSvr->SQL game integration.
+
+## CI details
+
+GitHub Actions run `45003138779` compiled all native tests and this disk-backed host; final job **success**. Log confirms `DIAMOND_SQLITE_DURABLE_BRIDGE=PASS`, `RESTART_PERSISTENCE=PASS`, `ROLLBACK=PASS`, `CONCURRENT_REPLAY=PASS`. CI runs the synthetic configuration; private staged SCP was tested **locally** with the same binary code only, not uploaded to GitHub.
