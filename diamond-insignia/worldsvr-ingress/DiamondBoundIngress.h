@@ -27,11 +27,21 @@ struct VerifiedIdentity {
   const void* authenticated_session=nullptr;
   std::uint32_t user_num=0;
   std::uint32_t expected_revision=0;
+  // Supplied only by trusted, server-owned catalog/session lookups.
+  // These booleans alone are insufficient: matched values must bind to packet.
+  std::uint32_t server_catalog_grade_two_confirmed=0;
+  std::uint32_t server_selector_confirms_diamond=0;
+  std::uint32_t first_payload_dword_authoritatively_matched=0;
+  std::uint32_t second_payload_dword_authoritatively_matched=0;
+  std::uint32_t matched_first_payload_dword=0;
+  std::uint32_t matched_second_payload_dword=0;
 };
-// Supplied by trusted HOST code, never by packet fields. Must validate the
-// exact server-owned USERCONTEXT and fetch revision from the TEST datastore.
+// Host resolver sees *untrusted observed fields* and must match them to
+// authenticated, authoritative server state. Never create a positive proof
+// merely from the 159..474 numeric range or packet-supplied values.
 using TrustedResolver=int (*)(void* resolver_context,
                              const void* server_owned_user_context,
+                             const DiamondIngress::Observation* observed,
                              VerifiedIdentity* output);
 struct Binding {
   std::uint32_t abi=kBindingABI;
@@ -76,15 +86,35 @@ inline Result Process(const void* server_owned_user_context,
   if(!server_owned_user_context)return Result::AuthRefused;
   VerifiedIdentity identity{};
   try {
-    if(b.resolve(b.resolver_context,server_owned_user_context,&identity)!=0 ||
+    if(b.resolve(b.resolver_context,server_owned_user_context,&observed,&identity)!=0 ||
        !identity.authenticated_session ||
        identity.user_num!=kSyntheticUserNum ||
-       identity.expected_revision==0)return Result::AuthRefused;
+       identity.expected_revision==0 ||
+       identity.server_catalog_grade_two_confirmed!=1 ||
+       identity.server_selector_confirms_diamond!=1 ||
+       identity.first_payload_dword_authoritatively_matched!=1 ||
+       identity.second_payload_dword_authoritatively_matched!=1 ||
+       identity.matched_first_payload_dword!=observed.mastery_id ||
+       identity.matched_second_payload_dword!=observed.second_field)
+       return Result::AuthRefused;
     cabal_diamond_world_result decision{};
     cabal_merit_route_result route=CABAL_MERIT_ROUTE_INVALID;
-    const int status=cabal_diamond_merit_shadow_route(
+    const cabal_diamond_merit_server_proof proof{
+      CABAL_DIAMOND_MERIT_PROOF_VERSION,
+      1u,
+      identity.server_catalog_grade_two_confirmed,
+      identity.server_selector_confirms_diamond,
+      identity.first_payload_dword_authoritatively_matched,
+      identity.second_payload_dword_authoritatively_matched,
+      identity.authenticated_session,
+      identity.user_num,
+      identity.expected_revision,
+      identity.matched_first_payload_dword,
+      identity.matched_second_payload_dword
+    };
+    const int status=cabal_diamond_merit_verified_shadow_route(
       b.engine,packet,length,identity.authenticated_session,
-      identity.user_num,identity.expected_revision,
+      identity.user_num,identity.expected_revision,&proof,
       &b.callbacks,b.backend_context,1u,&decision,&route);
     if(status!=0)return Result::BadEngine;
     return route==CABAL_MERIT_ROUTE_SHADOW_APPLIED ? Result::ShadowApplied :
