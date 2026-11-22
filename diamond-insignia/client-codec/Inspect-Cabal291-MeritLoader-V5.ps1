@@ -40,6 +40,30 @@ public static class CabalMeritNativeV5 {
   }
   return new int[0];
  }
+ // Surrounding entries are diagnostic context only; do not invent helper bounds.
+ public static int[] PdataNeighbors(byte[] data,int start,int length,int rva){
+  if(data==null || start<0 || length<12 || (length%12)!=0 ||
+     (long)start+length>data.Length)throw new ArgumentException("PDATA range invalid");
+  int lo=0,hi=length/12-1;
+  while(lo<=hi){
+   int mid=lo+(hi-lo)/2;
+   uint begin=BitConverter.ToUInt32(data,start+mid*12);
+   if(begin<=rva)lo=mid+1;
+   else hi=mid-1;
+  }
+  int[] neighbors=new int[]{-1,-1,-1,-1};
+  if(hi>=0){
+   int p=start+hi*12;
+   neighbors[0]=(int)BitConverter.ToUInt32(data,p);
+   neighbors[1]=(int)BitConverter.ToUInt32(data,p+4);
+  }
+  if(lo<length/12){
+   int p=start+lo*12;
+   neighbors[2]=(int)BitConverter.ToUInt32(data,p);
+   neighbors[3]=(int)BitConverter.ToUInt32(data,p+4);
+  }
+  return neighbors;
+ }
 
  static int FileOff(byte[] d,int sect,int n,uint rva){
   for(int i=0;i<n;i++){
@@ -160,6 +184,13 @@ Must ($hits.Length -eq 3 -and $hits[0].Target -eq 0x1100 -and
 $bounds=[CabalMeritNativeV5]::PdataFunction($t,360,24,0x1100)
 Must ($bounds.Length -eq 2 -and $bounds[0] -eq 0x1100 -and
  $bounds[1] -eq 0x1200) 'Synthetic function-boundary failure'
+[BitConverter]::GetBytes([uint32]0x1300).CopyTo($t,384)
+[BitConverter]::GetBytes([uint32]0x1400).CopyTo($t,388)
+$noPdata=[CabalMeritNativeV5]::PdataFunction($t,360,36,0x1250)
+$near=[CabalMeritNativeV5]::PdataNeighbors($t,360,36,0x1250)
+Must ($noPdata.Length -eq 0 -and $near.Length -eq 4 -and
+ $near[0] -eq 0x1100 -and $near[1] -eq 0x1200 -and
+ $near[2] -eq 0x1300 -and $near[3] -eq 0x1400) 'Synthetic PDATA-gap fallback regression'
 Must ([CabalMeritNativeV5]::FindCalls($t,0,128,4096,[int[]]@(0x1300)).Length -eq 0) 'Synthetic negative caller failure'
 Must ([CabalMeritNativeV5]::ImportParserSmoke()) 'Synthetic PE import slot name resolution failure'
 # Regression test: execute the Segment path in Windows PowerShell 5.1.
@@ -196,7 +227,36 @@ $targets=[ordered]@{selector_wrapper=$wrapper;selector_posthelper=$helper}
 $blocks=New-Object System.Collections.Generic.List[object]
 foreach($tgt in $targets.GetEnumerator()){
  $range=[CabalMeritNativeV5]::PdataFunction($b,$pdataOff,$pdataLen,[int]$tgt.Value)
- Must ($range.Length -eq 2) ('No matching PDATA function for '+$tgt.Key)
+ if($range.Length -ne 2){
+  Must ($tgt.Key -eq 'selector_posthelper') ('Required PDATA function missing for '+$tgt.Key)
+  $anchor=[int]$tgt.Value
+  $windowSize=2048
+  $preSize=128
+  Must ($anchor-$preSize -ge $textStart+$delta -and
+     $anchor+$windowSize -le $textEnd+$delta) 'Unbounded helper window outside pinned .text'
+  $near=[CabalMeritNativeV5]::PdataNeighbors($b,$pdataOff,$pdataLen,$anchor)
+  Must ($near.Length -eq 4) 'PDATA neighbor extraction invalid'
+  $blocks.Add([ordered]@{
+   name=$tgt.Key;requested_rva=('0x{0:x}' -f $anchor);
+   classification='RAW_CALL_TARGET_NO_PDATA_ENTRY';
+   pdata_range_proven=$false;
+   function_begin_rva=$null;function_end_rva=$null;total_bytes=$null;
+   leading_bytes_hex='';
+   trailing_bytes_start_rva=$null;trailing_bytes_hex='';
+   code_complete=$false;
+   raw_target_window_start_rva=('0x{0:x}' -f $anchor);
+   raw_target_window_bytes=$windowSize;
+   raw_target_window_hex=(Get-MeritHexBytesV5 $b ($anchor-$delta) $windowSize);
+   preceding_window_start_rva=('0x{0:x}' -f ($anchor-$preSize));
+   preceding_window_hex=(Get-MeritHexBytesV5 $b ($anchor-$delta-$preSize) $preSize);
+   previous_pdata_begin_rva=$(if($near[0] -ge 0){'0x{0:x}' -f $near[0]}else{$null});
+   previous_pdata_end_rva=$(if($near[1] -ge 0){'0x{0:x}' -f $near[1]}else{$null});
+   next_pdata_begin_rva=$(if($near[2] -ge 0){'0x{0:x}' -f $near[2]}else{$null});
+   next_pdata_end_rva=$(if($near[3] -ge 0){'0x{0:x}' -f $near[3]}else{$null});
+  })
+  Write-Host ('FUNCTION='+$tgt.Key+';target_rva=0x{0:x};pdata=NONE;raw_bytes={1};BOUNDARIES_UNPROVEN=YES' -f $anchor,$windowSize)
+  continue
+ }
  $begin=[int]$range[0];$end=[int]$range[1]
  if($tgt.Key -eq 'selector_wrapper'){
   Must ($begin -eq $wrapper -and $end -eq 0x21cda4) 'Wrapper bounds differ from verified V4'
@@ -208,6 +268,7 @@ foreach($tgt in $targets.GetEnumerator()){
  $tailSize=$(if($fullSize -gt $firstSize){[Math]::Min(2048,$fullSize-$firstSize)}else{0})
  $blocks.Add([ordered]@{
   name=$tgt.Key;requested_rva=('0x{0:x}' -f $tgt.Value);
+  classification='PDATA_BOUNDED_FUNCTION';pdata_range_proven=$true;
   function_begin_rva=('0x{0:x}' -f $begin);
   function_end_rva=('0x{0:x}' -f $end);
   total_bytes=$fullSize;leading_bytes_hex=(Get-MeritHexBytesV5 $b ($begin-$delta) $firstSize);
@@ -246,7 +307,8 @@ $report=[ordered]@{
  import_slot_name_candidates=$importInfo;raw_e8_e9_candidate_count=$found.Length;exported_contexts=@($results.ToArray());
  export_limit=120;game_launched=$false;process_memory_read=$false;
  sql_or_vm_access=$false;client_modified=$false;
- actual_decoder_found=$false;diamond_opcode_found=$false
+ actual_decoder_found=$false;diamond_opcode_found=$false;
+ no_pdata_does_not_prove_leaf_function=$true;unbounded_windows_are_not_full_function_bodies=$true
 }
 $temp=Join-Path $env:TEMP ('CABAL_X64_MERIT_V5_'+[guid]::NewGuid().ToString('N'))
 $zip=Join-Path (Join-Path $env:USERPROFILE 'Downloads') ('CABAL_DIAMOND_MERIT_X64_V5_'+(Get-Date -Format 'yyyyMMdd-HHmmss')+'.zip')
