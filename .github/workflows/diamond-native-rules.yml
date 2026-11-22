@@ -59,6 +59,8 @@ jobs:
         run: python3 -m unittest discover -s diamond-insignia/client291-real-resource -p 'test_correlate_procmon_merit_assets.py' -v
       - name: Verify exact UI event registration mapping and no off-by-one errors
         run: python3 -m unittest discover -s diamond-insignia/native/client291-semantic-proof -p 'test_ui_event_binding.py' -v
+      - name: Verify WorldSvr Merit versus Dimension Inventory opcode registrations
+        run: python3 -m unittest discover -s diamond-insignia/native/client291-semantic-proof -p 'test_worldsvr_adjacent_c2s.py' -v
       - name: Publish tested native library (OFFLINE ONLY, not a WorldSvr drop-in)
         uses: actions/upload-artifact@v4
         with:
