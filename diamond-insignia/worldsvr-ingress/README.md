@@ -29,6 +29,29 @@ This exact object build passed locally using the actual user archive; one unrela
 
 GitHub CI workflow: https://github.com/patmalnieksgatis-netizen/CABAL-Downloads/actions/workflows/diamond-worldsvr-ingress.yml
 
+## Isolated source-compile preflight (ABI v2)
+
+The separate `Verify-DiamondWorldSvrSourceClone.py` compiles the exact
+archived lib.so **source copy** twice and checks exported symbols:
+
+```sh
+python3 Verify-DiamondWorldSvrSourceClone.py \
+  --source /path/to/unmodified-archived-libso/src \
+  --output /tmp/diamond-isolated-v291-clone-build
+```
+
+It refuses an incompatible source SHA, an existing destination, missing headers,
+and ABI v1. The default build must **not export any Diamond binder**; the
+synthetic-only build must export `cabal_diamond_proc_bind_shadow_clone_v2`.
+This is only an object-file compile preflight; it does **not** link or launch
+WorldSvr, validate the user's currently loaded lib.so, connect to SQL, or
+prove in-game Diamond compatibility.
+
+The earlier bound ingress used the old numeric-ID shadow route that no longer
+executes. The clone-only ABI-v2 binding instead requires host-verified session,
+catalog, server Merit selector, both payload DWORDs and a matching revision.
+The actual WorldSvr provider of these proofs remains unimplemented.
+
 ## Hard blocker to playable Diamond
 
 This is an **actual C2S code insertion point** but **not a complete game feature**. The new Diamond rank-up action/reply ABI and real server-authenticated inventory/WExp+SQL transaction are not verified. The first payload DWORD under 0x09F3 is a *candidate* ID, not proof that the client already sends grade 2 actions. The prepared native rule engine, SQL Server ODBC *shadow* adapter and this patch do not yet form a production gameplay implementation.
