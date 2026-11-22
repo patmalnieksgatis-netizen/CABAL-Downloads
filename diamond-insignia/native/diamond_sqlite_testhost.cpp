@@ -16,6 +16,7 @@
 #include <thread>
 #include <vector>
 #include <atomic>
+#include <algorithm>
 #include <mutex>
 #include <sstream>
 #include <utility>
@@ -43,7 +44,7 @@ struct Tx {
  std::int64_t wexp=0;
  std::uint32_t tickets=0;
  std::int32_t points=0;
- std::vector<std::uint32_t> slots{159,319};
+ std::vector<std::uint32_t> slots;
  std::vector<cabal_diamond_level_entry> levels;
  explicit Tx(Host* h):host(h) {}
  ~Tx(){if(db){sqlite3_exec(db,"ROLLBACK",nullptr,nullptr,nullptr);sqlite3_close(db);}}
@@ -73,17 +74,28 @@ int load(void*,void* opaque,cabal_diamond_state* output) {
  output->verified_exchange_ticket_count=tx.tickets;output->free_points=tx.points;
  if(tx.badge==2) {
   output->active_category_mask=1;
-  output->server_open_mastery_ids=tx.slots.data();
-  output->server_open_count=tx.slots.size();
   try {
+    tx.slots.clear();
+    Statement opened(tx.db,"SELECT mastery_id FROM test_open_slots WHERE usernum=? ORDER BY mastery_id");
+    opened.bind(1,static_cast<int>(tx.user));
+    int status=SQLITE_ROW;
+    while((status=opened.step())==SQLITE_ROW) {
+      const int id=sqlite3_column_int(opened.p,0);
+      if(id<159 || id>474 || tx.slots.size()>=316)return -1;
+      tx.slots.push_back(static_cast<std::uint32_t>(id));
+    }
+    if(status!=SQLITE_DONE)return -1;
     tx.levels.clear();
     Statement s(tx.db,"SELECT mastery_id,level FROM test_mastery WHERE usernum=? ORDER BY mastery_id");
     s.bind(1,static_cast<int>(tx.user));
-    while(s.step()==SQLITE_ROW) {
+    while((status=s.step())==SQLITE_ROW) {
       const int id=sqlite3_column_int(s.p,0),level=sqlite3_column_int(s.p,1);
-      if((id!=159 && id!=319) || level<1 || level>100)return -1;
+      if(id<159 || id>474 || level<1 || level>100 || tx.levels.size()>=316)return -1;
       tx.levels.push_back({id,level});
     }
+    if(status!=SQLITE_DONE)return -1;
+    output->server_open_mastery_ids=tx.slots.empty()?nullptr:tx.slots.data();
+    output->server_open_count=tx.slots.size();
     output->server_levels=tx.levels.empty()?nullptr:tx.levels.data();
     output->server_level_count=tx.levels.size();
   } catch(...) {return -1;}
@@ -109,7 +121,8 @@ int commit(void*,void* opaque,const cabal_diamond_request* request,const cabal_d
   if(upd.step()!=SQLITE_DONE || sqlite3_changes(tx->db)!=1)return fail();
   if(request->command==CABAL_DIAMOND_MASTERY_LEVEL_UP){
     const int id=proposal->changed_mastery_id;
-    if((id!=159 && id!=319) || id!=request->mastery_id)return fail();
+    if(id<159 || id>474 || id!=request->mastery_id ||
+       std::find(tx->slots.begin(),tx->slots.end(),static_cast<std::uint32_t>(id))==tx->slots.end())return fail();
     int previous=0;
     for(const auto& level:tx->levels)if(level.mastery_id==id)previous=level.level;
     if(proposal->changed_mastery_level!=previous+1)return fail();
