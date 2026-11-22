@@ -15,7 +15,7 @@
 
 namespace DiamondBoundIngress {
 constexpr std::uint32_t kSyntheticUserNum=900001u;
-constexpr std::uint32_t kBindingABI=2u; // resolver signature + packet-attestation ABI changed
+constexpr std::uint32_t kBindingABI=3u; // acquire/release lifetime lease is mandatory
 
 enum class Result : int {
   Unchanged=0, Disabled=1, CandidateNoHost=2, ShadowApplied=3,
@@ -36,20 +36,34 @@ struct VerifiedIdentity {
   std::uint32_t matched_first_payload_dword=0;
   std::uint32_t matched_second_payload_dword=0;
 };
-// Host resolver sees *untrusted observed fields* and must match them to
-// authenticated, authoritative server state. Never create a positive proof
-// merely from the 159..474 numeric range or packet-supplied values.
-using TrustedResolver=int (*)(void* resolver_context,
-                             const void* server_owned_user_context,
-                             const DiamondIngress::Observation* observed,
-                             VerifiedIdentity* output);
+// Host must first acquire an AUTHENTICATED, EXCLUSIVE session lease.
+// The lease keeps WorldSvr context and its server catalog state alive
+// through WorldBridge's complete commit/abort. A mere lookup is unsafe.
+// Both first/second DWORDs are UNTRUSTED inputs, not proof by themselves.
+using TrustedAcquireLease=int (*)(void* authority_context,
+                                  const void* server_owned_user_context,
+                                  const DiamondIngress::Observation* observed,
+                                  void** out_lease,VerifiedIdentity* output);
+using TrustedReleaseLease=void (*)(void* authority_context,void* lease) noexcept;
 struct Binding {
   std::uint32_t abi=kBindingABI;
   const cabal_diamond_engine* engine=nullptr;
   cabal_diamond_world_callbacks callbacks{};
   void* backend_context=nullptr;
-  TrustedResolver resolve=nullptr;
-  void* resolver_context=nullptr;
+  TrustedAcquireLease acquire_exclusive=nullptr;
+  TrustedReleaseLease release_exclusive=nullptr;
+  void* authority_context=nullptr;
+};
+struct ScopedLease {
+  const Binding& host;
+  void* token=nullptr;
+  explicit ScopedLease(const Binding& binding) noexcept:host(binding){}
+  ~ScopedLease() noexcept {
+    if(token && host.release_exclusive)
+      host.release_exclusive(host.authority_context,token);
+  }
+  ScopedLease(const ScopedLease&)=delete;
+  ScopedLease& operator=(const ScopedLease&)=delete;
 };
 inline std::mutex& BindingMutex() {static std::mutex m;return m;}
 inline Binding& BindingSlot() {static Binding b{};return b;}
@@ -60,7 +74,8 @@ inline bool ExactCloneOptIn() noexcept {
 }
 inline bool InstallOnce(const Binding* source) noexcept {
   if(!ExactCloneOptIn()||!source||source->abi!=kBindingABI||
-     !source->engine||!source->resolve||
+     !source->engine||!source->acquire_exclusive||
+     !source->release_exclusive||
      source->callbacks.version!=CABAL_DIAMOND_WORLD_BRIDGE_VERSION||
      !source->callbacks.begin_authenticated_locked||
      !source->callbacks.load_trusted_state||
@@ -85,8 +100,12 @@ inline Result Process(const void* server_owned_user_context,
   }
   if(!server_owned_user_context)return Result::AuthRefused;
   VerifiedIdentity identity{};
+  ScopedLease lease(b); // destroyed after callback commit/abort on all paths
   try {
-    if(b.resolve(b.resolver_context,server_owned_user_context,&observed,&identity)!=0 ||
+    const int obtained=b.acquire_exclusive(
+      b.authority_context,server_owned_user_context,&observed,
+      &lease.token,&identity);
+    if(obtained!=0 || !lease.token ||
        !identity.authenticated_session ||
        identity.user_num!=kSyntheticUserNum ||
        identity.expected_revision==0 ||
