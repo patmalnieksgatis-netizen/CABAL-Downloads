@@ -15,7 +15,7 @@
 
 namespace DiamondBoundIngress {
 constexpr std::uint32_t kSyntheticUserNum=900001u;
-constexpr std::uint32_t kBindingABI=1u;
+constexpr std::uint32_t kBindingABI=2u; // resolver signature + packet-attestation ABI changed
 
 enum class Result : int {
   Unchanged=0, Disabled=1, CandidateNoHost=2, ShadowApplied=3,
