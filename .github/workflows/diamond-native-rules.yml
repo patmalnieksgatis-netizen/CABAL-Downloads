@@ -42,8 +42,10 @@ jobs:
       - name: Publish tested native library (OFFLINE ONLY, not a WorldSvr drop-in)
         uses: actions/upload-artifact@v4
         with:
-          name: diamond-native-v291-offline-linux-x64
-          path: /tmp/libDiamondNative.so
+          name: diamond-native-v291-mssql-shadow-clone-linux-x64
+          path: |
+            /tmp/libDiamondNative.so
+            /tmp/diamond_mssql_shadow_smoke
           if-no-files-found: error
           retention-days: 7
       - name: Confirm no server launch
