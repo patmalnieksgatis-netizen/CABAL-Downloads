@@ -14,11 +14,11 @@ import subprocess
 import sys
 
 SONAME="libDiamondWorldCloneOffline.so"
-V2_BIND="cabal_diamond_proc_bind_shadow_clone_v2"
+V2_BIND="cabal_diamond_proc_bind_shadow_clone_v3"
 V1_BIND="cabal_diamond_proc_bind_shadow_clone_v1"
 V2_MERIT="cabal_diamond_merit_verified_shadow_route"
 CURRENT_LIB_SO_SHA256="6679e46aa2ee915d97de9501ba027cae3eec153f1cd82e7c16ed47221c63ecab"
-TEST_INGRESS="cabal_diamond_proc_test_ingress_clone_v2"
+TEST_INGRESS="cabal_diamond_proc_test_ingress_clone_v3"
 
 def exports(path):
     output=subprocess.run(["nm","-D","--defined-only",str(path)],
@@ -60,7 +60,7 @@ def run(root: pathlib.Path,native_lib: pathlib.Path,merit_cpp: pathlib.Path,
             "source clone missing critical files")
     require(V2_BIND in proc.read_text() and TEST_INGRESS in proc.read_text() and
             V1_BIND not in proc.read_text() and
-            "kBindingABI=2u" in bind.read_text(),
+            "kBindingABI=3u" in bind.read_text(),
             "source clone must use new WorldSvr ABI v2")
     require(V2_MERIT in merit_cpp.read_text() and
             "DIAMOND_ENABLE_SHADOW_TRIAL" in merit_cpp.read_text(),
