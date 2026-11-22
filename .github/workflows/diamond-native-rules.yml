@@ -34,7 +34,7 @@ jobs:
           nm -D /tmp/libDiamondNative.so | grep cabal_diamond_world_execute
           g++ -std=c++17 -O2 -Wall -Wextra -Werror -pedantic -o /tmp/diamond_synthetic_catalog diamond-insignia/native/test_emit_synthetic_scp.cpp
           /tmp/diamond_synthetic_catalog > /tmp/diamond_synthetic.scp
-          g++ -std=c++17 -O2 -Wall -Wextra -Werror -pedantic -pthread -o /tmp/diamond_sqlite_testhost diamond-insignia/native/diamond_sqlite_testhost.cpp -L/tmp -lDiamondNative -lsqlite3 -Wl,-rpath,/tmp
+          g++ -std=c++17 -O2 -Wall -Wextra -Werror -pedantic -pthread -DDIAMOND_ENABLE_SHADOW_TRIAL -o /tmp/diamond_sqlite_testhost diamond-insignia/native/diamond_sqlite_testhost.cpp diamond-insignia/native/diamond_merit_world_entry.cpp -L/tmp -lDiamondNative -lsqlite3 -Wl,-rpath,/tmp
           /tmp/diamond_sqlite_testhost --selftest /tmp/diamond_synthetic.scp /tmp/diamond_synthetic_durable.sqlite3
           g++ -std=c++17 -O2 -Wall -Wextra -Werror -pedantic -fPIC -shared -o /tmp/libDiamondMeritGate.so diamond-insignia/native/diamond_merit_world_entry.cpp
           nm -D /tmp/libDiamondMeritGate.so | grep cabal_diamond_merit_classify_c2s
