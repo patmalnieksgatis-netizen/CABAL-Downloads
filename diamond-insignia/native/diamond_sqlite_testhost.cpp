@@ -149,15 +149,31 @@ void init_db(const char* path){sqlite3* db=nullptr;
  try{
   // EXCLUSIVELY test_* tables. Refuse any existing file to protect player data.
   sql(db,"PRAGMA foreign_keys=ON");
+  sql(db,"BEGIN IMMEDIATE");
   sql(db,"CREATE TABLE test_account(usernum INTEGER PRIMARY KEY, nonce INTEGER NOT NULL,"
          "badge INTEGER NOT NULL CHECK(badge IN(1,2)),wexp INTEGER NOT NULL CHECK(wexp>=0),"
          "tickets INTEGER NOT NULL CHECK(tickets>=0),points INTEGER NOT NULL CHECK(points>=0),"
          "revision INTEGER NOT NULL CHECK(revision>=0))");
-  sql(db,"CREATE TABLE test_mastery(usernum INTEGER NOT NULL REFERENCES test_account(usernum),"
-         "mastery_id INTEGER NOT NULL,level INTEGER NOT NULL CHECK(level>=1),"
+  sql(db,"CREATE TABLE test_open_slots("
+         "usernum INTEGER NOT NULL REFERENCES test_account(usernum),"
+         "mastery_id INTEGER NOT NULL CHECK(mastery_id BETWEEN 159 AND 474),"
          "PRIMARY KEY(usernum,mastery_id))");
+  sql(db,"CREATE TABLE test_mastery("
+         "usernum INTEGER NOT NULL,mastery_id INTEGER NOT NULL,"
+         "level INTEGER NOT NULL CHECK(level BETWEEN 1 AND 100),"
+         "PRIMARY KEY(usernum,mastery_id),"
+         "FOREIGN KEY(usernum,mastery_id) REFERENCES test_open_slots(usernum,mastery_id))");
+  // Only synthetic users. 900002 must remain unchanged for the entire test.
   sql(db,"INSERT INTO test_account(usernum,nonce,badge,wexp,tickets,points,revision)"
-         " VALUES(900001,439041101,1,40000,120,100,10)");
+         " VALUES(900001,439041101,1,40000,120,100,10),"
+         "       (900002,439041102,1,40000,120,100,10)");
+  // The 316 Diamond IDs are available as explicitly opened TEST slots.
+  // Real game slots MUST be loaded from WorldSvr, not opened wholesale.
+  sql(db,"WITH RECURSIVE slots(id) AS "
+         "(SELECT 159 UNION ALL SELECT id+1 FROM slots WHERE id<474) "
+         "INSERT INTO test_open_slots(usernum,mastery_id)"
+         "SELECT 900001,id FROM slots");
+  sql(db,"COMMIT");
  }catch(...){sqlite3_close(db);throw;}
  sqlite3_close(db);
 }
