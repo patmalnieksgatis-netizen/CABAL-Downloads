@@ -28,7 +28,7 @@ ParseStatus ParseLegacyRequest(const void* bytes, std::size_t length,
 }
 std::array<std::uint8_t,kLegacyResultBytes>
 EncodeLegacyResult(bool committed) noexcept {
-    // The same 7-byte shape appears at 0xA3B544/0xA3B5C9 in WorldSvr.
+    // The same 7-byte shape appears at 0xA3B544/0xA3B5CA in WorldSvr.
     return {0xE2,0xB7,0x07,0x00,0xF3,0x09,static_cast<std::uint8_t>(committed ? 1 : 0)};
 }
 const char* ParseStatusName(ParseStatus s) noexcept {
