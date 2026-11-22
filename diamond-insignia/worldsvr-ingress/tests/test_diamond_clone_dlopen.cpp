@@ -4,6 +4,7 @@
 #include <cstdlib>
 #include <cstdint>
 #include <iostream>
+#include <mutex>
 #include <dlfcn.h>
 #include <string>
 #include <vector>
@@ -15,6 +16,8 @@ struct Store {
  std::uint32_t revision=10,slot=159;
  int points=50,level=0,commits=0,aborts=0;
  bool fail=false;
+ std::mutex session_mutex;
+ int leases=0,releases=0;
  cabal_diamond_level_entry row{159,0};
 };
 struct Tx {Store* store;};
@@ -35,30 +38,43 @@ int load(void*,void* token,cabal_diamond_state* s) {
 int commit(void*,void* token,const cabal_diamond_request* request,
            const cabal_diamond_evaluation* proposal) {
  auto* tx=static_cast<Tx*>(token);auto& h=*tx->store;
- if(h.fail || !proposal->permitted || request->expected_revision!=h.revision ||
+ if(h.leases!=h.releases+1 || h.fail || !proposal->permitted ||
+    request->expected_revision!=h.revision ||
     proposal->new_revision!=h.revision+1 || proposal->changed_mastery_id!=159 ||
     proposal->changed_mastery_level!=h.level+1)return -1;
  h.revision=proposal->new_revision;h.points=proposal->new_free_points;
  h.level=proposal->changed_mastery_level;++h.commits;delete tx;return 0;
 }
 void abort_tx(void*,void* token){auto* tx=static_cast<Tx*>(token);++tx->store->aborts;delete tx;}
-int resolve(void* host,const void* user_context,
-            const DiamondIngress::Observation* observed,VerifiedIdentity* id){
+int acquire(void* host,const void* user_context,
+            const DiamondIngress::Observation* observed,
+            void** lease,VerifiedIdentity* id) {
  auto& h=*static_cast<Store*>(host);
- if(!observed || user_context!=&h.user || h.user.secret!=4567)return -1;
- // Synthetic host only: explicitly match BOTH legacy payload fields. This
- // deliberately does not constitute evidence of the real game's ABI.
- if(observed->mastery_id!=159 || observed->second_field!=999)return -1;
+ if(!lease||!id)return -1;
+ *lease=nullptr;*id={};
+ if(user_context!=&h.user || h.user.secret!=4567 || !observed)return -1;
+ h.session_mutex.lock();
+ *lease=&h;++h.leases;
  id->authenticated_session=&h.session;id->user_num=kSyntheticUserNum;
  id->expected_revision=h.revision;
  id->server_catalog_grade_two_confirmed=1;
  id->server_selector_confirms_diamond=1;
- id->first_payload_dword_authoritatively_matched=1;
- id->second_payload_dword_authoritatively_matched=1;
+ // The synthetic HOST knows its two expected values independently.
+ id->first_payload_dword_authoritatively_matched=
+    observed->mastery_id==159?1u:0u;
+ id->second_payload_dword_authoritatively_matched=
+    observed->second_field==999?1u:0u;
  id->matched_first_payload_dword=159;
  id->matched_second_payload_dword=999;
  return 0;
 }
+void release(void* host,void* lease) noexcept {
+ auto& h=*static_cast<Store*>(host);
+ if(lease!=&h)return;
+ ++h.releases;
+ h.session_mutex.unlock();
+}
+
 std::vector<std::uint8_t> packet(unsigned opcode,unsigned mastery){
  std::vector<std::uint8_t> p(18,0);
  p[0]=0xe2;p[1]=0xb7;p[2]=18;p[8]=static_cast<std::uint8_t>(opcode);
@@ -86,11 +102,12 @@ int main(int argc,char**argv){
  assert(process(&h.user,diamond.data(),diamond.size())==Result::Disabled);
  setenv("CABAL_DIAMOND_SHADOW_TRIAL","ISOLATED_SYNTHETIC_USER_900001_ONLY",1);
  Binding binding{};binding.engine=engine;binding.backend_context=&h;
- binding.resolve=resolve;binding.resolver_context=&h;
+ binding.acquire_exclusive=acquire;binding.release_exclusive=release;
+ binding.authority_context=&h;
  binding.callbacks.version=1;binding.callbacks.begin_authenticated_locked=begin;
  binding.callbacks.load_trusted_state=load;binding.callbacks.commit_durable=commit;
  binding.callbacks.abort_transaction=abort_tx;
- Binding oldAbi=binding;oldAbi.abi=1; // prior unsafe resolver signature
+ Binding oldAbi=binding;oldAbi.abi=2; // prior resolver-without-lease ABI
  assert(bind(&oldAbi)!=0);
  assert(bind(&binding)==0);assert(bind(&binding)!=0);
  assert(process(&h.user,gold.data(),gold.size())==Result::Unchanged);
@@ -109,12 +126,13 @@ int main(int argc,char**argv){
  h.fail=false;
  assert(process(&h.user,diamond.data(),diamond.size())==Result::ShadowApplied);
  assert(h.level==2 && h.points==35 && h.revision==12 && h.commits==2);
+ assert(h.leases==h.releases && h.leases>=5);
  unsetenv("CABAL_DIAMOND_SHADOW_TRIAL");
  assert(process(&h.user,diamond.data(),diamond.size())==Result::Disabled);
  cabal_diamond_engine_destroy(engine);
  dlclose(handle);
  std::cout<<"DIAMOND_LINKED_OFFLINE_CLONE_DLOPEN=PASS\n"
-          <<"TRUSTED_SESSION_RESOLVER_REQUIRED=PASS\n"
+          <<"WORLD_SESSION_LEASE_HELD_THROUGH_COMMIT=PASS\n"
           <<"GOLD_PLATINUM_PASS_THROUGH=PASS\n"
           <<"PRODUCTION_GAME_OR_DB_ACCESSED=NO\n";
 }
