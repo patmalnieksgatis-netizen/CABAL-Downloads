@@ -10,7 +10,7 @@ import sys
 import unittest
 import zipfile
 from pathlib import Path
-sys.path.insert(0,str(Path(__file__).parents[1]))
+sys.path.insert(0,str(Path(__file__).parents[1]/'src'))
 from prove_resource_route import inspect, EvidenceError
 
 class ResourceRouteTest(unittest.TestCase):
