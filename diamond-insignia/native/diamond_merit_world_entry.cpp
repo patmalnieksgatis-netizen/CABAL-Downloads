@@ -57,30 +57,12 @@ extern "C" int cabal_diamond_merit_shadow_route(
    *route=CABAL_MERIT_ROUTE_ORIGINAL;
    return 0;
  }
-#if !defined(DIAMOND_ENABLE_SHADOW_TRIAL)
- // Production builds are classification-only. No Diamond SQL/WExp/item effects.
+// Legacy ABI remains classification-only, EVEN in experimental builds.
+// Explicit trust evidence is required by cabal_diamond_merit_verified_shadow_route.
  (void)engine;(void)session;(void)user;(void)trusted_revision;
  (void)callbacks;(void)callback_context;(void)enabled;
  *route=CABAL_MERIT_ROUTE_DISABLED;
  return 0;
-#else
- if(enabled!=1){
-   *route=CABAL_MERIT_ROUTE_DISABLED;
-   return 0;
- }
- if(!engine || !session || !user || !callbacks || trusted_revision==0)
-   return -3;
- const cabal_diamond_request cmd{
-   CABAL_DIAMOND_ABI_VERSION,CABAL_DIAMOND_MASTERY_LEVEL_UP,
-   trusted_revision,static_cast<std::int32_t>(view.candidate_mastery_index)
- };
- const int status=cabal_diamond_world_execute(engine,session,user,&cmd,
-                                               callbacks,callback_context,world);
- if(status!=0)return status;
- *route=(world->status==CABAL_DIAMOND_WORLD_APPLIED)
-   ? CABAL_MERIT_ROUTE_SHADOW_APPLIED:CABAL_MERIT_ROUTE_SHADOW_REJECTED;
- return 0;
-#endif // DIAMOND_ENABLE_SHADOW_TRIAL
 }
 
 extern "C" int cabal_diamond_merit_verified_shadow_route(
@@ -112,7 +94,27 @@ extern "C" int cabal_diamond_merit_verified_shadow_route(
    *route=CABAL_MERIT_ROUTE_DISABLED;
    return 0;
  }
- return cabal_diamond_merit_shadow_route(
-   engine,bytes,len,session,user,trusted_revision,
-   callbacks,callback_context,enabled,world,route);
+#if !defined(DIAMOND_ENABLE_SHADOW_TRIAL)
+ (void)engine;(void)session;(void)user;(void)trusted_revision;
+ (void)callbacks;(void)callback_context;(void)enabled;
+ *route=CABAL_MERIT_ROUTE_DISABLED;
+ return 0;
+#else
+ if(enabled!=1) {
+   *route=CABAL_MERIT_ROUTE_DISABLED;
+   return 0;
+ }
+ if(!engine || !session || !user || !trusted_revision || !callbacks)
+   return -3;
+ const cabal_diamond_request cmd{
+   CABAL_DIAMOND_ABI_VERSION,CABAL_DIAMOND_MASTERY_LEVEL_UP,
+   trusted_revision,static_cast<std::int32_t>(packet.candidate_mastery_index)
+ };
+ const int status=cabal_diamond_world_execute(engine,session,user,&cmd,
+                                               callbacks,callback_context,world);
+ if(status!=0)return status;
+ *route=(world->status==CABAL_DIAMOND_WORLD_APPLIED)
+   ? CABAL_MERIT_ROUTE_SHADOW_APPLIED:CABAL_MERIT_ROUTE_SHADOW_REJECTED;
+ return 0;
+#endif
 }
