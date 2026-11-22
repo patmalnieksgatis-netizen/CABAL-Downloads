@@ -103,7 +103,8 @@ int main() {
   assert(r.status==CABAL_DIAMOND_WORLD_AUTH_FAILED && s.commits==0);
   s.fail_commit=true;
   assert(cabal_diamond_world_execute(engine,&s.session,42,&rank,&callbacks,&s,&r)==0);
-  assert(r.status==CABAL_DIAMOND_WORLD_COMMIT_FAILED);
+  assert(r.status==CABAL_DIAMOND_WORLD_COMMIT_FAILED &&
+         r.evaluated.permitted==0 && r.evaluated.requires_atomic_commit==0);
   assert(s.revision==7 && s.wexp==40000 && s.tickets==120 && s.commits==0);
   s.fail_commit=false;
   s.authoritative=false;
