@@ -21,17 +21,18 @@ MAX_FILES = 150
 
 def inspect_payload(raw):
     info = {"size": len(raw), "sha256": hashlib.sha256(raw).hexdigest(),
-            "codec": "observed_xor4_raw_deflate_only",
+            "codec": "v11_loader_mapped_plus4_xor4_raw_deflate_trailer_length",
             "success": False, "reason": None}
-    if len(raw) < 9 or len(raw) > MAX_ENTRY:
+    if len(raw) < 13 or len(raw) > MAX_ENTRY:
         info["reason"] = "invalid_input_size"
         return info
-    expected = int.from_bytes(raw[:4], "little")
-    info["declared_uncompressed_size"] = expected
+    expected = int.from_bytes(raw[-4:], "little")
+    info["prefix_le32_observed"] = int.from_bytes(raw[:4], "little")
+    info["loader_trailer_uncompressed_size"] = expected
     if expected < 1 or expected > MAX_OUTPUT:
         info["reason"] = "uncompressed_size_out_of_bounds"
         return info
-    stream = bytearray(raw[4:])
+    stream = bytearray(raw[4:-4])
     for i in range(4):
         stream[i] ^= XOR4[i]
     info["decoded_stream_first4"] = bytes(stream[:4]).hex()
@@ -107,6 +108,7 @@ def audit(archive):
         "runtime_opened_path_proven": False,
         "diamond_ui_or_packet_proven": False,
         "tested_codec_is_only_one_observed_route": True,
+        "loader_binding_to_these_assets_proven": False,
         "candidates": result,
     }
 
