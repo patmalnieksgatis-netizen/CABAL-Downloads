@@ -201,7 +201,7 @@ Assert-MeritV9 ($bytes.Length -eq 15089000) 'Unexpected binary length'
 $delta=3072;$textBeginFile=1024;$textEndFile=11733504
 $pdataOffset=14474752;$pdataLength=522240
 Assert-MeritV9 (($pdataOffset+$pdataLength) -le $bytes.Length) 'Unexpected PDATA end'
-Assert-MeritV9 ((Get-MeritV9Hex $bytes (0x2b8b36-$delta) 5) -eq 'e8c9f4ffff') 'V8 processing-calI anchor mismatch'
+Assert-MeritV9 ((Get-MeritV9Hex $bytes (0x2b8b36-$delta) 5) -eq 'e8c9f4ffff') 'V8 processing-call anchor mismatch'
 Assert-MeritV9 ((Get-MeritV9Hex $bytes (0x2b8b59-$delta) 5) -eq 'e832ed7700') 'V8 copy-like call anchor mismatch'
 Assert-MeritV9 ((Get-MeritV9Hex $bytes (0x2b7f97-$delta) 5) -eq 'e8903e7b00') 'V8 cleanup call anchor mismatch'
 # Targets are next evidence, NOT asserted to be read/decode routines.
