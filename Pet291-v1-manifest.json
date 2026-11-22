@@ -14,10 +14,11 @@
   "client_sha256": "658a5ca2722201a3df991949b023f7159b379cc0627bf79bbe80c2a4fc03c442",
   "scope": "TEST_VM_192.168.56.101_ACCOUNT1004",
   "price_mileage": 50,
-  "purchase_and_self_appearance": "CANDIDATE_GAMEPLAY_PENDING",
+  "purchase_and_self_appearance": "USER_REPORTED_WORKING_2026-11-22",
   "physical_registration": "PENDING",
   "peer_pet_appearance": "PENDING",
   "sql_engine_test": "IMAGE_REGISTRY_FORBIDDEN",
   "sql_grammar_batches": 21,
-  "bridge_fixture_checks": 904
+  "bridge_fixture_checks": 904,
+  "confirmation_scope": "User replied strada after the paired install and purchase/Apply instructions. Target logs and receipt were not independently collected. Relog persistence was not separately reported."
 }
