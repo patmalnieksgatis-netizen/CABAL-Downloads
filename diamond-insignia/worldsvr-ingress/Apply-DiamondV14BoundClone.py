@@ -101,12 +101,12 @@ def patch(source,output):
         p+='''
 #if defined(DIAMOND_ENABLE_SHADOW_TRIAL)
 extern "C" __attribute__((visibility("default")))
-int cabal_diamond_proc_bind_shadow_clone_v2(
+int cabal_diamond_proc_bind_shadow_clone_v3(
     const DiamondBoundIngress::Binding* binding) {
     return DiamondBoundIngress::InstallOnce(binding)?0:-1;
 }
 extern "C" __attribute__((visibility("default")))
-int cabal_diamond_proc_test_ingress_clone_v2(
+int cabal_diamond_proc_test_ingress_clone_v3(
     const void* context,const void* bytes,std::size_t length) {
     return static_cast<int>(DiamondBoundIngress::Process(context,bytes,length));
 }
