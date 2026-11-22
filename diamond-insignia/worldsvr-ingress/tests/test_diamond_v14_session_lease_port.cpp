@@ -8,6 +8,8 @@
 #include <iostream>
 #include <mutex>
 #include <thread>
+#include <chrono>
+#include <condition_variable>
 
 using namespace diamond_v291;
 using namespace DiamondBoundIngress;
@@ -15,6 +17,9 @@ struct Store {
     alignas(8) std::array<unsigned char,0xF0> userContext{};
     alignas(8) std::array<unsigned char,0xA28> userData{};
     std::mutex mutex;
+    std::mutex gateMutex;
+    std::condition_variable gateCV;
+    bool pauseInCommit=false,commitEntered=false,releaseCommit=false;
     bool connected=true,permit=true,gradeTwo=true,selector=true,commitFails=false;
     bool swapData=false,wrongOwner=false;
     std::uint64_t generation=19;
@@ -85,6 +90,12 @@ int load(void*,void* p,cabal_diamond_state* out) {
 int commit(void*,void* p,const cabal_diamond_request* cmd,
            const cabal_diamond_evaluation* e) {
     auto* tx=static_cast<Tx*>(p);auto& s=*tx->host;
+    if(s.pauseInCommit) {
+        std::unique_lock<std::mutex> gate(s.gateMutex);
+        s.commitEntered=true;
+        s.gateCV.notify_all();
+        s.gateCV.wait(gate,[&]{return s.releaseCommit;});
+    }
     if(s.commitFails||s.acquired!=s.released+1||!e->permitted||
        e->new_revision!=s.revision+1||cmd->expected_revision!=s.revision||
        e->changed_mastery_id!=159||e->changed_mastery_level!=s.level+1)
@@ -153,7 +164,34 @@ int main() {
     altered=request(160,999);
     assert(Process(state.userContext.data(),altered.data(),altered.size())==DiamondBoundIngress::Result::AuthRefused);
     assert(state.acquired==state.released);
-    assert(Process(state.userContext.data(),candidate.data(),candidate.size())==DiamondBoundIngress::Result::ShadowApplied);
+    // Real concurrent blocker test: a session disconnect/character switch
+    // cannot acquire the registry mutex while a Diamond debit is in commit.
+    state.pauseInCommit=true;
+    DiamondBoundIngress::Result purchaseOutcome=DiamondBoundIngress::Result::Invalid;
+    std::thread buyer([&]{
+        purchaseOutcome=Process(state.userContext.data(),
+                                candidate.data(),candidate.size());
+    });
+    bool entered=false;
+    {
+        std::unique_lock<std::mutex> gate(state.gateMutex);
+        entered=state.gateCV.wait_for(gate,std::chrono::seconds(4),
+                                     [&]{return state.commitEntered;});
+    }
+    bool couldDisconnect=false;
+    if(entered) {
+        couldDisconnect=state.mutex.try_lock();
+        if(couldDisconnect)state.mutex.unlock();
+    }
+    {
+        std::lock_guard<std::mutex> gate(state.gateMutex);
+        state.releaseCommit=true;
+    }
+    state.gateCV.notify_all();
+    buyer.join();
+    assert(entered && !couldDisconnect &&
+           purchaseOutcome==DiamondBoundIngress::Result::ShadowApplied);
+    state.pauseInCommit=false;
     assert(state.points==45 && state.level==1 && state.revision==12 &&
            state.commits==1 && state.acquired==state.released);
     state.commitFails=true;
@@ -169,6 +207,7 @@ int main() {
     cabal_diamond_engine_destroy(engine);
     std::cout<<"DIAMOND_V14_SESSION_POINTER_OWNER_AND_GENERATION=PASS\n"
              <<"AUTHORITY_LOCK_HELD_ACROSS_COMMIT=PASS\n"
+             <<"CONCURRENT_DISCONNECT_BLOCKED_UNTIL_COMMIT=PASS\n"
              <<"MALFORMED_OR_UNATTESTED_C2S_NO_DEBIT=PASS\n"
              <<"REAL_WORLDSVR_REGISTRY=NOT_CONNECTED\n";
 }
