@@ -12,9 +12,9 @@ Verified direct machine-code sequence:
 
 - `0x21791C: call [0xB32558]` with `EDX=0x80000000` (generic read) and creation disposition `3`, then checks handle for `-1`.
 - `0x21793F`, `0x217957`, `0x217987: call [0xB325D8]` seeking through the file.
-- `0x217975: call [0xB32570]` with requested byte count `4`, writes the apparent 4-byte length/header into pointer from `R8` of outer wrapper.
+- `0x217975: call [0xB32570]` with requested byte count `4`, writes a 4-byte value read from the **last four bytes of the file (trailer)** into pointer from `R8` of outer wrapper; the complete seek sequence was confirmed in V7.
 - `0x2179A3: call [0xB325F8]`; `0x2179BE: call [0xB325E8]`; strong argument-based indication of read-only file mapping and view.
-- `0x2179D7: call 0x9F8F14` allocates a buffer with length based on first 4 bytes; `0x2179DC` stores pointer to output resource slot; `0x2179F1` increments stored size field.
+- `0x2179D7: call 0x9F8F14` allocates a buffer with length based on that **4-byte trailer** (+1); `0x2179DC` stores pointer to output resource slot; `0x2179F1` increments stored size field.
 - `0x217A17: call 0x2B7FAC` after `RCX=&[rsp+0x40]` pointing to output slot/buffer. **This is the next high-priority transformation/decoder candidate; behavior unknown until its body is inspected.**
 - `0x217A24` frees auxiliary buffer, and `0x217A2C/0x217A35/0x217A3E` use indirect API calls for mapped view/handle cleanup.
 
@@ -44,3 +44,7 @@ V5's earlier `DINPUT8.dll` owner label for those slots was a parser error and ha
 4. Inspect source callers/helpers `0x21A9CC`, `0x21A718`, `0x21A724`, `0x21DE30`, `0x21D9F8`, `0x21DBAC`, `0x2161B0`, `0x1F5914` as bounded static code samples.
 
 **Not yet proven:** Merit `.enc` specific load ID, codec/cryptography, Diamond packet/opcode, server feature or SQL persistence. Do not patch binaries/SQL or copy EP45 ENC without stronger evidence.
+
+## V7 correction (2026-11-22)
+
+The later V7 audit confirms source filename IDs **52 = meritsystem.enc** and **53 = meritsystem_msg.enc** from exact branch/address mapping and confirms the 4-byte size field used by the mapped-file loader is read from the **trailer**. See [V7_X64_ZIP_VERIFIED_20261122.md](./V7_X64_ZIP_VERIFIED_20261122.md). Its worker-dispatch wrapper at 0x2B7FAC calls 0x2B8B08; that next function has not yet been disassembled.
