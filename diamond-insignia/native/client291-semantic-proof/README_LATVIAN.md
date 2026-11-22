@@ -6,7 +6,7 @@
 
 - `CabalMain.exe` SHA256 `52e7956d4781fea1f0369cac8ab1eac4c3ddec2d1977c6557be53ec2b79885d9`, 15,089,000 B.
 - `meritsystem.enc` SHA256 `3d859032a8b42c3e011c6d7ff739c9ac088b7f63effbc8afbc7215e162c1b78a`, 41,368 B.
-- Klienta **lokālā** notikuma ID `0x1A1` (koriģēts pēc pilnas reģistrācijas secības pārbaudes) ir reģistrēta funkcija RVA `0x6FF14C`, kas sūta C2S **`0x09F3` 18 baitu** paketi, pie `+0x0A` un `+0x0E` ievietojot `Merit` singleton `+0x118` un `+0x11C` laukus. Pārbaude: RVA `0x6F123F`, `0x6F1253`, `0x6FF157`, `0x6FF161`, `0x6FF17C`, `0x6FF197`.
+- Klienta **lokālā** notikuma ID `0x1A1` (koriģēts pēc pilnas reģistrācijas secības pārbaudes) ir reģistrēta funkcija RVA `0x6FF14C`, kas sūta C2S **`0x09F3` 18 baitu** paketi, pie `+0x0A` un `+0x0E` ievietojot `Merit` singleton `+0x118` un `+0x11C` laukus. Pārbaude: RVA `0x6F1228`, `0x6F1236`, `0x6F123F`, `0x6F124A`, `0x6FF157`, `0x6FF161`, `0x6FF17C`, `0x6FF197`.
 - Tīkla `0x09F3` atbildes apstrādātājs reģistrēts pie RVA `0x6EFED7`, `0x6EFEEE`, mērķis `0x6F84FC`. Sekmīga statusa (`+6 == 1`) atzarā tiek **nosacīti** lasīts `uint32_le` no `+7` RVA `0x6F8585` vai `0x6F85B9`.
 - Pirmajā atzarā `0x37FA34` saņemtais skaitlis tiek ierakstīts Merit objekta laukā `+0xAB6C`. Kad Merit UI saskaita izlietotos punktus, tās pārbaudes RVA `0x2523BF–0x2523E3` un `0x63B70F–0x63B72D` **salīdzina šo budžetu ar iztērēto punktu summu**. Tādēļ papildu vērtība šajā atzarā ir Merit pieejamais punktu budžets/limits, nevis ignorējams padding.
 - Citā atzarā `0x37F9D8` pieraksta `+7` skaitli kā vērtību Merit divu atslēgu stāvokļa tabulā (sk. RVA `0x37FA1B`). Šīs tabulas domēna lauku nozīme nav pilnīgi identificēta.
@@ -34,7 +34,7 @@ Publiskā [libcozip](https://github.com/Michael-K-GH/libcozip) formāta piemēr�
 
 ## Nepieciešams reālajam Diamond labojumam
 
-1. **Pierādīt, kuru C2S opcode sūta Diamond Insignia pogas**; `0x1A2` vietējā Merit darbība NAV tieši identificēta kā Diamond.
+1. **Pierādīt, kuru C2S opcode sūta Diamond Insignia pogas**; `0x1A1` vietējā Merit darbība NAV tieši identificēta kā Diamond.
 2. Pierādīt servera autoritatīvo `0x09F3` papildu skaitļa avotu un pilno S2C atbildes shēmu. **Nesūtīt izdomātu 11B success un nulles**.
 3. Izprast v291 `meritsystem.enc` patieso kriptēšanas/dekompresijas metodi, nevis pielietot EP33 key.
 4. Piesaistīt esošo `DiamondCommitGate`, ODBC adapteri, WorldSvr sesiju adapteri un `WorldSaveBarrier` reālai vienotai inventāra/WExp/kvīts saglabāšanai un pārbaudīt atsevišķā VM klonā.
