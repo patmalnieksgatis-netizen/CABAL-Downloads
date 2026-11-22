@@ -43,7 +43,7 @@ jobs:
           nm -D /tmp/libDiamondNative.so | grep cabal_diamond_mssql_shadow_callbacks
           g++ -std=c++17 -O2 -Wall -Wextra -Werror -pedantic -pthread -o /tmp/diamond_mssql_shadow_smoke diamond-insignia/native/diamond_mssql_shadow_smoke.cpp -L/tmp -lDiamondNative -Wl,-rpath,'$ORIGIN'
           /tmp/diamond_mssql_shadow_smoke 2>/tmp/diamond_shadow_no_args.stderr && exit 44 || test $? -eq 2
-      - name: Publish tested native library (OFFLINE ONLY, not a WorldSvr drop-in)
+      - name: Validate exact v291 Merit wire boundaries (offline only)\n        run: bash diamond-insignia/native/client291-wire/run-tests.sh\n      - name: Publish tested native library (OFFLINE ONLY, not a WorldSvr drop-in)
         uses: actions/upload-artifact@v4
         with:
           name: diamond-native-v291-mssql-shadow-clone-linux-x64
