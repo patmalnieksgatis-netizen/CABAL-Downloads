@@ -54,3 +54,16 @@ A second compile of the **same source tree** with flag \`-DDIAMOND_V14_PROBE_AUT
 - The full patched private v14 source plus diffs and test code is in conversation artifact \`CABAL_V291_Diamond_v14_Bridge_20261122.zip\`; private source itself was not put in public GitHub.
 
 **Deployment truth:** This is **not Diamond/Mandarat gameplay activation**. The probe is for confirming whether the client's real commands actually reach the installed C2S path before building a real host-authenticated item 33554961/WExp/SQL commit and S2C serializer. Never describe it as finished live Diamond.
+
+
+## Actual VM outcome, 2026-11-22 11:46 UTC: probe start FAILURE and successful rollback
+
+The user ran \`preflight\`, PASS (active original 6679e46a... and probe 49e8cb...), followed by \`activate-probe\` on EP36_291_TEST. \`WorldSvr_01_01\` stopped; Supervisor spawned PID 31747 at 11:46:38.684; **process exited status 78** at 11:46:38.731 (~47 ms). The deploy helper automatically restored original \`lib.so\` and restarted WorldSvr instances. After rollback:
+
+- SHA256 of active \`/usr/lib/cabal/lib.so\` again **6679e46aa2ee915d97de9501ba027cae3eec153f1cd82e7c16ed47221c63ecab**
+- \`WorldSvr_01_01\` RUNNING PID 31748; \`WorldSvr_01_16\` RUNNING PID 31809; log shows \`Complete Loading Data\`
+- Boot log at UNIX epoch 1795347999 = 2026-11-22 11:46:39 UTC includes \`python3.12\` and \`WorldSvr_01_01\` entries; do NOT assume these correspond to failed PID 31747 because that process exited at 11:46:38. Logs do not yet identify why the failed process returned 78.
+- Source search found NO explicit \`exit(78)\` / \`_exit(78)\` / \`return 78\` in the patched extension. \`exit status 78\` often conventionally denotes config error but **not proven** here.
+- **ELF discrepancy discovered after failure:** running original library's DT_SONAME is \`lib.so\`, while compiled probe's dynamic section lacks SONAME. This is not proof of failure since the ELF loader does not generally require SONAME for LD_PRELOAD. Need verify runtime entrypoint/preload setup and failed-process stderr before creating or deploying revised library.
+- A different \`SIGSEGV\` from previous day 2026-11-21 14:21 is unrelated to this attempt. Some earlier broad grep commands missed failure due to \`grep -m 3\` or shell quoting; future diagnostics should target supervisor config \`[program:WorldSvr_01_01]\`, stderr/stdout around 11:46:38 with \`grep -a\`.
+- **Do not retry the same probe** pending root cause. No Diamond gameplay features enabled; original server restored.
