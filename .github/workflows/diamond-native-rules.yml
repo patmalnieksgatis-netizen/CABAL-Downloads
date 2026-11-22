@@ -40,6 +40,8 @@ jobs:
           nm -D /tmp/libDiamondMeritGate.so | grep cabal_diamond_merit_classify_c2s
           g++ -std=c++17 -O2 -Wall -Wextra -Werror -pedantic -DDIAMOND_ENABLE_SHADOW_TRIAL -o /tmp/test_diamond_merit_world_entry diamond-insignia/native/test_diamond_merit_world_entry.cpp diamond-insignia/native/diamond_merit_world_entry.cpp -L/tmp -lDiamondNative -Wl,-rpath,/tmp
           /tmp/test_diamond_merit_world_entry
+          g++ -std=c++17 -O2 -Wall -Wextra -Werror -pedantic -o /tmp/test_diamond_merit_production_gate diamond-insignia/native/test_diamond_merit_production_gate.cpp diamond-insignia/native/diamond_merit_world_entry.cpp
+          /tmp/test_diamond_merit_production_gate
           g++ -std=c++17 -O2 -Wall -Wextra -Werror -pedantic -o /tmp/diamond_mssql_shadow_auth_test diamond-insignia/native/test_diamond_mssql_shadow_bridge.cpp -L/tmp -lDiamondNative -Wl,-rpath,/tmp
           /tmp/diamond_mssql_shadow_auth_test
           nm -D /tmp/libDiamondNative.so | grep cabal_diamond_mssql_shadow_callbacks
