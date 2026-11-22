@@ -37,3 +37,20 @@ Therefore a separate `libdiamond_v291_sidecar.so` loaded **before** original `li
 **Not yet installed/tested** on owner's VM. Actual VM `LD_PRELOAD`/supervisor env and plugin ordering must be inspected first. No install instructions should modify live `lib.so`. A full rollback script for the service launch configuration and isolated snapshot is needed before a VM test.
 
 **Still NOT complete Diamond gameplay** — authoritative item 33554961/WExp debit, real SQL transaction, S2C serialization and client state remain unimplemented.
+
+
+## Live Supervisor launch configuration mismatch — 2026-11-22 12:xx
+
+User showed \`ps -p 3414 -o args=\` = \`/usr/bin/python3 /usr/bin/supervisord\`. Found on-disk \`/etc/cabal_scripts/cabal_services/cabal_server1.conf:73\` program \`WorldSvr_01_01\`; line 75 command uses:
+\`CABAL_EVENTPASS_CATALOG=1 LD_PRELOAD="/usr/lib/cabal/lib.so /usr/lib/cabal/libchilkat-9.5.0.so /usr/lib/cabal/libPolyHook_2.so /usr/lib/cabal/libZycore.so.1.4 /usr/lib/cabal/libZydis.so.4.0 /usr/lib/cabal/EP36CostumeCore_v1_5_3020fix.so" exec /usr/bin/WorldSvr_01_01 -c\`.
+
+**But actual live WorldSvr host PID 129045** (Supervisor reports inside-container PID 41752) has environment:
+\`LD_PRELOAD=/etc/cabal/migration_tools/ep36-costume-trial-v1/mileage-v1/EP36CostumeMileage.so /usr/lib/cabal/lib.so /usr/lib/cabal/libchilkat-9.5.0.so /usr/lib/cabal/libPolyHook_2.so /usr/lib/cabal/libZycore.so.1.4 /usr/lib/cabal/libZydis.so.4.0 /usr/lib/cabal/guardian-v1/GuardianArcana-v1.so /usr/lib/cabal/skillbook291/SkillBook291.so /usr/lib/cabal/cashshop291/CashShop291.so\`.
+
+**Important deployment blocker:** disk \`cabal_server1.conf\` and running process environment differ materially. It may be an unsaved or alternate Supervisor program configuration, a runtime change, or a launcher override. No evidence yet that this file is the actual loaded definition. Do not blindly \`sed\` or \`supervisorctl reread/update\`; that could remove CostumeMileage, GuardianArcana, SkillBook291 and CashShop291 on next restart. Need identify Supervisor's actual included configuration, environment= overrides, command, and ensure proper backup. The correct sidecar LD_PRELOAD place is directly before \`/usr/lib/cabal/lib.so\` and after \`EP36CostumeMileage.so\` if applicable; do not change rest of order.
+
+Another found file \`/etc/cabal/migration_tools/ep36-costume-trial-v1/build.sh\` references exit code 78 in a test tuple, but it is **not evidence** that this test script executed or generated previously observed WorldSvr exit status 78. Diagnose separately.
+
+Live status in that query: WorldSvr_01_01 RUNNING pid 41752 and WorldSvr_01_16 RUNNING pid 35626. Original \`lib.so\` was rolled back after failed v14 SONAME candidate. No sidecar deployed.
+
+Next: read-only inspect main \`/etc/supervisord.conf\` [include] stanza and full live program block, as well as paths containing \`EP36CostumeMileage.so\`, then build minimal reversible override. Continue with original \`lib.so\` unchanged.
