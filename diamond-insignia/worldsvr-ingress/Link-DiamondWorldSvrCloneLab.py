@@ -61,6 +61,15 @@ def run(root: pathlib.Path,native_lib: pathlib.Path,merit_cpp: pathlib.Path,
 
     sources=sorted(root.rglob("*.cpp"))
     require(len(sources)>=10,"incomplete archived source clone")
+    # V14 source patcher copies the exact native Merit implementation directly
+    # into the clone; the archived-source variant keeps it externally. NEVER
+    # compile the same translation unit twice.
+    extra_merit=[] if merit_cpp in sources else [merit_cpp]
+    if extra_merit:
+        require(not any(p.name in ("diamond_merit_world_entry.cpp",
+                                  "diamond_merit_world_entry_v2.cpp")
+                        for p in sources),
+                "refuse ambiguous duplicate Merit bridge implementation")
     # Object/list order matters: libraries MUST follow the compiled sources.
     # -z defs refuses missing SQL ODBC and native gate dependencies.
     cmd=[compiler,"-std=c++17","-O2","-fPIC",
@@ -68,7 +77,7 @@ def run(root: pathlib.Path,native_lib: pathlib.Path,merit_cpp: pathlib.Path,
          "-shared","-Wl,-z,defs","-Wl,-soname,"+SONAME,
          "-o",str(output)]
     cmd.extend(str(source) for source in sources)
-    cmd.extend([str(merit_cpp),"-L"+str(native_lib.parent),
+    cmd.extend([*(str(p) for p in extra_merit),"-L"+str(native_lib.parent),
                 "-lDiamondNative","-lodbc","-Wl,-rpath,$ORIGIN"])
     output.parent.mkdir(parents=True,exist_ok=True)
     try:
