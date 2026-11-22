@@ -6,3 +6,8 @@ g++ -std=c++17 -O2 -Wall -Wextra -Werror -Wpedantic -Isrc src/Client291MeritWire
 ./build/test
 g++ -std=c++17 -O1 -g -Wall -Wextra -Werror -Wpedantic -fsanitize=address,undefined -fno-omit-frame-pointer -Isrc src/Client291MeritWire.cpp tests/test_client291_wire.cpp -o build/test_asan
 ASAN_OPTIONS=detect_leaks=1 UBSAN_OPTIONS=halt_on_error=1 ./build/test_asan
+# Additional fail-closed boundary regressions: malformed/truncated C2S and S2C.
+g++ -std=c++17 -O2 -Wall -Wextra -Werror -Wpedantic -Isrc src/Client291MeritWire.cpp tests/test_client291_wire_boundaries.cpp -o build/test_boundaries
+./build/test_boundaries
+g++ -std=c++17 -O1 -g -Wall -Wextra -Werror -Wpedantic -fsanitize=address,undefined -fno-omit-frame-pointer -Isrc src/Client291MeritWire.cpp tests/test_client291_wire_boundaries.cpp -o build/test_boundaries_asan
+ASAN_OPTIONS=detect_leaks=1 UBSAN_OPTIONS=halt_on_error=1 ./build/test_boundaries_asan
