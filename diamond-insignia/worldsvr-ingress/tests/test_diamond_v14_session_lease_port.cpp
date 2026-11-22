@@ -167,7 +167,7 @@ int main() {
     // Real concurrent blocker test: a session disconnect/character switch
     // cannot acquire the registry mutex while a Diamond debit is in commit.
     state.pauseInCommit=true;
-    DiamondBoundIngress::Result purchaseOutcome=DiamondBoundIngress::Result::Invalid;
+    DiamondBoundIngress::Result purchaseOutcome=DiamondBoundIngress::Result::BadEngine;
     std::thread buyer([&]{
         purchaseOutcome=Process(state.userContext.data(),
                                 candidate.data(),candidate.size());
