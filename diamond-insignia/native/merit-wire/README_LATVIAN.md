@@ -34,3 +34,15 @@ python3 evidence/verify_worldsvr_merit.py /path/to/exact/hash-pinned/WorldSvr
 ```
 
 Verifikatora skripts tikai nolasa failu. Spēlē nekas nav mainīts.
+
+## 2026-11-22: precīzais v291 x64 klients tagad saņemts un pārbaudīts
+
+Lietotājs augšupielādēja precīzo CabalMain.exe, SHA256 52e7956d4781fea1f0369cac8ab1eac4c3ddec2d1977c6557be53ec2b79885d9, un meritsystem.enc, SHA256 3d859032a8b42c3e011c6d7ff739c9ac088b7f63effbc8afbc7215e162c1b78a. Vecais aizrādījums šajā dokumentā, ka precīzais klients nav pieejams, ir NOVECojis.
+
+Jaunā analīze un pārbaudāmais kods: [client291-wire](../client291-wire/README_LATVIAN.md).
+
+- C2S 0x09F3 18 baiti APSTIPRINĀTI ar klienta funkciju RVA 0x6FF14C–0x6FF1B2, galveni E2 B7 12 00 un DWORD pie +0x0A, +0x0E.
+- Klienta 0x09F3 S2C callback RVA 0x6F84FC; success atzarā noteiktos gadījumos lasa DWORD no paketes +7.
+- Servera viena 0x09F3 success atbilde ir 7 baiti, kas nesatur šo DWORD. Potenciāls, nevis pierādīts spēles kļūdas cēlonis.
+- dia_meritscore_fomula atrodas klienta Merit datu parsētājā. Diamond rank-up opcode un pie +7 esošā lauka nozīme NAV verificēti; meritsystem.enc vēl nav atkodēts.
+- Nekādas klienta, VM, SQL vai lib.so izmaiņas.
