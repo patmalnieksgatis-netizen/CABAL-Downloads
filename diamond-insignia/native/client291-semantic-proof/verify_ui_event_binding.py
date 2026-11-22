@@ -83,12 +83,30 @@ def inspect(exe):
         or merit[0x15:0x1d]!=bytes.fromhex("c7442420e2b71200")
         or merit[0x4f:0x54]!=bytes.fromhex("e8a088bbff")):
         raise ValueError("Merit C2S sender byte anchors changed")
+    # Source-pinned adjacent, independent outgoing packet builders.
+    # These are UI-event callbacks; their relationship to Diamond is unproven.
+    outbound={
+        0x1a1:(MERIT_CALLBACK,0x6ff157,"b8f3090000",0x09f3,18),
+        0x1a2:(0x6fcd44,0x6fce79,"b8fd090000",0x09fd,20),
+        0x1a3:(0x6fcd00,0x6fcd15,"b8fb090000",0x09fb,10),
+        0x1a4:(0x6fcf44,0x6fcf59,"b8f9090000",0x09f9,10),
+    }
+    packet_evidence=[]
+    for event,(callback,site,expected,opcode,size) in outbound.items():
+        if int(maps[event]["handler_rva"],16)!=callback:
+            raise ValueError("packet callback mismatch")
+        if read_pe_rva(exe,site,5)!=bytes.fromhex(expected):
+            raise ValueError("packet opcode anchor changed")
+        packet_evidence.append({"event_id":hex(event),"handler_rva":hex(callback),
+                                "opcode":hex(opcode),"packet_size":size,
+                                "opcode_anchor_rva":hex(site)})
     return {"mode":"STATIC_EXACT_CLIENT_UI_EVENT_BINDINGS",
             "client_sha256":SHA,
             "ui_event_0x1a1_handler":hex(MERIT_CALLBACK),
             "merit_c2s_opcode":"0x09f3","merit_c2s_bytes":18,
             "previous_0x1a2_attribution":"CORRECTED_OFF_BY_ONE",
             "bindings":[maps[k] for k in sorted(EXPECTED)],
+            "adjacent_ui_packet_builders":packet_evidence,
             "diamond_button_proven":False,"runtime_event_fired_proven":False,
             "game_files_modified":False}
 
