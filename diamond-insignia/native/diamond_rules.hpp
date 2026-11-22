@@ -4,6 +4,7 @@
 // License: project-local integration scaffold.
 #pragma once
 #include <cstdint>
+#include <cstddef>
 #include <map>
 #include <set>
 #include <vector>
@@ -72,7 +73,7 @@ inline bool valid_levels(const TrustedState& s,const std::map<int,Mastery>& spec
 inline TransactionProposal rank_up(const TrustedState& s,uint32_t expected_revision) {
   TransactionProposal r; r.after=s; r.expected_revision=expected_revision;
   if (!s.authoritative) {r.result=Error::Untrusted; return r;}
-  if (s.revision!=expected_revision || s.revision==std::numeric_limits<uint32_t>::max())
+  if (s.revision!=expected_revision || s.revision>=static_cast<uint32_t>(std::numeric_limits<int32_t>::max()))
     {r.result=Error::Stale;return r;}
   if (s.badge_grade==2){r.result=Error::AlreadyDiamond;return r;}
   if (s.badge_grade!=1 || !s.platinum_badge) {r.result=Error::MissingPlatinum;return r;}
@@ -99,7 +100,7 @@ inline TransactionProposal mastery_level_up(const TrustedState& s,
   if (it==specs.end() || id<159 || id>474){r.result=Error::UnknownMastery;return r;}
   const Mastery& m=it->second;
   if (m.id!=id || category_root(m.category)==-1 || m.max_level<1 ||
-      m.level_cost.size()!=static_cast<size_t>(m.max_level)){
+      m.level_cost.size()!=static_cast<std::size_t>(m.max_level)){
     r.result=Error::InvalidConfig; return r;
   }
   if (s.active_categories.count(m.category)==0){r.result=Error::LockedCategory;return r;}
