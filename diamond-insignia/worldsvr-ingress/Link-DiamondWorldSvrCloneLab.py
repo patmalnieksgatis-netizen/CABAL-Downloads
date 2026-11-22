@@ -109,11 +109,17 @@ def run(root: pathlib.Path,native_lib: pathlib.Path,merit_cpp: pathlib.Path,
         require(V3_BIND in symbols and VERIFIED_MERIT in symbols and
                 TEST_INGRESS in symbols and V1_BIND not in symbols and V2_BIND not in symbols,
                 "missing/new and stale exported ABI mismatch")
+        native_deps=subprocess.run(["readelf","-d",str(native_lib)],
+                                   text=True,capture_output=True,check=True).stdout
+        # With GNU ld --as-needed, direct libodbc may be omitted from this
+        # wrapper if libDiamondNative.so itself already owns that dependency.
+        # The entire runtime dependency closure still requires libodbc.so.2.
+        requires_odbc=("Shared library: [libodbc.so.2]" in deps or
+                       "Shared library: [libodbc.so.2]" in native_deps)
         require("Library soname: ["+SONAME+"]" in deps and
                 "Shared library: [libDiamondNative.so]" in deps and
-                "Shared library: [libodbc.so.2]" in deps and
-                "Shared library: [lib.so]" not in deps,
-                "unexpected ELF identity or dependencies")
+                requires_odbc and "Shared library: [lib.so]" not in deps,
+                "unexpected ELF identity or missing transitive ODBC dependency")
     except BaseException:
         output.unlink(missing_ok=True)
         raise
