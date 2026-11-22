@@ -63,6 +63,24 @@ jobs:
             /tmp/diamond-dlopen-ci/diamond_clone_dlopen_smoke \
             /tmp/diamond-dlopen-ci/libDiamondSyntheticIngress.so
           echo 'CI_SHARED_OBJECT_IS_SYNTHETIC_NOT_ARCHIVED_WORLDSVR=YES'
+      - name: Prove v14 authenticated owner and catalog lease through Diamond WorldBridge
+        run: |
+          set -eux
+          g++ -std=c++17 -O2 -Wall -Wextra -Werror -pedantic \
+            -ffunction-sections -fdata-sections -DDIAMOND_ENABLE_SHADOW_TRIAL \
+            -Idiamond-insignia/native \
+            -Idiamond-insignia/native/commit-gate \
+            -Idiamond-insignia/native/world-session-bridge/deps \
+            diamond-insignia/worldsvr-ingress/tests/test_diamond_v14_session_lease_port.cpp \
+            diamond-insignia/worldsvr-ingress/DiamondV14SessionLeasePort.cpp \
+            diamond-insignia/native/world-session-bridge/DiamondWorldSessionBridge.cpp \
+            diamond-insignia/native/world-session-bridge/deps/EventPassOwnerV282.cpp \
+            diamond-insignia/native/diamond_merit_world_entry.cpp \
+            diamond-insignia/native/diamond_abi.cpp \
+            diamond-insignia/native/diamond_world_bridge.cpp \
+            -Wl,--gc-sections -pthread \
+            -o /tmp/diamond_v14_lease_attestation_test
+          /tmp/diamond_v14_lease_attestation_test
       - name: Verify patcher is syntactically valid and refuses unknown source
         run: |
           set -eux
