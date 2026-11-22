@@ -1,0 +1,24 @@
+name: Diamond Merit x64 mapped worker V8 Windows tests
+on:
+  push:
+    branches:
+      - feature/diamond-insignia-v291-20261121
+    paths:
+      - diamond-insignia/client-codec/Inspect-Cabal291-MeritWorker-V8.ps1
+      - .github/workflows/diamond-merit-x64-worker-v8.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  windows-power-shell:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify static PE/Pdata/hex synthetic tests without CABAL files
+        shell: powershell
+        run: |
+          & .\diamond-insignia\client-codec\Inspect-Cabal291-MeritWorker-V8.ps1 -SelfTestOnly
+      - name: Confirm no live game access
+        shell: powershell
+        run: |
+          Write-Output 'No CABAL binary, process memory, VM, SQL or server modifications.'
