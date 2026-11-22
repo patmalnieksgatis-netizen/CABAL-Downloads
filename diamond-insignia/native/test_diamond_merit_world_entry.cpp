@@ -85,7 +85,13 @@ int main(){
  assert(route==CABAL_MERIT_ROUTE_DISABLED && f.commits==0);
  for(unsigned i=1;i<=5;i++){
    auto changed=proof;
-   (&changed.authenticated_session)[i-1]=0;
+   switch(i){
+     case 1:changed.authenticated_session=0;break;
+     case 2:changed.server_catalog_grade_two_confirmed=0;break;
+     case 3:changed.server_selector_confirms_diamond=0;break;
+     case 4:changed.first_payload_dword_authoritatively_matched=0;break;
+     case 5:changed.second_payload_dword_authoritatively_matched=0;break;
+   }
    assert(cabal_diamond_merit_verified_shadow_route(
      engine,diamond.data(),diamond.size(),&f.session_token,f.user,3,
      &changed,&cb,&f,1,&world,&route)==0);
