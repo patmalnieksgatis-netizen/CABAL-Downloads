@@ -365,6 +365,11 @@ int main(int argc,char**argv){
   require(cabal_diamond_engine_create(cfg.data(),cfg.size(),&engine)==0,"native SCP catalog rejected");
   init_db(path.c_str());Host host{path};auto c=callbacks();
   cabal_diamond_request rank{1,CABAL_DIAMOND_RANK_UP,10,0};cabal_diamond_world_result result{};
+  // An authenticated pointer for account 900001 must not grant access to 900002.
+  require(cabal_diamond_world_execute(engine,&host.session,900002,&rank,
+          &c,&host,&result)==0 &&
+          result.status==CABAL_DIAMOND_WORLD_AUTH_FAILED,
+          "cross-account spoofing was not rejected");
   require(cabal_diamond_world_execute(engine,&host.session,host.session.uid,&rank,&c,&host,&result)==0 &&
           result.status==CABAL_DIAMOND_WORLD_APPLIED,"rankup did not commit");
   require(result.evaluated.new_wexp==10000 && result.evaluated.new_ticket_count==20,"rank resources wrong");
@@ -456,6 +461,25 @@ int main(int argc,char**argv){
       13,&second_proof,&c,&host,1,&result,&route)==0 &&
       route==CABAL_MERIT_ROUTE_SHADOW_REJECTED,
       "duplicate independent Diamond mastery accepted");
+  // All 316 synthetic slots are loaded from durable DB, not hard-coded IDs.
+  // Mastery 175 is category 11 but has an unresolved linked-mastery edge.
+  // It MUST NOT spend points until linked semantics are implemented.
+  auto linked_packet=c2s;
+  linked_packet[10]=175;
+  linked_packet[11]=0;
+  cabal_diamond_merit_server_proof linked_proof{
+    CABAL_DIAMOND_MERIT_PROOF_VERSION,1,1,1,1,1,
+    &host.session,host.session.uid,14,175,kUnknownPayload
+  };
+  require(cabal_diamond_merit_verified_shadow_route(
+      engine,linked_packet.data(),linked_packet.size(),
+      &host.session,host.session.uid,14,&linked_proof,
+      &c,&host,1,&result,&route)==0 &&
+      route==CABAL_MERIT_ROUTE_SHADOW_REJECTED &&
+      result.status==CABAL_DIAMOND_WORLD_REJECTED &&
+      result.evaluated.permitted==0,
+      "linked-masteries-unknown packet was permitted");
+  state_check(path,14,2,100-costs.first-costs.second-5,2);
   cabal_diamond_engine_destroy(engine);
   std::cout<<"DIAMOND_SQLITE_DURABLE_BRIDGE=PASS\n"
            <<"RESTART_PERSISTENCE=PASS\nROLLBACK=PASS\nCONCURRENT_REPLAY=PASS\n"
