@@ -40,3 +40,17 @@ The current binding processes only **read-only observation** and the synthetic l
 Run the default candidate **only on a snapshotted VM clone**, after verifying the backup SHA. Docker CLI can hang on that host, so use the host's `/proc/<WorldSvrPID>/root` and supervisor control once its availability is verified. Atomic renaming, not writing into a memory-mapped inode, is required. Both WorldSvr_01_01 and WorldSvr_01_16 use the same active `/usr/lib/cabal/lib.so`.
 
 Next tasks for Codex/local execution: compile and install the source-matched candidate in isolated clone; observe exact on-wire C2S Merit packet when clicking grade-up or Mastery; implement trusted full account/char and real DB+inventory atomic commit and correct S2C reply; only after tests add explicit production opt-in.
+
+
+## Updated isolated-VM installable passive probe build
+
+A second compile of the **same source tree** with flag \`-DDIAMOND_V14_PROBE_AUTO_OBSERVE\` produces the **isolated test-VM probe** as \`lib.so_diamond_v14_probe\`. This compile flag logs **at most the first 16** C2S Diamond Mastery 0x09F3 candidates and original Platinum grade-up 0x0B10 packet lengths/counts, without requiring edits to supervisord environment. It still performs **no Diamond game purchase, inventory, SQL, WExp, response or item changes**.
+
+- Probe SHA256: **\`49e8cbaecb5e723ca20d4af3ac31eca887da3cac6432b4b1560b99075a49379f\`**
+- Actual baseline active SHA256: **\`6679e46aa2ee915d97de9501ba027cae3eec153f1cd82e7c16ed47221c63ecab\`**
+- ELF symbol size check: all **136** original sized exported names retained; the **only** size change is \`ProcSystem::DoProcessDataCtx\` (326→624 bytes), exactly the function containing the new ingress logic.
+- No new ELF dependencies or GLIBC beyond 2.38. A standard non-WorldSvr LD_PRELOAD load test passed.
+- Conversation artifact \`CABAL_V291_Diamond_v14_VM_Probe_20261122.tar.gz\`, SHA256 \`18f4176be5baf5fd86beeef08c7cfd1c0447465a7d2c42601f83f8c1ffa67f7b\`. It has the probe plus a **VM-host no-Docker** SSH helper \`deploy_probe_VM_ONLY.sh\` with preflight, activate-probe, logs and rollback commands. The helper refuses unknown hostnames, wrong hashes, missing backup, missing supervisorctl or unsatisfied shared-library dependencies before any live replacement. It uses atomic rename into the container filesystem via \`/proc/<supervisord PID>/root/usr/lib/cabal/lib.so\` and only then supervisorctl restarts both WorldSvr instances. This helper was shell-syntax-checked locally but **not executed against the owner's VM**, so its environment assumptions must be validated in the preflight stage.
+- The full patched private v14 source plus diffs and test code is in conversation artifact \`CABAL_V291_Diamond_v14_Bridge_20261122.zip\`; private source itself was not put in public GitHub.
+
+**Deployment truth:** This is **not Diamond/Mandarat gameplay activation**. The probe is for confirming whether the client's real commands actually reach the installed C2S path before building a real host-authenticated item 33554961/WExp/SQL commit and S2C serializer. Never describe it as finished live Diamond.
