@@ -1,6 +1,6 @@
 # CABAL v291 x64 Merit / Diamond — V6 owner-run outcome (2026-11-22)
 
-**Evidence status:** this note is grounded **only in the PowerShell stdout pasted by the owner**, not in the ZIP's JSON or extracted code bytes. The ZIP `CABAL_DIAMOND_MERIT_X64_V6_20261122-092848.zip` was generated on the owner's Windows computer but **has not yet been supplied for independent disassembly**. Do not label conclusions about V6's function bodies as verified until its report is inspected.
+**Historical owner-run stdout record.** The ZIP was **subsequently uploaded and independently disassembled**. The verified byte-level conclusions, including the mapped-file loader at `0x2178E0` and transform candidate `0x2B7FAC`, are in [`V6_X64_ZIP_DISASSEMBLY_20261122.md`](./V6_X64_ZIP_DISASSEMBLY_20261122.md). This stdout note remains for traceability.
 
 ## Command provenance and safety
 
@@ -10,7 +10,7 @@ The script checks the same pinned source binary + ENC SHA256 as V5, and emits PD
 
 ## 10 exported source contexts
 
-All ten listed targets returned PDATA-bounded ranges; every range is below the script's 8192-byte full leading-byte limit, so the script should mark each `code_complete=true` in the **pending** JSON (verify when ZIP is received).
+All ten listed targets returned PDATA-bounded ranges; the subsequently received JSON confirmed `code_complete=true` and exact byte lengths for each.
 
 | Analysis label (not binary symbol) | PDATA RVA begin–end | Bytes |
 |---|---|---:|
