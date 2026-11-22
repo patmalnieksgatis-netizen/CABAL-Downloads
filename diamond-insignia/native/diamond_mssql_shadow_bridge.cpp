@@ -195,7 +195,8 @@ struct Transaction {
  }
 };
 int begin(void* context,const void* session,std::uint32_t user,void** out) {
- if(!out)return -1;*out=nullptr;
+ if(!out) return -1;
+ *out=nullptr;
  auto* c=static_cast<cabal_diamond_mssql_shadow_config*>(context);
  if(!c||c->abi_version!=CABAL_DIAMOND_MSSQL_SHADOW_ABI||
     !c->active_authenticated_session||session!=c->active_authenticated_session||
