@@ -26,5 +26,12 @@ jobs:
           nm -D /tmp/libDiamondNative.so | grep cabal_diamond_evaluate
           g++ -std=c++17 -O2 -Wall -Wextra -Werror -pedantic -o /tmp/diamond_abi_test diamond-insignia/native/test_diamond_abi.cpp -L/tmp -lDiamondNative -Wl,-rpath,/tmp
           /tmp/diamond_abi_test
+      - name: Publish tested native library (OFFLINE ONLY, not a WorldSvr drop-in)
+        uses: actions/upload-artifact@v4
+        with:
+          name: diamond-native-v291-offline-linux-x64
+          path: /tmp/libDiamondNative.so
+          if-no-files-found: error
+          retention-days: 7
       - name: Confirm no server launch
         run: echo 'Pure transaction proposals only - no game binary, SQL, VM, or packet ABI touched.'
