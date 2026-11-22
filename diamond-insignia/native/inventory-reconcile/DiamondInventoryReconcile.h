@@ -47,9 +47,16 @@ struct Audit {
     std::size_t afterTargetRows=0;
     bool Verified() const noexcept {return status==AuditStatus::Verified;}
 };
+// Rank up: resource debit required, strictly before > after.
 Audit VerifyPersistedTicketDebit(
     PersistedBlob before,PersistedBlob after,
     std::uint64_t expectedBeforeUnits,std::uint64_t expectedAfterUnits,
     QuantityDecoder decoder,void* decoderContext) noexcept;
+// Mastery purchases must preserve inventory EXACTLY: no ticket debit, no
+// serial/slot/option changes and no unrelated GameData item mutation.
+Audit VerifyPersistedTicketsUnchanged(
+    PersistedBlob before,PersistedBlob after,
+    std::uint64_t expectedUnits,QuantityDecoder decoder,
+    void* decoderContext) noexcept;
 const char* Name(AuditStatus status) noexcept;
 } // namespace diamond_v291::inventory
