@@ -22,10 +22,13 @@ jobs:
           /tmp/diamond_transaction_test
           g++ -std=c++17 -O2 -Wall -Wextra -Werror -pedantic -o /tmp/diamond_catalog_test diamond-insignia/native/test_diamond_catalog.cpp
           /tmp/diamond_catalog_test
-          g++ -std=c++17 -O2 -Wall -Wextra -Werror -pedantic -fPIC -shared -o /tmp/libDiamondNative.so diamond-insignia/native/diamond_abi.cpp
+          g++ -std=c++17 -O2 -Wall -Wextra -Werror -pedantic -fPIC -shared -o /tmp/libDiamondNative.so diamond-insignia/native/diamond_abi.cpp diamond-insignia/native/diamond_world_bridge.cpp
           nm -D /tmp/libDiamondNative.so | grep cabal_diamond_evaluate
           g++ -std=c++17 -O2 -Wall -Wextra -Werror -pedantic -o /tmp/diamond_abi_test diamond-insignia/native/test_diamond_abi.cpp -L/tmp -lDiamondNative -Wl,-rpath,/tmp
           /tmp/diamond_abi_test
+          g++ -std=c++17 -O2 -Wall -Wextra -Werror -pedantic -pthread -o /tmp/diamond_world_bridge_test diamond-insignia/native/test_diamond_world_bridge.cpp -L/tmp -lDiamondNative -Wl,-rpath,/tmp
+          /tmp/diamond_world_bridge_test
+          nm -D /tmp/libDiamondNative.so | grep cabal_diamond_world_execute
       - name: Publish tested native library (OFFLINE ONLY, not a WorldSvr drop-in)
         uses: actions/upload-artifact@v4
         with:
