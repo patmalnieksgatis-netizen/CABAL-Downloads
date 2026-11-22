@@ -225,7 +225,7 @@ void verify_after_restart(const std::string& path,int expected_points){
  }
  {
   Statement q(db.get(),"SELECT usernum,nonce,revision,badge,wexp,tickets,points "
-                        "FROM test_account");
+                        "FROM test_account ORDER BY usernum");
   require(q.step()==SQLITE_ROW,"restart: missing account");
   require(sqlite3_column_int(q.p,0)==900001 &&
           sqlite3_column_int64(q.p,1)==439041101ll &&
@@ -233,11 +233,21 @@ void verify_after_restart(const std::string& path,int expected_points){
           sqlite3_column_int(q.p,3)==2 &&
           sqlite3_column_int64(q.p,4)==10000 &&
           sqlite3_column_int(q.p,5)==20 &&
-          sqlite3_column_int(q.p,6)==expected_points &&
-          q.step()==SQLITE_DONE,"restart: account wallet or revision mismatch");
+          sqlite3_column_int(q.p,6)==expected_points,
+          "restart: Diamond account wallet or revision mismatch");
+  require(q.step()==SQLITE_ROW &&
+          sqlite3_column_int(q.p,0)==900002 &&
+          sqlite3_column_int64(q.p,1)==439041102ll &&
+          sqlite3_column_int(q.p,2)==10 &&
+          sqlite3_column_int(q.p,3)==1 &&
+          sqlite3_column_int64(q.p,4)==40000 &&
+          sqlite3_column_int(q.p,5)==120 &&
+          sqlite3_column_int(q.p,6)==100 &&
+          q.step()==SQLITE_DONE,
+          "restart: second account changed, missing, or unexpected");
  }
  {
-  Statement q(db.get(),"SELECT usernum,mastery_id,level FROM test_mastery");
+  Statement q(db.get(),"SELECT usernum,mastery_id,level FROM test_mastery ORDER BY usernum,mastery_id");
   require(q.step()==SQLITE_ROW && sqlite3_column_int(q.p,0)==900001 &&
           sqlite3_column_int(q.p,1)==159 &&
           sqlite3_column_int(q.p,2)==2,"restart: Mastery 159 mismatch");
@@ -247,13 +257,29 @@ void verify_after_restart(const std::string& path,int expected_points){
           q.step()==SQLITE_DONE,"restart: Mastery 319 missing or extra");
  }
  {
+  Statement q(db.get(),"SELECT COUNT(*),MIN(mastery_id),MAX(mastery_id) "
+                        "FROM test_open_slots WHERE usernum=900001");
+  require(q.step()==SQLITE_ROW &&
+          sqlite3_column_int(q.p,0)==316 &&
+          sqlite3_column_int(q.p,1)==159 &&
+          sqlite3_column_int(q.p,2)==474 &&
+          q.step()==SQLITE_DONE,"restart: expected 316 opened test slots");
+  Statement second(db.get(),"SELECT COUNT(*) FROM test_open_slots WHERE usernum=900002");
+  require(second.step()==SQLITE_ROW &&
+          sqlite3_column_int(second.p,0)==0,
+          "restart: second user unexpectedly has opened slots");
+ }
+ {
   Statement q(db.get(),"SELECT name FROM sqlite_master WHERE type='table' "
                         "AND name NOT LIKE 'sqlite_%' ORDER BY name");
   require(q.step()==SQLITE_ROW &&
           std::string(reinterpret_cast<const char*>(sqlite3_column_text(q.p,0)))=="test_account",
           "restart: unexpected account schema");
   require(q.step()==SQLITE_ROW &&
-          std::string(reinterpret_cast<const char*>(sqlite3_column_text(q.p,0)))=="test_mastery" &&
+          std::string(reinterpret_cast<const char*>(sqlite3_column_text(q.p,0)))=="test_mastery",
+          "restart: missing mastery table");
+  require(q.step()==SQLITE_ROW &&
+          std::string(reinterpret_cast<const char*>(sqlite3_column_text(q.p,0)))=="test_open_slots" &&
           q.step()==SQLITE_DONE,"restart: unexpected tables");
  }
 }
