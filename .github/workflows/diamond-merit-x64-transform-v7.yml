@@ -1,0 +1,24 @@
+name: Diamond Merit x64 transform V7 Windows tests
+on:
+  push:
+    branches:
+      - feature/diamond-insignia-v291-20261121
+    paths:
+      - diamond-insignia/client-codec/Inspect-Cabal291-MeritTransform-V7.ps1
+      - .github/workflows/diamond-merit-x64-transform-v7.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  windows-power-shell:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Synthetic PDATA and IAT tests only - no game access
+        shell: powershell
+        run: |
+          & .\diamond-insignia\client-codec\Inspect-Cabal291-MeritTransform-V7.ps1 -SelfTestOnly
+      - name: Confirm read-only tests
+        shell: powershell
+        run: |
+          Write-Output 'No CabalMain binary, client, SQL, VM, process memory, or modifications used in CI.'
