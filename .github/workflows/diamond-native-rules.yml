@@ -45,6 +45,8 @@ jobs:
           /tmp/diamond_mssql_shadow_smoke 2>/tmp/diamond_shadow_no_args.stderr && exit 44 || test $? -eq 2
       - name: Validate exact v291 Merit wire boundaries (offline only)
         run: bash diamond-insignia/native/client291-wire/run-tests.sh
+      - name: Validate Merit candidate ENC audit and ZIP safety (offline only)
+        run: python3 -m unittest discover -s diamond-insignia/client291-real-resource -p 'test_audit_merit_candidates.py' -v
       - name: Publish tested native library (OFFLINE ONLY, not a WorldSvr drop-in)
         uses: actions/upload-artifact@v4
         with:
