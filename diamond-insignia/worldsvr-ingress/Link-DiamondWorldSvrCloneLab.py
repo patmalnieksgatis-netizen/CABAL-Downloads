@@ -14,9 +14,10 @@ import subprocess
 import sys
 
 SONAME="libDiamondWorldCloneOffline.so"
-V2_BIND="cabal_diamond_proc_bind_shadow_clone_v3"
+V3_BIND="cabal_diamond_proc_bind_shadow_clone_v3"
 V1_BIND="cabal_diamond_proc_bind_shadow_clone_v1"
-V2_MERIT="cabal_diamond_merit_verified_shadow_route"
+V2_BIND="cabal_diamond_proc_bind_shadow_clone_v2"
+VERIFIED_MERIT="cabal_diamond_merit_verified_shadow_route"
 CURRENT_LIB_SO_SHA256="6679e46aa2ee915d97de9501ba027cae3eec153f1cd82e7c16ed47221c63ecab"
 TEST_INGRESS="cabal_diamond_proc_test_ingress_clone_v3"
 
@@ -58,11 +59,11 @@ def run(root: pathlib.Path,native_lib: pathlib.Path,merit_cpp: pathlib.Path,
     state=root/"include/Types.h"
     require(proc.is_file() and bind.is_file() and state.is_file(),
             "source clone missing critical files")
-    require(V2_BIND in proc.read_text() and TEST_INGRESS in proc.read_text() and
-            V1_BIND not in proc.read_text() and
+    require(V3_BIND in proc.read_text() and TEST_INGRESS in proc.read_text() and
+            V1_BIND not in proc.read_text() and V2_BIND not in proc.read_text() and
             "kBindingABI=3u" in bind.read_text(),
             "source clone must use new WorldSvr ABI v2")
-    require(V2_MERIT in merit_cpp.read_text() and
+    require(VERIFIED_MERIT in merit_cpp.read_text() and
             "DIAMOND_ENABLE_SHADOW_TRIAL" in merit_cpp.read_text(),
             "verified native Merit bridge is missing or not gated")
 
@@ -105,8 +106,8 @@ def run(root: pathlib.Path,native_lib: pathlib.Path,merit_cpp: pathlib.Path,
             missing=exports(baseline_lib)-exports(output)
             require(not missing,"candidate loses current v291 extension exports: "+
                     ",".join(sorted(missing)[:12]))
-        require(V2_BIND in symbols and V2_MERIT in symbols and
-                TEST_INGRESS in symbols and V1_BIND not in symbols,
+        require(V3_BIND in symbols and VERIFIED_MERIT in symbols and
+                TEST_INGRESS in symbols and V1_BIND not in symbols and V2_BIND not in symbols,
                 "missing/new and stale exported ABI mismatch")
         require("Library soname: ["+SONAME+"]" in deps and
                 "Shared library: [libDiamondNative.so]" in deps and
@@ -117,7 +118,7 @@ def run(root: pathlib.Path,native_lib: pathlib.Path,merit_cpp: pathlib.Path,
         output.unlink(missing_ok=True)
         raise
     print("DIAMOND_OFFLINE_WORLDSVR_SOURCE_LINK=PASS")
-    print("BINDER="+V2_BIND+";MERIT_ROUTE="+V2_MERIT)
+    print("BINDER="+V3_BIND+";MERIT_ROUTE="+VERIFIED_MERIT)
     print("SYNTHETIC_ONLY_DLOPEN_ENTRY="+TEST_INGRESS)
     print("STRICT_UNDEFINED_SYMBOL_CHECK=PASS;ODBC_LINKED=YES")
     print("CURRENT_EXTENSION_EXPORTED_ABI_PRESERVED="+
