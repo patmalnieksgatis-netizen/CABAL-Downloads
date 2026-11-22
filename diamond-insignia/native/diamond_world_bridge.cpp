@@ -65,6 +65,9 @@ extern "C" int cabal_diamond_world_execute(
     // The core never sends a client response before its confirmation.
     if (callbacks->commit_durable(backend_context,transaction,request,
                                   &result->evaluated)!=0) {
+      // NEVER expose an approved result after a failed storage transaction.
+      result->evaluated.permitted=0;
+      result->evaluated.requires_atomic_commit=0;
       result->status=CABAL_DIAMOND_WORLD_COMMIT_FAILED;
       abort_if_needed();
       return 0;
@@ -74,6 +77,8 @@ extern "C" int cabal_diamond_world_execute(
     result->status=CABAL_DIAMOND_WORLD_APPLIED;
     return 0;
   } catch (...) {
+    result->evaluated.permitted=0;
+    result->evaluated.requires_atomic_commit=0;
     result->status=CABAL_DIAMOND_WORLD_BAD_BACKEND;
     try {abort_if_needed();} catch(...) {}
     return -3;
