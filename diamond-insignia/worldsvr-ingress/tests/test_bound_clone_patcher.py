@@ -27,7 +27,7 @@ class ClonePatcherHeaderTests(unittest.TestCase):
                           else HERE.parent/"native"/name)
                 self.assertTrue((dest/name).is_file())
                 self.assertEqual((dest/name).read_bytes(),expected.read_bytes())
-            self.assertIn("kBindingABI=2u",
+            self.assertIn("kBindingABI=3u",
                           (dest/"DiamondBoundIngress.h").read_text())
             self.assertIn("CABAL_DIAMOND_MERIT_PROOF_VERSION 2u",
                           (dest/"diamond_merit_world_entry.h").read_text())
@@ -43,7 +43,7 @@ class ClonePatcherHeaderTests(unittest.TestCase):
 
     def test_bind_symbol_is_v2_only(self):
         script=(HERE/"Apply-DiamondBoundClone.py").read_text()
-        self.assertIn("cabal_diamond_proc_bind_shadow_clone_v2",script)
+        self.assertIn("cabal_diamond_proc_bind_shadow_clone_v3",script)
         self.assertNotIn("cabal_diamond_proc_bind_shadow_clone_v1",script)
 
 if __name__=="__main__":
