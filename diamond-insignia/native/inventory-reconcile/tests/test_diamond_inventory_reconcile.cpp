@@ -89,6 +89,17 @@ int main() {
         Blob(original),Blob(saved),120,20,SyntheticStackCodec,nullptr);
     assert(audit.Verified() && audit.beforeUnits==120 && audit.afterUnits==20);
     assert(audit.beforeTargetRows==1 && audit.afterTargetRows==1);
+    // Mastery purchase costs points, NOT a ticket. Persisted inventory must
+    // remain byte-identical, and an authoritative stack decoder is still
+    // mandatory even though the ticket balance is unchanged.
+    const auto same=VerifyPersistedTicketsUnchanged(
+        Blob(original),Blob(original),120,SyntheticStackCodec,nullptr);
+    assert(same.Verified() && same.beforeUnits==120 && same.afterUnits==120);
+    assert(VerifyPersistedTicketsUnchanged(Blob(original),Blob(original),120,
+        nullptr,nullptr).status==AuditStatus::MissingQuantityCodec);
+    assert(VerifyPersistedTicketsUnchanged(Blob(original),Blob(saved),120,
+        SyntheticStackCodec,nullptr).status==AuditStatus::TicketIdentityChanged);
+
     assert(VerifyPersistedTicketDebit(Blob(original),Blob(saved),120,20,
         nullptr,nullptr).status==AuditStatus::MissingQuantityCodec);
     assert(VerifyPersistedTicketDebit(Blob(original,false),Blob(saved),120,20,
@@ -124,7 +135,8 @@ int main() {
     TestPersistenceBarrier(false,false); // no trusted stack decoding => NO S2C success
     TestPersistenceBarrier(audit.Verified(),true); // synthetic verified evidence
     std::cout<<"DIAMOND_RECORD30_PERSISTED_INVENTORY_AUDIT=PASS\n"
-             <<"INVENTORY_STACK_CODEC_MANDATORY=PASS\n"
+             <<"MASTERY_MUST_NOT_DEBIT_TICKETS=PASS\n"
+          <<"INVENTORY_STACK_CODEC_MANDATORY=PASS\n"
              <<"UNTRUSTED_OR_CHANGED_OTHER_ITEMS_REJECTED=PASS\n"
              <<"IPC47_ACK_ALONE_NEVER_GAME_SUCCESS=PASS\n"
              <<"LIVE_GAME_QUANTITY_CODEC_OR_MSSQL=NOT_VERIFIED\n";
