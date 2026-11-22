@@ -123,5 +123,6 @@ int main(){
  assert(f.commits==2 && f.level==2 && f.revision==5 && f.points==85);
  cabal_diamond_engine_destroy(engine);
  std::cout<<"DIAMOND_MERIT_C2S_TO_NATIVE_SHADOW=PASS\n"
-          <<"PLATINUM_LEGACY_ROUTE_PRESERVED=PASS\n"\n          <<"UNVERIFIED_09F3_CANNOT_DEBIT=PASS\n";
+          <<"PLATINUM_LEGACY_ROUTE_PRESERVED=PASS\n"
+          <<"UNVERIFIED_09F3_CANNOT_DEBIT=PASS\n";
 }
