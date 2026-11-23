@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Offline tests of bounded read-only ticket sample. No SSH, SQL or player data."""
 import importlib.util
+import json
 from pathlib import Path
 import re
 import unittest
@@ -50,6 +51,22 @@ class TestB0TicketOptionProbe(unittest.TestCase):
             probe.parse("TICKET_OPTION|2c01000000000000|1234")
         with self.assertRaisesRegex(ValueError,"UNEXPECTED_OUTPUT"):
             probe.parse("ACCOUNT|1234")
+    def test_owner_real_b0_999_fixture_does_not_claim_low10_or_low16(self):
+        path=Path(__file__).resolve().parents[1]/"fixtures"/"owner_ep36_291_b0_999_option_observation_20261123.json"
+        report=json.loads(path.read_text(encoding="utf-8"))
+        self.assertEqual(report["real_item_id"],33554961)
+        self.assertEqual(report["actual_world_kind_field38"],"0xB0")
+        self.assertEqual(report["actual_world_max_stack_field3c"],999)
+        self.assertEqual(report["anonymous_inventory_blob_lengths"],[120,1830,210])
+        self.assertEqual(report["observed_ticket_records"],2)
+        self.assertEqual(report["distinct_character_count"],"unknown")
+        self.assertFalse(report["independent_ui_quantity_comparison_done"])
+        self.assertFalse(report["low10_or_low16_profile_verified"])
+        for sample in report["observed_ticket_options"]:
+            self.assertEqual(sample["low10"],999)
+            self.assertEqual(sample["low16"],999)
+            self.assertEqual(sample["raw_itemOption_64bit_le"],"e703000000000000")
+            self.assertEqual(sample["item_kind_hi32_le"],"00000000")
     def test_no_credentials_in_arguments_or_output(self):
         self.assertIn("SQLCMDPASSWORD",probe.SH)
         self.assertIn("MSSQL_SA_PASSWORD",probe.SH)
