@@ -95,7 +95,18 @@ int main() {
     auto owner=Owner(rows,&world);
     const auto pkt=GradeUpFrame();
     HostFixture state{};
-    GameHost host{1,&state,&CommitOnlySynthetic};
+    GameHost host{1,&state,&CommitOnlySynthetic,{}};
+    // SYNTHETIC capability flags: only exercise the binding gate. No real
+    // transaction or GameData write occurs in this offline unit test!
+    host.sql.characterIdx=owner.registeredCharacterIdx;
+    host.sql.userNum=owner.registeredUserNum;
+    host.sql.exactServer01PrimaryKeysVerified=true;
+    host.sql.verifiedCharacterBelongsToUser=true;
+    host.sql.singleSerializableTransactionAcrossAllFourTables=true;
+    host.sql.revisionAndIntentReplayProtectionEnforced=true;
+    host.sql.lockedBeforeRowsComparedInsideThatTransaction=true;
+    host.sql.transactionReceiptDurablyCommitted=true;
+    host.sql.notChainingIndependentToolSetProcedures=true;
     const auto ok=PrepareAndCommitRealGradeUp(pkt.data(),pkt.size(),owner,host);
     assert(ok.state==GameActionState::CommittedPendingSaveProof);
     assert(ok.inventory==SelectionVerdict::ExactDebitPlan);
@@ -156,6 +167,36 @@ int main() {
     assert(state.calls==1);
     assert(PrepareAndCommitRealGradeUp(pkt.data(),pkt.size(),owner,{}).state==
            GameActionState::MissingRealCommitBackend);
+    // The actual Server01 schema binds Inventory/WarExp on CharacterIdx
+    // and Platinum on UserNum. Swapping either identity must fail closed.
+    auto wrongDb=host;wrongDb.sql.userNum+=1;
+    assert(PrepareAndCommitRealGradeUp(pkt.data(),pkt.size(),owner,wrongDb).state==
+           GameActionState::MissingRealCommitBackend);
+    wrongDb=host;wrongDb.sql.characterIdx+=1;
+    assert(PrepareAndCommitRealGradeUp(pkt.data(),pkt.size(),owner,wrongDb).state==
+           GameActionState::MissingRealCommitBackend);
+    wrongDb=host;wrongDb.sql.verifiedCharacterBelongsToUser=false;
+    assert(PrepareAndCommitRealGradeUp(pkt.data(),pkt.size(),owner,wrongDb).state==
+           GameActionState::MissingRealCommitBackend);
+    // Independent SQL writer procs cannot be chained and called "atomic".
+    wrongDb=host;wrongDb.sql.notChainingIndependentToolSetProcedures=false;
+    assert(PrepareAndCommitRealGradeUp(pkt.data(),pkt.size(),owner,wrongDb).state==
+           GameActionState::MissingRealCommitBackend);
+    wrongDb=host;wrongDb.sql.singleSerializableTransactionAcrossAllFourTables=false;
+    assert(PrepareAndCommitRealGradeUp(pkt.data(),pkt.size(),owner,wrongDb).state==
+           GameActionState::MissingRealCommitBackend);
+    wrongDb=host;wrongDb.sql.revisionAndIntentReplayProtectionEnforced=false;
+    assert(PrepareAndCommitRealGradeUp(pkt.data(),pkt.size(),owner,wrongDb).state==
+           GameActionState::MissingRealCommitBackend);
+    wrongDb=host;wrongDb.sql.lockedBeforeRowsComparedInsideThatTransaction=false;
+    assert(PrepareAndCommitRealGradeUp(pkt.data(),pkt.size(),owner,wrongDb).state==
+           GameActionState::MissingRealCommitBackend);
+    wrongDb=host;wrongDb.sql.transactionReceiptDurablyCommitted=false;
+    assert(PrepareAndCommitRealGradeUp(pkt.data(),pkt.size(),owner,wrongDb).state==
+           GameActionState::MissingRealCommitBackend);
+    wrongDb=host;wrongDb.sql.exactServer01PrimaryKeysVerified=false;
+    assert(PrepareAndCommitRealGradeUp(pkt.data(),pkt.size(),owner,wrongDb).state==
+           GameActionState::MissingRealCommitBackend);
     assert(state.calls==1);
     state.simulateFailure=true;
     assert(PrepareAndCommitRealGradeUp(pkt.data(),pkt.size(),owner,host).state==
@@ -169,7 +210,8 @@ int main() {
     assert(PrepareAndCommitRealGradeUp(pkt.data(),pkt.size(),owner,host).state==
            GameActionState::InDoubtRecoveryRequired);
     assert(rows==untouched);
-    std::cout<<"0BDA_REAL_B0_999_TICKET_METADATA_COMMIT_BLOCKED=PASS\n"
+    std::cout<<"0BDA_SERVER01_REAL_PK_AND_SINGLE_SQL_TX_GATE=PASS\n"
+             <<"0BDA_REAL_B0_999_TICKET_METADATA_COMMIT_BLOCKED=PASS\n"
              <<"0BDA_GAMEPLAY_ENTRY_ORIGINAL_PLATINUM_PASSTHROUGH=PASS\n"
              <<"0BDA_GAMEPLAY_RULES_SELECTED_TICKETS_AND_WEXP_IN_ONE_PATH=PASS\n"
              <<"0BDA_GAMEPLAY_FAIL_CLOSED_AND_NO_S2C_WITHOUT_DURABLE_SAVE=PASS\n"
