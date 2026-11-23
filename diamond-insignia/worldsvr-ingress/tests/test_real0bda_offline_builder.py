@@ -83,6 +83,16 @@ class Safety(unittest.TestCase):
         self.assertEqual(symbols["_Z10CriticalFnv"],("T",0x1010))
         self.assertEqual(mod.RECONSTRUCTED_NAME,
                          "libDiamondV14_ORIGINAL_RECONSTRUCTED_OFFLINE.so")
+    def test_0bda_passive_getter_export_and_dispatch_machine_code_required(self):
+        source=FILE.read_text()
+        self.assertIn('OBSERVER_EXPORT="cabal_diamond_0bda_passive_hits_v1"',source)
+        self.assertIn('observer_dispatch=dispatch_bytes(observer)',source)
+        self.assertIn('if not observer_bytes_differ:',source)
+        self.assertIn('observer_new_losses or observer_strong_losses',source)
+        self.assertIn('"observer_changes_world_inventory_sql":False',source)
+        self.assertIn('"observer_forwards_all_packets_to_original_dispatch":True',source)
+        self.assertIn("OUTPUT",source.upper())
+        self.assertNotIn("dlopen(",source)
     def test_minimal_0bda_patch_adds_no_cpp_and_keeps_original_dispatch(self):
         with tempfile.TemporaryDirectory() as tmp:
             root=pathlib.Path(tmp)
@@ -117,6 +127,22 @@ class Safety(unittest.TestCase):
             )
             staged=root/"patched"
             mod.minimal_pure_0bda_patch(original,staged,fake)
+            observer=root/"observer"
+            mod.passive_observer_patch(staged,observer)
+            self.assertEqual(len(mod.source_list(observer)),
+                             len(mod.source_list(original)))
+            observed=(observer/"hooks/Handlers/ProcSystem.cpp").read_text()
+            self.assertEqual(observed.count(
+                "cabal_diamond_0bda_passive_hits_v1"),1)
+            self.assertEqual(observed.count(
+                "__atomic_fetch_add(&g_diamond0bda_passive_hits"),1)
+            self.assertEqual(observed.count(
+                "__atomic_load_n(&g_diamond0bda_passive_hits"),1)
+            self.assertIn("return ((int(*)(void*, PROCESSDATACONTEXT*))oDoProcessDataCtx)",observed)
+            self.assertNotIn("GameData",observed)
+            self.assertNotIn("sqlcmd",observed)
+            self.assertNotIn("LD_PRELOAD",observed)
+            self.assertNotIn("supervisorctl",observed)
             self.assertEqual(len(mod.source_list(original)),
                              len(mod.source_list(staged)))
             self.assertEqual(len(mod.source_list(staged)),11)
