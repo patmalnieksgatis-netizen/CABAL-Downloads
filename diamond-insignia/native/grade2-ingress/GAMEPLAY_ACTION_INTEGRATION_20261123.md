@@ -76,3 +76,30 @@ Bez šiem faktiem nav pamata ieviest spekulatīvu spēles resursu
 norakstīšanu vai viltotu 7-baitu veiksmes paketi.
 
 **Aktīvais EP36_291_TEST nav mainīts.** Tika labots tikai GitHub avots.
+
+
+## 2026-11-23: īstais 33554961 steka tips 0xB0 / 999
+
+No `EP36_291_TEST` WorldSvr PID 438, oriģinālā SHA
+`caec7772...`, nolasīti priekšmeta metadati:
+`kind_field38=0xB0`, `stack_field3C=999`.
+
+Oriģinālais `0xAE0E90` count helper šim tipam atgriež
+skaitlisko **1** *default* atzarā, lai gan steka
+konfigurācija ir 999. **Tas nav pierādīts reālais biļešu
+daudzums.** Nevar šos 100 atsevišķos `1` uzskatīt par
+derīgu norakstījumu, kamēr nav atrasts B0 specifiskais
+steka daudzuma un saglabāšanas kodējums.
+
+Tādēļ `DiamondWorld48TicketUnits` šajā gadījumā
+atgriež `UnverifiedStackQuantity` (ar oriģinālo skaitlisko
+atgriezi diagnostikai), `Diamond0BDATicketSelection`
+atgriež `UnsupportedStackQuantityEncoding`, un
+`PrepareAndCommitRealGradeUp` noraida priekšlikumu
+**pirms jebkura atomiskā commit izsaukuma**.
+
+Atbilstoši C++ testi aptver īsto B0/999 kombināciju un
+neļauj tai iziet cauri ar sintētisko AF/999 testu.
+Nedrīkst pašrocīgi nomainīt live kataloga tipu
+uz AF, safabricēt 100 atsevišķus stekus vai norakstīt
+tikai vienu priekšmetu no spēles kaudzes.
