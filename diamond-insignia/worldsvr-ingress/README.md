@@ -1,3 +1,25 @@
+## Current 2026-11-23 source-patcher safety contract (ABI v3)
+
+Both `Apply-DiamondV14BoundClone.py` and the older
+`Apply-DiamondBoundClone.py` now **only observe** a candidate `0x09F3`
+inside real `ProcSystem::DoProcessDataCtx`. The original WorldSvr dispatcher
+still receives that packet, so calling the Diamond transaction gate from this
+path would risk a *double debit*. We removed those in-dispatch shadow writes.
+Even the synthetic-trial build is passive when handling normal C2S traffic.
+
+The only source-clone path that is allowed to call
+`DiamondBoundIngress::Process` is the explicit offline-only
+`cabal_diamond_proc_test_ingress_clone_v3` entrypoint, which does **not**
+forward the packet to the original game dispatcher. No ordinary build exports
+this entrypoint. CI runs `test_clone_never_double_debits.py` and deliberately
+injects old unsafe code into the test fixture to confirm rejection.
+
+The old ABI-v2 reports below are **historical test milestones**, not current
+implementation instructions. Any future *playable* handler must first prove
+client C2S/S2C semantics, authenticated ownership, real persisted game
+resources and recovery; only then may it consume and reply to a Diamond
+packet in a separate, exactly-once server path.
+
 # CABAL v291 — WorldSvr Merit ingress integration (PASSIVE CLONE ONLY)
 
 ## Implemented
