@@ -42,7 +42,14 @@ TicketUnitsResult DecodeTicketSlot48(
                 units=option&0xFFFFu;break;
             case 0x10u: case 0x1Bu: case 0x66u:
                 units=option&0x7Fu;break;
-            default:units=1u;break;
+            default:
+                // Exact original WorldSvr 0xAE0E90 returns 1 here, but
+                // 0xB0/999 was OBSERVED for item 33554961 on the VM.
+                // A 999-configured stack cannot be safely charged using
+                // this fallback without the real item quantity encoding.
+                out.quantity=1u; // original helper's numeric return
+                out.verdict=TicketUnitsVerdict::UnverifiedStackQuantity;
+                return out;
         }
     }
     if(units==0) {
