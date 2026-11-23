@@ -116,6 +116,13 @@ jobs:
             diamond-insignia/native/grade2-ingress/test_0bda_ticket_selection.cpp \
             -o /tmp/diamond_0bda_ticket_selection_plan
           /tmp/diamond_0bda_ticket_selection_plan
+      - name: Verify B0 GameData 30-byte copy-only 100-ticket debit on 999 stack
+        run: |
+          set -euo pipefail
+          g++ -std=c++17 -O2 -Wall -Wextra -Werror -pedantic \
+            diamond-insignia/native/inventory-reconcile/tests/test_b0_partial_debit30.cpp \
+            -o /tmp/diamond_b0_partial_debit30
+          /tmp/diamond_b0_partial_debit30
       - name: Verify real B0 999 option profile and future 999-to-899 persisted debit reconciliation
         run: |
           set -euo pipefail
