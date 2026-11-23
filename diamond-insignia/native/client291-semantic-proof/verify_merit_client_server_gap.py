@@ -25,6 +25,17 @@ CLIENT = {
     0x21F: (0x6D1130,0x6D1147,0x6DFF60,0x6DFF88,0x0BDF),
     0x220: (0x6D115B,0x6D1172,0x6E0464,0x6E04B1,0x0BE0),
 }
+# Server-to-client command -> (registration instruction, callback LEA, handler RVA)
+# The client registers all six via 0x16BB3C and 0x2879E4.
+S2C = {
+    0x0BDA: (0x6CFFE3,0x6CFFFA,0x6DA920),
+    0x0BDB: (0x6D000E,0x6D0025,0x6DAED8),
+    0x0BDC: (0x6D0039,0x6D0050,0x6DB154),
+    0x0BDD: (0x6D0064,0x6D007B,0x6DB0FC),
+    0x0BDF: (0x6D008F,0x6D00A6,0x6DAD14),
+    0x0BE0: (0x6D00BA,0x6D00D1,0x6DB3B4),
+}
+
 # (RIP-relative opcode prefix, full instruction length)
 PATTERNS = (
     (bytes.fromhex("48833d"),8), # cmp qword [rip+disp32], imm8
@@ -115,6 +126,16 @@ def verify_client(exe):
         elif read(at,5)!=b"\xb8"+struct.pack("<I",opcode):
             raise ProofError("OPCODE_ANCHOR_"+hex(ui))
 
+    for opcode,(event_rva,lea_rva,callback_rva) in S2C.items():
+        if read(event_rva,3)!=bytes.fromhex("c74510") or int.from_bytes(read(event_rva+3,4),"little")!=opcode:
+            raise ProofError("S2C_REGISTRATION_ANCHOR_"+hex(opcode))
+        lea=read(lea_rva,7)
+        if lea[:3]!=bytes.fromhex("488d15") or lea_rva+7+struct.unpack_from("<i",lea,3)[0]!=callback_rva:
+            raise ProofError("S2C_HANDLER_ANCHOR_"+hex(opcode))
+        bind=read(lea_rva+11,5)
+        if bind[0]!=0xe8 or lea_rva+16+struct.unpack_from("<i",bind,1)[0]!=0x2879E4:
+            raise ProofError("S2C_BINDER_ANCHOR_"+hex(opcode))
+
 def audit(client,world):
     verify_client(client)
     checked_sha(world,WORLD_SHA,"WORLD")
@@ -134,7 +155,14 @@ def audit(client,world):
             "client_sha256":CLIENT_SHA,"world_sha256":WORLD_SHA,
             "world_registry_base":f"0x{WORLD_MAP_BASE:X}",
             "claims":"Five client Merit-adjacent C2S opcodes have no direct static RIP-relative registry reference in this WorldSvr; indirect/dynamic registration and Diamond semantics remain unproven.",
-            "events":rows,"game_modified":False}
+            "events":rows,
+            "client_s2c_handlers":[
+                {"s2c_opcode":f"0x{opcode:04X}","handler_rva":f"0x{parts[2]:X}",
+                 "paired_c2s_ui_event": next(
+                     (f"0x{ui:X}" for ui,entry in CLIENT.items() if entry[4]==opcode),None)}
+                for opcode,parts in S2C.items()
+            ],
+            "game_modified":False}
 
 def main(argv=None):
     p=argparse.ArgumentParser(description=__doc__)
