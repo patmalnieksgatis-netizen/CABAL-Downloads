@@ -11,7 +11,7 @@ DispatchResult Dispatch(const ProcessDataContext* ctx,
     // network framing; this shim refuses to equate iLen with transport truth.
     if(!ctx || !ctx->pUserCtx || !ctx->cpPacket ||
        verifiedFrameSize!=ctx->iLen ||
-       verifiedFrameSize<10 || verifiedFrameSize>12+2*kMaxAttestableEntries ||
+       verifiedFrameSize<10 || verifiedFrameSize>65535 ||
        !originalTransportIntegrityVerified) {
         result.state=DispatchState::InvalidFrame;
         return result;
