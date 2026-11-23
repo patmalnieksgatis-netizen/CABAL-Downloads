@@ -37,6 +37,24 @@ TicketDebitPlan PlanTicketDebit(const Candidate& request,
         out.status=SelectionVerdict::ItemMetadataMissing;
         return out;
     }
+    // The exact running v291 WorldSvr reports kind+0x38=0xB0 and
+    // stack+0x3C=999 for item 33554961. The ORIGINAL 0xAE0E90
+    // decoder's default branch returns a singleton for 0xB0; that
+    // does NOT prove a 999-configured ticket stack really contains 1.
+    // Never authorize a 100-ticket debit using the unverified fallback.
+    // Also refuse any other unknown >1 stack class; it may require an
+    // as-yet unidentified item-specific quantity format.
+    if(world.itemCatalog.stackField3C>1) {
+        const auto kind=world.itemCatalog.kindField38;
+        const bool recognized=(kind==0x43u || kind==0x46u ||
+                               kind==0xAFu || kind==0xB8u ||
+                               kind==0x10u || kind==0x1Bu ||
+                               kind==0x66u);
+        if(!recognized) {
+            out.status=SelectionVerdict::UnsupportedStackQuantityEncoding;
+            return out;
+        }
+    }
     // This predicate is only a READ-ONLY validation of the current snapshot.
     // The game backend must revalidate identities, slot versions and amount
     // while performing a separate durable debit, never copy this plan blindly.
