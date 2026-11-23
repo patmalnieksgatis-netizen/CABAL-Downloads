@@ -2,9 +2,11 @@
 // CABAL v291 Material kind 0xB0, item 33554961. Observed evidence:
 // two saved inventory rows each have 64-bit ItemOption 0x00000000000003E7,
 // and runtime item metadata has kind=0xB0, max stack=999.
-// BOTH low10 and low16 give 999; the correct encoding is NOT yet proven.
-// This implementation must fail CLOSED until an independent UI/native
-// WorldSvr comparison identifies the actual quantity field and any flags.
+// BOTH low10 and low16 give 999. For *plain* option values 1..999 with
+// no flags they also agree for every possible valid stack quantity.
+// The new PlainPositiveOptionNoFlags profile permits this restricted case
+// after independent SAME-STACK UI/native evidence, never from the raw 999
+// sample alone. Other layouts still fail closed.
 // Pure, allocation-free, read-only. NOT a GameData writer.
 #include <cstdint>
 
@@ -14,7 +16,7 @@ constexpr std::uint32_t kRealB0MaterialKind=0xB0u;
 constexpr std::uint32_t kRealB0TicketMaxStack=999u;
 constexpr std::uint64_t kObservedTicketOption20261123=0x3E7ULL;
 enum class B0CountProfile : std::uint8_t {
-    Unknown, OptionLow10, OptionLow16
+    Unknown, OptionLow10, OptionLow16, PlainPositiveOptionNoFlags
 };
 struct B0QuantityEvidence {
     B0CountProfile provenProfile=B0CountProfile::Unknown;
@@ -68,13 +70,23 @@ inline B0QuantityResult DecodeB0QuantityWithIndependentProof(
             mask=0x3FFULL;break;
         case B0CountProfile::OptionLow16:
             mask=0xFFFFULL;break;
+        case B0CountProfile::PlainPositiveOptionNoFlags:
+            // Unknown bit-width is immaterial when entire raw option
+            // consists solely of a positive count <=999: low10/low16
+            // and whole-value interpretations must agree.
+            mask=~std::uint64_t{0};break;
     }
     // If other bits of ItemOption exist, they may encode item flags
     // or high count bits. Refuse to tamper with them until independently
     // proven. The two real sampled ticket options have all other bits zero.
     if(!proof.extraOptionFlagsProvenAbsent || (rawOption&~mask)!=0)
         return {B0QuantityVerdict::UnverifiedOptionFlags,0};
-    const auto count=static_cast<std::uint32_t>(rawOption&mask);
+    // Validate BEFORE narrowing to 32 bits. High option bits are never
+    // permitted, including under PlainPositiveOptionNoFlags mode.
+    const auto rawCount=rawOption&mask;
+    if(rawCount<1 || rawCount>kRealB0TicketMaxStack)
+        return {B0QuantityVerdict::InvalidCount,0};
+    const auto count=static_cast<std::uint32_t>(rawCount);
     if(count<1 || count>kRealB0TicketMaxStack)
         return {B0QuantityVerdict::InvalidCount,0};
     return {B0QuantityVerdict::VerifiedCount,count};
