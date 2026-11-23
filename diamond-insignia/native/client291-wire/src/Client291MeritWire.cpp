@@ -53,6 +53,36 @@ Status CheckServerResponseForClient291(const void* packet,std::size_t size) noex
   // NOT known. Do NOT emit or interpret as a confirmed Diamond success.
   return Status::ResponseSuccessShapeUnknown;
 }
+SuccessDwordPath ClassifyClientSuccessDwordPath(
+    const ClientLookupCalls& c) noexcept {
+  // Verified exact original v291 handler RVA 0x6F84FC:
+  // 0x6F857C: map lookup #1; 0 => read DWORD [packet+7] at 0x6F8585.
+  // Nonzero => 0x6F859B lookup #2; 1 => read at 0x6F85B9.
+  // Otherwise 0x6F85AA lookup #3; 2 => read at 0x6F85B9.
+  // Other outcomes skip the TWO reads in this handler.
+  // No assumption the repeated map lookups return the same value.
+  if(!c.hasFirst) return SuccessDwordPath::Unobserved;
+  if(c.first==0) return SuccessDwordPath::ReadAt6F8585;
+  if(!c.hasSecond) return SuccessDwordPath::Unobserved;
+  if(c.second==1) return SuccessDwordPath::ReadAt6F85B9;
+  if(!c.hasThird) return SuccessDwordPath::Unobserved;
+  if(c.third==2) return SuccessDwordPath::ReadAt6F85B9;
+  return SuccessDwordPath::NoDwordReadOnObservedPath;
+}
+Status CheckServerResponseForObservedClientRoute(
+    const void* packet,std::size_t size,
+    const ClientLookupCalls& calls) noexcept {
+  // Preserve the existing conservative/strict parser for header, size,
+  // opcode, status, and 11B success. Only refine the 7B risk classification.
+  const auto basic=CheckServerResponseForClient291(packet,size);
+  if(basic!=Status::ResponseTruncatedSuccess)return basic;
+  const auto branch=ClassifyClientSuccessDwordPath(calls);
+  if(branch==SuccessDwordPath::Unobserved)
+    return Status::ResponseRouteUnobserved;
+  if(branch==SuccessDwordPath::NoDwordReadOnObservedPath)
+    return Status::ResponseLegacyNoDwordReadOnObservedPath;
+  return Status::ResponseTruncatedSuccess;
+}
 const char* Name(Status s) noexcept {
   switch(s){
     case Status::Ok:return "Ok";
@@ -64,6 +94,8 @@ const char* Name(Status s) noexcept {
     case Status::ResponseRejected:return "ResponseRejected";
     case Status::ResponseTruncatedSuccess:return "ResponseTruncatedSuccess";
     case Status::ResponseSuccessShapeUnknown:return "ResponseSuccessShapeUnknown";
+    case Status::ResponseRouteUnobserved:return "ResponseRouteUnobserved";
+    case Status::ResponseLegacyNoDwordReadOnObservedPath:return "ResponseLegacyNoDwordReadOnObservedPath";
   }
   return "Unknown";
 }
