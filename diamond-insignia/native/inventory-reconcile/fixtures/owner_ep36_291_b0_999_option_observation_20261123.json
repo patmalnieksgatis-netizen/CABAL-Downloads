@@ -1,0 +1,36 @@
+{
+  "source_file": "CABAL_V291_B0_TICKET_OPTIONS_20261123_202810.json",
+  "mode": "CABAL_291_B0_TICKET_RAW_OPTIONS",
+  "status": "PASS",
+  "vm": "EP36_291_TEST",
+  "real_item_id": 33554961,
+  "actual_world_kind_field38": "0xB0",
+  "actual_world_max_stack_field3c": 999,
+  "anonymous_inventory_blob_lengths": [
+    120,
+    1830,
+    210
+  ],
+  "v14_row_size_compatible_30_bytes": true,
+  "observed_ticket_options": [
+    {
+      "raw_itemOption_64bit_le": "e703000000000000",
+      "item_kind_hi32_le": "00000000",
+      "low10": 999,
+      "low16": 999
+    },
+    {
+      "raw_itemOption_64bit_le": "e703000000000000",
+      "item_kind_hi32_le": "00000000",
+      "low10": 999,
+      "low16": 999
+    }
+  ],
+  "observed_ticket_records": 2,
+  "distinct_character_count": "unknown",
+  "aggregate_ticket_count_for_one_character": "unknown",
+  "independent_ui_quantity_comparison_done": false,
+  "low10_or_low16_profile_verified": false,
+  "real_gamedata_mutations_performed": false,
+  "privacy": "No UserNum, CharacterIdx, character names, item serials, or full inventories"
+}
