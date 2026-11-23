@@ -46,6 +46,15 @@ jobs:
             diamond-insignia/native/grade2-ingress/test_0bda_save_reply_gate.cpp \
             -o /tmp/diamond_0bda_reply_gate_clone
           /tmp/diamond_0bda_reply_gate_clone
+      - name: Verify authoritative 0BDA ticket selection plans and exact 100-unit debit
+        run: |
+          set -euo pipefail
+          g++ -std=c++17 -O2 -Wall -Wextra -Werror -pedantic \
+            diamond-insignia/native/grade2-ingress/DiamondWorld48TicketUnits.cpp \
+            diamond-insignia/native/grade2-ingress/Diamond0BDATicketSelection.cpp \
+            diamond-insignia/native/grade2-ingress/test_0bda_ticket_selection.cpp \
+            -o /tmp/diamond_0bda_ticket_selection_plan
+          /tmp/diamond_0bda_ticket_selection_plan
       - name: Verify exact WorldSvr 48-byte ticket quantity decoder and runtime metadata safety
         run: |
           set -euo pipefail
