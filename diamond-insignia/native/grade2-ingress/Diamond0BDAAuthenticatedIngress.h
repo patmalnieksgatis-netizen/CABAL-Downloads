@@ -3,7 +3,7 @@
 // No incoming packet UserNum or CharacterIdx is trusted. No SQL or socket.
 // This adapter is not a procedure registry hook; that remains unimplemented.
 #include "Diamond0BDAGameplayAction.h"
-#include "../world-session-bridge/DiamondWorldSessionBridge.h"
+#include "../world-session-bridge/DiamondWorldSessionAuthority.h"
 #include <cstddef>
 #include <cstdint>
 
