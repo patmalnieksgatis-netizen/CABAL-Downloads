@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Hash-pinned, SOURCE-COPY ONLY CABAL v282/v291 v14 Diamond ABI-v2 adapter.
+"""Hash-pinned, SOURCE-COPY ONLY CABAL v282/v291 v14 Diamond ABI-v3 adapter.
 
 Never touches a running WorldSvr, compiled lib.so, database, client or VM.
 The synthetic test ingress deliberately still forwards game packets to the
@@ -80,21 +80,18 @@ def patch(source,output):
                        '#include "DiamondBoundIngress.h"')
         p=replace_one(p,'    UINT16 opcode = header->wMainCmd;\n',
 '''    UINT16 opcode = header->wMainCmd;
-    // SYNTHETIC SHADOW ONLY: existing EventPass, Gold, Platinum and
+    // PASSIVE OBSERVATION ONLY: existing EventPass, Gold, Platinum and
     // original WorldSvr dispatch remain untouched on every code path.
     if (opcode == DiamondIngress::kMasteryLevelUp &&
         DiamondIngress::Enabled() && pProcessDataCtx->iLen == 18) {
         const auto observation=DiamondIngress::Inspect(
             pProcessDataCtx->cpPacket,pProcessDataCtx->iLen);
-        if(observation.candidate) {
-            const auto decision=DiamondBoundIngress::Process(
-                pProcessDataCtx->pUserCtx,pProcessDataCtx->cpPacket,
-                pProcessDataCtx->iLen);
-            if(decision==DiamondBoundIngress::Result::ShadowApplied &&
-               DiamondIngress::ShouldLog()) {
-                Log::Print(LOG_INFO,"DiamondV14Offline",__LINE__,
-                           "SYNTHETIC shadow commit; original dispatch untouched");
-            }
+        if(observation.candidate && DiamondIngress::ShouldLog()) {
+            // OBSERVE ONLY. Never apply a shadow mutation from real C2S
+            // dispatch: the original WorldSvr handler still runs below,
+            // otherwise one packet could debit game + shadow twice.
+            Log::Print(LOG_INFO,"DiamondV14Offline",__LINE__,
+                       "READ_ONLY 0x09F3 candidate; no Diamond write or consume");
         }
     }
 ''')
