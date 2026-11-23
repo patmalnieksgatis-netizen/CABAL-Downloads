@@ -98,10 +98,10 @@ class Safety(unittest.TestCase):
                 '}\n'
             )
             proc.write_text(source)
-            types=original/"include/Types.h"
-            types.parent.mkdir(parents=True)
+            types_file=original/"include/Types.h"
+            types_file.parent.mkdir(parents=True)
             t="struct PROCESSDATACONTEXT {\n    char* cpPacket;\n    // ... other fields\n};\n"
-            types.write_text(t)
+            types_file.write_text(t)
             for i in range(10):
                 (original/f"one{i}.cpp").write_text("void foo() {}\n")
             def sha(data):
