@@ -61,6 +61,23 @@ GameActionResult PrepareAndCommitRealGradeUp(
         result.state=GameActionState::MissingRealCommitBackend;
         return result;
     }
+    // Exact SQL catalog proved only the names, PKs and separated write
+    // procedure signatures. It did not prove a combined GameData debit.
+    // The real host must implement and attest these invariants itself;
+    // a test's synthetic flags can never substitute for a live audit.
+    const auto& db=host.sql;
+    if(db.characterIdx!=owner.registeredCharacterIdx ||
+       db.userNum!=owner.registeredUserNum ||
+       !db.exactServer01PrimaryKeysVerified ||
+       !db.verifiedCharacterBelongsToUser ||
+       !db.singleSerializableTransactionAcrossAllFourTables ||
+       !db.revisionAndIntentReplayProtectionEnforced ||
+       !db.lockedBeforeRowsComparedInsideThatTransaction ||
+       !db.transactionReceiptDurablyCommitted ||
+       !db.notChainingIndependentToolSetProcedures) {
+        result.state=GameActionState::MissingRealCommitBackend;
+        return result;
+    }
     AtomicGradeUpRequest operation{};
     operation.durableIntentId=owner.durableIntentId;
     operation.userNum=owner.registeredUserNum;
