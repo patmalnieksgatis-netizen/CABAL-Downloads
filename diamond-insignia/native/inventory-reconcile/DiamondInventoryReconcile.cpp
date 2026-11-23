@@ -105,6 +105,23 @@ Audit VerifyInternal(PersistedBlob before,PersistedBlob after,
                 result.status=AuditStatus::TicketIdentityChanged;
                 return result;
             }
+            // Net total reduction alone is insufficient: one stack must
+            // never gain units while another stack is consumed. The decoder
+            // is already mandatory and independently verified by the caller.
+            if(!requireUnchanged) {
+                std::uint32_t oldUnits=0;
+                std::uint32_t newUnits=0;
+                if(!decoder(decoderContext,prior,&oldUnits) ||
+                   !decoder(decoderContext,current,&newUnits) ||
+                   !oldUnits || !newUnits) {
+                    result.status=AuditStatus::QuantityCodecFailed;
+                    return result;
+                }
+                if(newUnits>oldUnits) {
+                    result.status=AuditStatus::TicketStackIncreased;
+                    return result;
+                }
+            }
         }
         for(const auto& entry:saved.records) {
             if(entry.second.itemId!=kExchangeTicketItemId)continue;
@@ -163,6 +180,7 @@ const char* Name(AuditStatus s) noexcept {
         case AuditStatus::QuantityCodecFailed:return "QuantityCodecFailed";
         case AuditStatus::UnrelatedInventoryChanged:return "UnrelatedInventoryChanged";
         case AuditStatus::TicketIdentityChanged:return "TicketIdentityChanged";
+        case AuditStatus::TicketStackIncreased:return "TicketStackIncreased";
         case AuditStatus::TicketTotalsMismatch:return "TicketTotalsMismatch";
     }
     return "Unknown";
