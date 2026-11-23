@@ -46,6 +46,19 @@ jobs:
             diamond-insignia/native/grade2-ingress/test_0bda_save_reply_gate.cpp \
             -o /tmp/diamond_0bda_reply_gate_clone
           /tmp/diamond_0bda_reply_gate_clone
+      - name: Parse EP36_291_TEST PowerShell ticket metadata transport and embedded Python (no SSH)
+        shell: pwsh
+        run: |
+          $script = Get-Content 'diamond-insignia/native/grade2-ingress/Read-DiamondTicketMetadata-291.ps1' -Raw
+          $tokens = $null
+          $errors = $null
+          [System.Management.Automation.Language.Parser]::ParseInput($script, [ref]$tokens, [ref]$errors) | Out-Null
+          if ($errors.Count -gt 0) { throw ($errors | Out-String) }
+          $match = [regex]::Match($script, "(?ms)^\x24py = @'\r?\n(?<src>.*?)^'@")
+          if (-not $match.Success) { throw 'Embedded Python here-string missing' }
+          $match.Groups['src'].Value | python3 -c 'import ast,sys; ast.parse(sys.stdin.read())'
+          if ($LASTEXITCODE -ne 0) { throw 'Embedded Python syntax failure' }
+          Write-Output 'TICKET_METADATA_POWERSHELL_AND_PYTHON_PARSE=PASS'
       - name: Audit disposable-clone-only ticket metadata capture safety (no process attach)
         run: python3 -m unittest discover -s diamond-insignia/native/grade2-ingress -p 'test_capture_clone_ticket_catalog.py' -v
       - name: Verify real-host WorldSvr 0BDA gameplay transaction path and pending-save gate
