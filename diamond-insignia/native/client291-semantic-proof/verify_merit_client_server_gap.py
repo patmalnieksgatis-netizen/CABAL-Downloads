@@ -46,6 +46,23 @@ S2C_READ_ANCHORS = {
     0x0BDF: ((0x6DADB0,"807e0601"),(0x6DADBF,"448b4e07")),
 }
 
+# The two independently observed response paths target native Merit state slot 2.
+# This is a data-structure index, NOT proven Diamond rank-up functionality.
+STATE_SLOT2_ANCHORS = {
+    0x6DB102:"80790601",      # 0BDD status byte==1
+    0x6DB10D:"ba02000000",    # edx=2
+    0x6DB115:"e86e77b6ff",    # call 242888 wrapper
+    0x6DB019:"bb02000000",    # 0BDB ebx=2
+    0x6DB01E:"8bd3",          # edx=ebx
+    0x6DB023:"e808e7b6ff",    # call 249730
+    0x2428A4:"e8876e0000",    # wrapper calls same 249730
+    0x249745:"4289849164010000",
+    0x249752:"4689849158010000",
+    0x24975A:"46898c9170010000",
+    0x249762:"4a8984d198010000",
+    0x24976F:"4a8984d180010000",
+}
+
 # (RIP-relative opcode prefix, full instruction length)
 PATTERNS = (
     (bytes.fromhex("48833d"),8), # cmp qword [rip+disp32], imm8
@@ -151,6 +168,10 @@ def verify_client(exe):
             if read(rva,len(bytes.fromhex(expected)))!=bytes.fromhex(expected):
                 raise ProofError("S2C_READ_ANCHOR_"+hex(opcode)+"_"+hex(rva))
 
+    for rva,expected in STATE_SLOT2_ANCHORS.items():
+        if read(rva,len(bytes.fromhex(expected)))!=bytes.fromhex(expected):
+            raise ProofError("STATE_SLOT2_ANCHOR_"+hex(rva))
+
 def audit(client,world):
     verify_client(client)
     checked_sha(world,WORLD_SHA,"WORLD")
@@ -183,6 +204,13 @@ def audit(client,world):
                 {"opcode":"0x0BDD","reads":["status_byte_at_6"]},
                 {"opcode":"0x0BDF","reads":["status_byte_at_6","dword_at_7_in_success_path"]},
             ],
+            "client_state_slot_2_response_paths":[
+                {"s2c_opcode":"0x0BDD","success_branch":"0x6DB102",
+                 "path":"0x6DB115 -> 0x242888 -> 0x249730"},
+                {"s2c_opcode":"0x0BDB","success_branch":"0x6DAF09",
+                 "path":"0x6DB023 -> 0x249730"},
+            ],
+            "state_slot_2_diamond_semantics_proven":False,
             "game_modified":False}
 
 def main(argv=None):
