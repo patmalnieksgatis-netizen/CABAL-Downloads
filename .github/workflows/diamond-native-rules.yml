@@ -44,6 +44,8 @@ jobs:
             diamond-insignia/native/grade2-ingress/test_gradeup_0bda.cpp \
             -o /tmp/diamond_gradeup_0bda_clone_mock
           /tmp/diamond_gradeup_0bda_clone_mock
+      - name: Verify Platinum 0B10 server inventory-slot list via exact ELF layout tests
+        run: python3 -m unittest discover -s diamond-insignia/native/grade2-ingress -p 'test_verify_platinum_slot_list_worldsvr.py' -v
       - name: Verify 0BDA strongest grade-up counterpart to existing Platinum 0B10
         run: python3 -m unittest discover -s diamond-insignia/native/grade2-ingress -p 'test_verify_gradeup_0bda.py' -v
       - name: Prevent 0BDD rank-up misrouting (verified 0B13 slot-cancel mirror)
