@@ -4,28 +4,10 @@
 // Requires a host-supplied session authority which owns the WorldSvr
 // registry and holds its lock through the *whole* Execute().
 #include "DiamondLabOdbcBackend.h"
+#include "DiamondWorldSessionAuthority.h"
 #include <cstdint>
 #include <string>
 namespace diamond_v291 {
-struct LockedWorldSession {
-    // These fields MUST originate from trusted WorldSvr registry, not C2S.
-    const void* userData = nullptr;
-    std::uint32_t registeredUserNum = 0;
-    std::uint32_t registeredCharacterIdx = 0;
-    std::uint64_t sessionGeneration = 0;
-    std::int64_t labNonce = 0; // clone DB only; never a client credential
-};
-class WorldSessionAuthority {
-public:
-    virtual ~WorldSessionAuthority() = default;
-    // Acquire MUST guarantee both memory regions are valid to read:
-    // >=0xF0 bytes for userCtx and >=0xA28 bytes for userData.
-    // Lock must block disconnect, character switch, and competing saves
-    // until ReleaseExclusive. A true production authority is NOT present.
-    virtual bool AcquireExclusive(const void* worldUserCtx,
-                                  LockedWorldSession& result) noexcept = 0;
-    virtual void ReleaseExclusive(const void* worldUserCtx) noexcept = 0;
-};
 enum class SessionProofError : std::uint8_t {
     Valid, MissingAuthority, NoLiveSession, InvalidLease,
     UserDataPointerMismatch, RegistryIdentityMismatch, OwnerReadFailure
