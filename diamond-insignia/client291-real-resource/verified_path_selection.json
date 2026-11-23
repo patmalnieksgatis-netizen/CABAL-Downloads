@@ -1,0 +1,28 @@
+{
+  "mode": "STATIC_READ_ONLY",
+  "status": "PASS",
+  "client_sha256": "52e7956d4781fea1f0369cac8ab1eac4c3ddec2d1977c6557be53ec2b79885d9",
+  "meritsystem_enc_data_file_sha256": "3d859032a8b42c3e011c6d7ff739c9ac088b7f63effbc8afbc7215e162c1b78a",
+  "resource52": {
+    "file": "meritsystem.enc",
+    "flag": 1,
+    "override_check": "0x21CC90 => SHLWAPI!PathFileExistsA",
+    "fallback_builder": "0x217244",
+    "localized_fragment": "\\Language\\"
+  },
+  "resource53": {
+    "file": "meritsystem_msg.enc",
+    "flag": 0,
+    "default_builder": "0x216FAC",
+    "data_fragment": "\\Data"
+  },
+  "verification": {
+    "exact_binary_instructions": 16,
+    "unit_tests": 3,
+    "negative_file_hash_tests": 2
+  },
+  "runtime_path_observed": false,
+  "game_files_changed": false,
+  "vm_changed": false,
+  "issue": "Data/meritsystem.enc not proven to be resource id52 runtime file"
+}

@@ -1,0 +1,377 @@
+name: Diamond native rules C++17 tests
+on:
+  push:
+    branches:
+      - feature/diamond-insignia-v291-20261121
+    paths:
+      - diamond-insignia/native/**
+      - diamond-insignia/client291-real-resource/**
+      - diamond-insignia/client-codec/**
+      - .github/workflows/diamond-native-rules.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  native-rules:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify 0BDD slot-cancel candidate remains passive under all build flags
+        run: |
+          set -euo pipefail
+          g++ -std=c++17 -O2 -Wall -Wextra -Werror -pedantic \
+            diamond-insignia/native/grade2-ingress/DiamondGrade2Ingress.cpp \
+            diamond-insignia/native/grade2-ingress/test_grade2_ingress.cpp \
+            -o /tmp/diamond_grade2_default_disabled
+          /tmp/diamond_grade2_default_disabled
+          g++ -std=c++17 -O2 -Wall -Wextra -Werror -pedantic \
+            -DDIAMOND_ENABLE_GRADE2_CLONE_TRIAL \
+            diamond-insignia/native/grade2-ingress/DiamondGrade2Ingress.cpp \
+            diamond-insignia/native/grade2-ingress/test_grade2_ingress.cpp \
+            -o /tmp/diamond_grade2_clone_trial
+          /tmp/diamond_grade2_clone_trial
+      - name: Gate 0BDA clone response on cmd46-47 durable persisted reconciliation
+        run: |
+          set -euo pipefail
+          g++ -std=c++17 -O2 -Wall -Wextra -Werror -pedantic \
+            diamond-insignia/native/world-save-barrier/DiamondWorldSaveBarrier.cpp \
+            diamond-insignia/native/grade2-ingress/Diamond0BDASaveReplyGate.cpp \
+            diamond-insignia/native/grade2-ingress/test_0bda_save_reply_gate.cpp \
+            -o /tmp/diamond_0bda_reply_gate_default
+          /tmp/diamond_0bda_reply_gate_default
+          g++ -std=c++17 -O2 -Wall -Wextra -Werror -pedantic \
+            -DDIAMOND_ENABLE_0BDA_CLONE_TRIAL \
+            diamond-insignia/native/world-save-barrier/DiamondWorldSaveBarrier.cpp \
+            diamond-insignia/native/grade2-ingress/Diamond0BDASaveReplyGate.cpp \
+            diamond-insignia/native/grade2-ingress/test_0bda_save_reply_gate.cpp \
+            -o /tmp/diamond_0bda_reply_gate_clone
+          /tmp/diamond_0bda_reply_gate_clone
+      - name: Verify bounded B0 Merit Ticket sample parser and deidentification gates
+        run: python3 -m unittest discover -s diamond-insignia/native/inventory-reconcile/tests -p 'test_probe_live_b0_ticket_options.py' -v
+      - name: Parse B0 actual ticket inventory options probe PowerShell wrapper
+        shell: pwsh
+        run: |
+          $src = Get-Content 'diamond-insignia/native/inventory-reconcile/Read-Diamond291-B0TicketOptions.ps1' -Raw
+          $tokens = $null
+          $errors = $null
+          [System.Management.Automation.Language.Parser]::ParseInput($src, [ref]$tokens, [ref]$errors) | Out-Null
+          if ($errors.Count -gt 0) { throw ($errors | Out-String) }
+          Write-Output 'B0_INVENTORY_TICKET_OPTIONS_PS_PARSE=PASS'
+      - name: Verify exact GameData inventory WarExp Merit catalog-only SQL contract and parser
+        run: python3 -m unittest discover -s diamond-insignia/native/inventory-reconcile/tests -p 'test_audit_verified_gamedata_contract.py' -v
+      - name: Parse exact GameData contract PowerShell wrapper without SSH
+        shell: pwsh
+        run: |
+          $path = 'diamond-insignia/native/inventory-reconcile/Read-Diamond291-GameDataContract.ps1'
+          $source = Get-Content $path -Raw
+          $tokens = $null
+          $errors = $null
+          [System.Management.Automation.Language.Parser]::ParseInput($source, [ref]$tokens, [ref]$errors) | Out-Null
+          if ($errors.Count -gt 0) { throw ($errors | Out-String) }
+          Write-Output 'DIAMOND_REAL_GAMEDATA_CONTRACT_PS_PARSE=PASS'
+      - name: Verify B0 actual GameData SQL metadata audit safety and result parser
+        run: python3 -m unittest discover -s diamond-insignia/native/inventory-reconcile/tests -p 'test_audit_live_inventory_schema.py' -v
+      - name: Parse read-only B0 GameData PowerShell wrapper (no SSH or SQL)
+        shell: pwsh
+        run: |
+          $path = 'diamond-insignia/native/inventory-reconcile/Read-DiamondB0-GameDataSchema-291.ps1'
+          $source = Get-Content $path -Raw
+          $tokens = $null
+          $errors = $null
+          [System.Management.Automation.Language.Parser]::ParseInput($source, [ref]$tokens, [ref]$errors) | Out-Null
+          if ($errors.Count -gt 0) { throw ($errors | Out-String) }
+          Write-Output 'B0_GAMEDATA_METADATA_WRAPPER_PARSE=PASS'
+      - name: Parse EP36_291_TEST PowerShell ticket metadata transport and embedded Python (no SSH)
+        shell: pwsh
+        run: |
+          $script = Get-Content 'diamond-insignia/native/grade2-ingress/Read-DiamondTicketMetadata-291.ps1' -Raw
+          $tokens = $null
+          $errors = $null
+          [System.Management.Automation.Language.Parser]::ParseInput($script, [ref]$tokens, [ref]$errors) | Out-Null
+          if ($errors.Count -gt 0) { throw ($errors | Out-String) }
+          $match = [regex]::Match($script, "(?ms)^\x24py = @'\r?\n(?<src>.*?)^'@")
+          if (-not $match.Success) { throw 'Embedded Python here-string missing' }
+          $match.Groups['src'].Value | python3 -c 'import ast,sys; ast.parse(sys.stdin.read())'
+          if ($LASTEXITCODE -ne 0) { throw 'Embedded Python syntax failure' }
+          Write-Output 'TICKET_METADATA_POWERSHELL_AND_PYTHON_PARSE=PASS'
+      - name: Audit disposable-clone-only ticket metadata capture safety (no process attach)
+        run: python3 -m unittest discover -s diamond-insignia/native/grade2-ingress -p 'test_capture_clone_ticket_catalog.py' -v
+      - name: Verify actual Server01 atomic inventory WarExp rank receipt SQL offline safety
+        run: python3 -m unittest discover -s diamond-insignia/native/real-gamedata-transaction -p 'test_atomic_sql_static.py' -v
+      - name: Verify authenticated WorldSvr 0BDA v14 owner lease lasts through real game action callback
+        run: |
+          set -euo pipefail
+          g++ -std=c++17 -O2 -Wall -Wextra -Werror -pedantic \
+            diamond-insignia/native/world-session-bridge/deps/EventPassOwnerV282.cpp \
+            diamond-insignia/native/grade2-ingress/DiamondWorld48TicketUnits.cpp \
+            diamond-insignia/native/grade2-ingress/Diamond0BDATicketSelection.cpp \
+            diamond-insignia/native/grade2-ingress/DiamondGradeUp0BDA.cpp \
+            diamond-insignia/native/grade2-ingress/Diamond0BDAGameplayAction.cpp \
+            diamond-insignia/native/grade2-ingress/Diamond0BDAAuthenticatedIngress.cpp \
+            diamond-insignia/native/grade2-ingress/test_0bda_authenticated_ingress.cpp \
+            -o /tmp/diamond_0bda_authenticated_ingress
+          /tmp/diamond_0bda_authenticated_ingress
+      - name: Verify real-host WorldSvr 0BDA gameplay transaction path and pending-save gate
+        run: |
+          set -euo pipefail
+          g++ -std=c++17 -O2 -Wall -Wextra -Werror -pedantic \
+            diamond-insignia/native/grade2-ingress/DiamondWorld48TicketUnits.cpp \
+            diamond-insignia/native/grade2-ingress/Diamond0BDATicketSelection.cpp \
+            diamond-insignia/native/grade2-ingress/DiamondGradeUp0BDA.cpp \
+            diamond-insignia/native/grade2-ingress/Diamond0BDAGameplayAction.cpp \
+            diamond-insignia/native/grade2-ingress/test_0bda_gameplay_action.cpp \
+            -o /tmp/diamond_real_world_gameplay_action
+          /tmp/diamond_real_world_gameplay_action
+      - name: Verify authoritative 0BDA ticket selection plans and exact 100-unit debit
+        run: |
+          set -euo pipefail
+          g++ -std=c++17 -O2 -Wall -Wextra -Werror -pedantic \
+            diamond-insignia/native/grade2-ingress/DiamondWorld48TicketUnits.cpp \
+            diamond-insignia/native/grade2-ingress/Diamond0BDATicketSelection.cpp \
+            diamond-insignia/native/grade2-ingress/test_0bda_ticket_selection.cpp \
+            -o /tmp/diamond_0bda_ticket_selection_plan
+          /tmp/diamond_0bda_ticket_selection_plan
+      - name: Verify B0 GameData selected multi-stack 100-ticket debit with identity mapping and removal gate
+        run: |
+          set -euo pipefail
+          g++ -std=c++17 -O2 -Wall -Wextra -Werror -pedantic \
+            diamond-insignia/native/inventory-reconcile/tests/test_b0_selected_debit30.cpp \
+            diamond-insignia/native/inventory-reconcile/DiamondInventoryReconcile.cpp \
+            -o /tmp/diamond_b0_multistack_selected_debit
+          /tmp/diamond_b0_multistack_selected_debit
+      - name: Verify B0 GameData 30-byte copy-only 100-ticket debit on 999 stack
+        run: |
+          set -euo pipefail
+          g++ -std=c++17 -O2 -Wall -Wextra -Werror -pedantic \
+            diamond-insignia/native/inventory-reconcile/tests/test_b0_partial_debit30.cpp \
+            -o /tmp/diamond_b0_partial_debit30
+          /tmp/diamond_b0_partial_debit30
+      - name: Verify real B0 999 option profile and future 999-to-899 persisted debit reconciliation
+        run: |
+          set -euo pipefail
+          g++ -std=c++17 -O2 -Wall -Wextra -Werror -pedantic \
+            diamond-insignia/native/inventory-reconcile/tests/test_b0_quantity_profile.cpp \
+            diamond-insignia/native/inventory-reconcile/DiamondInventoryReconcile.cpp \
+            -o /tmp/diamond_b0_quantity_profile
+          /tmp/diamond_b0_quantity_profile
+      - name: Verify exact WorldSvr 48-byte ticket quantity decoder and runtime metadata safety
+        run: |
+          set -euo pipefail
+          g++ -std=c++17 -O2 -Wall -Wextra -Werror -pedantic \
+            diamond-insignia/native/grade2-ingress/DiamondWorld48TicketUnits.cpp \
+            diamond-insignia/native/grade2-ingress/test_world_48_ticket_units.cpp \
+            -o /tmp/diamond_world_48_ticket_units
+          /tmp/diamond_world_48_ticket_units
+          python3 -m unittest discover -s diamond-insignia/native/grade2-ingress -p 'test_verify_world_48_ticket_helper.py' -v
+      - name: Reject unsafe WorldSvr 0BDA command registration and preserve Platinum slots
+        run: |
+          set -euo pipefail
+          g++ -std=c++17 -O2 -Wall -Wextra -Werror -pedantic \
+            diamond-insignia/native/grade2-ingress/test_world_registry_preflight.cpp \
+            -o /tmp/diamond_0bda_world_registry_preflight
+          /tmp/diamond_0bda_world_registry_preflight
+      - name: Build WorldSvr-context-bound 0BDA ingress (default disabled and synthetic clone)
+        run: |
+          set -euo pipefail
+          g++ -std=c++17 -O2 -Wall -Wextra -Werror -pedantic \
+            diamond-insignia/native/grade2-ingress/DiamondGradeUp0BDA.cpp \
+            diamond-insignia/native/grade2-ingress/Diamond0BDAWorldContext.cpp \
+            diamond-insignia/native/grade2-ingress/test_0bda_world_context.cpp \
+            -o /tmp/diamond_0bda_world_context_default
+          /tmp/diamond_0bda_world_context_default
+          g++ -std=c++17 -O2 -Wall -Wextra -Werror -pedantic \
+            -DDIAMOND_ENABLE_0BDA_CLONE_TRIAL \
+            diamond-insignia/native/grade2-ingress/DiamondGradeUp0BDA.cpp \
+            diamond-insignia/native/grade2-ingress/Diamond0BDAWorldContext.cpp \
+            diamond-insignia/native/grade2-ingress/test_0bda_world_context.cpp \
+            -o /tmp/diamond_0bda_world_context_clone
+          /tmp/diamond_0bda_world_context_clone
+      - name: Build 0BDA rank-up candidate gateway (production disabled, clone trial no S2C)
+        run: |
+          set -euo pipefail
+          g++ -std=c++17 -O2 -Wall -Wextra -Werror -pedantic \
+            diamond-insignia/native/grade2-ingress/DiamondGradeUp0BDA.cpp \
+            diamond-insignia/native/grade2-ingress/test_gradeup_0bda.cpp \
+            -o /tmp/diamond_gradeup_0bda_default_closed
+          /tmp/diamond_gradeup_0bda_default_closed
+          g++ -std=c++17 -O2 -Wall -Wextra -Werror -pedantic \
+            -DDIAMOND_ENABLE_0BDA_CLONE_TRIAL \
+            diamond-insignia/native/grade2-ingress/DiamondGradeUp0BDA.cpp \
+            diamond-insignia/native/grade2-ingress/test_gradeup_0bda.cpp \
+            -o /tmp/diamond_gradeup_0bda_clone_mock
+          /tmp/diamond_gradeup_0bda_clone_mock
+      - name: Verify Platinum 0B10 server inventory-slot list via exact ELF layout tests
+        run: python3 -m unittest discover -s diamond-insignia/native/grade2-ingress -p 'test_verify_platinum_slot_list_worldsvr.py' -v
+      - name: Verify 0BDA strongest grade-up counterpart to existing Platinum 0B10
+        run: python3 -m unittest discover -s diamond-insignia/native/grade2-ingress -p 'test_verify_gradeup_0bda.py' -v
+      - name: Prevent 0BDD rank-up misrouting (verified 0B13 slot-cancel mirror)
+        run: python3 -m unittest discover -s diamond-insignia/native/grade2-ingress -p 'test_verify_grade2_mirror.py' -v
+      - name: Verify v14 inventory Record30 evidence cannot bypass durable-save barrier
+        run: |
+          set -euo pipefail
+          g++ -std=c++17 -O2 -Wall -Wextra -Werror -pedantic \
+            diamond-insignia/native/inventory-reconcile/tests/test_diamond_inventory_reconcile.cpp \
+            diamond-insignia/native/inventory-reconcile/DiamondInventoryReconcile.cpp \
+            diamond-insignia/native/world-save-barrier/DiamondWorldSaveBarrier.cpp \
+            -o /tmp/diamond_inventory_reconcile_test
+          /tmp/diamond_inventory_reconcile_test
+      - name: Build native rules and execute gameplay-state invariants
+        run: |
+          g++ -std=c++17 -O2 -Wall -Wextra -Werror -pedantic -o /tmp/diamond_rules_test diamond-insignia/native/test_diamond_rules.cpp
+          /tmp/diamond_rules_test
+          g++ -std=c++17 -O2 -Wall -Wextra -Werror -pedantic -pthread -o /tmp/diamond_transaction_test diamond-insignia/native/test_diamond_transaction.cpp
+          /tmp/diamond_transaction_test
+          g++ -std=c++17 -O2 -Wall -Wextra -Werror -pedantic -o /tmp/diamond_catalog_test diamond-insignia/native/test_diamond_catalog.cpp
+          /tmp/diamond_catalog_test
+          test -f /usr/include/sql.h || (sudo apt-get update -qq && sudo apt-get install -y unixodbc-dev)
+          g++ -std=c++17 -O2 -Wall -Wextra -Werror -pedantic -fPIC -shared -o /tmp/libDiamondNative.so diamond-insignia/native/diamond_abi.cpp diamond-insignia/native/diamond_world_bridge.cpp diamond-insignia/native/diamond_mssql_shadow_bridge.cpp -lodbc
+          nm -D /tmp/libDiamondNative.so | grep cabal_diamond_evaluate
+          g++ -std=c++17 -O2 -Wall -Wextra -Werror -pedantic -o /tmp/diamond_abi_test diamond-insignia/native/test_diamond_abi.cpp -L/tmp -lDiamondNative -Wl,-rpath,/tmp
+          /tmp/diamond_abi_test
+          g++ -std=c++17 -O2 -Wall -Wextra -Werror -pedantic -pthread -o /tmp/diamond_world_bridge_test diamond-insignia/native/test_diamond_world_bridge.cpp -L/tmp -lDiamondNative -Wl,-rpath,/tmp
+          /tmp/diamond_world_bridge_test
+          nm -D /tmp/libDiamondNative.so | grep cabal_diamond_world_execute
+          g++ -std=c++17 -O2 -Wall -Wextra -Werror -pedantic -o /tmp/diamond_synthetic_catalog diamond-insignia/native/test_emit_synthetic_scp.cpp
+          /tmp/diamond_synthetic_catalog > /tmp/diamond_synthetic.scp
+          g++ -std=c++17 -O2 -Wall -Wextra -Werror -pedantic -pthread -DDIAMOND_ENABLE_SHADOW_TRIAL -o /tmp/diamond_sqlite_testhost diamond-insignia/native/diamond_sqlite_testhost.cpp diamond-insignia/native/diamond_merit_world_entry.cpp -L/tmp -lDiamondNative -lsqlite3 -Wl,-rpath,/tmp
+          /tmp/diamond_sqlite_testhost --selftest /tmp/diamond_synthetic.scp /tmp/diamond_synthetic_durable.sqlite3
+          /tmp/diamond_sqlite_testhost --verify-restart /tmp/diamond_synthetic.scp /tmp/diamond_synthetic_durable.sqlite3
+          /tmp/diamond_sqlite_testhost --verify-reconnect /tmp/diamond_synthetic.scp /tmp/diamond_synthetic_durable.sqlite3
+          set +e
+          /tmp/diamond_sqlite_testhost --simulate-crash-before-commit /tmp/diamond_synthetic.scp /tmp/diamond_synthetic_durable.sqlite3
+          crash_rc=$?
+          set -e
+          if [ "$crash_rc" -ne 71 ]; then
+            echo "ERROR: crash fault injection returned $crash_rc instead of expected 71"; exit 1
+          fi
+          /tmp/diamond_sqlite_testhost --verify-restart /tmp/diamond_synthetic.scp /tmp/diamond_synthetic_durable.sqlite3
+          echo 'MID_COMMIT_PROCESS_CRASH_ROLLBACK=PASS'
+          cp /tmp/diamond_synthetic_durable.sqlite3 /tmp/diamond_tampered_readonly_test.sqlite3
+          python3 -c "import sqlite3; p='/tmp/diamond_tampered_readonly_test.sqlite3'; c=sqlite3.connect(p); c.execute('UPDATE test_account SET tickets=21'); c.commit(); c.close()"
+          if /tmp/diamond_sqlite_testhost --verify-restart /tmp/diamond_synthetic.scp /tmp/diamond_tampered_readonly_test.sqlite3; then
+            echo 'ERROR: tampered inventory item count was accepted'; exit 1
+          fi
+          echo 'TAMPERED_INVENTORY_RESTART_REJECTED=PASS'
+          g++ -std=c++17 -O2 -Wall -Wextra -Werror -pedantic -fPIC -shared -o /tmp/libDiamondMeritGate.so diamond-insignia/native/diamond_merit_world_entry.cpp
+          nm -D /tmp/libDiamondMeritGate.so | grep cabal_diamond_merit_classify_c2s
+          g++ -std=c++17 -O2 -Wall -Wextra -Werror -pedantic -DDIAMOND_ENABLE_SHADOW_TRIAL -o /tmp/test_diamond_merit_world_entry diamond-insignia/native/test_diamond_merit_world_entry.cpp diamond-insignia/native/diamond_merit_world_entry.cpp -L/tmp -lDiamondNative -Wl,-rpath,/tmp
+          /tmp/test_diamond_merit_world_entry
+          g++ -std=c++17 -O2 -Wall -Wextra -Werror -pedantic -o /tmp/test_diamond_merit_production_gate diamond-insignia/native/test_diamond_merit_production_gate.cpp diamond-insignia/native/diamond_merit_world_entry.cpp
+          /tmp/test_diamond_merit_production_gate
+          g++ -std=c++17 -O2 -Wall -Wextra -Werror -pedantic -o /tmp/diamond_mssql_shadow_auth_test diamond-insignia/native/test_diamond_mssql_shadow_bridge.cpp -L/tmp -lDiamondNative -Wl,-rpath,/tmp
+          /tmp/diamond_mssql_shadow_auth_test
+          nm -D /tmp/libDiamondNative.so | grep cabal_diamond_mssql_shadow_callbacks
+          g++ -std=c++17 -O2 -Wall -Wextra -Werror -pedantic -pthread -o /tmp/diamond_mssql_shadow_smoke diamond-insignia/native/diamond_mssql_shadow_smoke.cpp -L/tmp -lDiamondNative -Wl,-rpath,'$ORIGIN'
+          /tmp/diamond_mssql_shadow_smoke 2>/tmp/diamond_shadow_no_args.stderr && exit 44 || test $? -eq 2
+      - name: Verify actual Merit grade definitions cannot be presumed from Platinum SCP
+        run: python3 -m unittest discover -s diamond-insignia/native/catalog-audit -p 'test_audit_real_merit_grade.py' -v
+      - name: Verify staged Diamond SCP preserves original catalog rows and all 2442 additions
+        run: python3 -m unittest discover -s diamond-insignia/native/catalog-audit -p 'test_verify_staged_scp_parity.py' -v
+      - name: Validate exact v291 Merit wire boundaries (offline only)
+        run: bash diamond-insignia/native/client291-wire/run-tests.sh
+      - name: Validate Merit candidate ENC audit and ZIP safety (offline only)
+        run: python3 -m unittest discover -s diamond-insignia/client291-real-resource -p 'test_audit_merit_candidates.py' -v
+      - name: Validate V9 disassembly and safety gates (offline only)
+        run: python3 -m unittest discover -s diamond-insignia/client-codec -p 'test_analyze_v9_call_graph.py' -v
+      - name: Verify v291 Merit resource path to loader control flow (offline only)
+        run: python3 -m unittest discover -s diamond-insignia/client-codec -p 'test_verify_v291_merit_loader_chain.py' -v
+      - name: Verify Procmon Merit path audit (offline fixtures)
+        run: python3 -m unittest discover -s diamond-insignia/client291-real-resource -p 'test_audit_procmon_merit_paths.py' -v
+      - name: Verify Procmon to SHA-listed Merit asset path correlation
+        run: python3 -m unittest discover -s diamond-insignia/client291-real-resource -p 'test_correlate_procmon_merit_assets.py' -v
+      - name: Verify all v291 ENC loader direct callers (offline synthetic fixtures)
+        run: python3 -m unittest discover -s diamond-insignia/native/client291-resource-route/tests -p 'test_loader_callers.py' -v
+      - name: Verify exact UI event registration mapping and no off-by-one errors
+        run: python3 -m unittest discover -s diamond-insignia/native/client291-semantic-proof -p 'test_ui_event_binding.py' -v
+      - name: Verify v291 Merit UI event 0x216 to dynamic 0x0B10 C2S (offline fixtures)
+        run: python3 -m unittest discover -s diamond-insignia/native/client291-semantic-proof -p 'test_verify_merit_ui_0b10.py' -v
+      - name: Verify v291 Merit-adjacent opcode and WorldSvr static registration gap
+        run: python3 -m unittest discover -s diamond-insignia/native/client291-semantic-proof -p 'test_merit_client_server_gap.py' -v
+      - name: Verify WorldSvr Merit versus Dimension Inventory opcode registrations
+        run: python3 -m unittest discover -s diamond-insignia/native/client291-semantic-proof -p 'test_worldsvr_adjacent_c2s.py' -v
+      - name: Publish tested native library (OFFLINE ONLY, not a WorldSvr drop-in)
+        uses: actions/upload-artifact@v4
+        with:
+          name: diamond-native-v291-mssql-shadow-clone-linux-x64
+          path: |
+            /tmp/libDiamondNative.so
+            /tmp/libDiamondMeritGate.so
+            /tmp/diamond_mssql_shadow_smoke
+          if-no-files-found: error
+          retention-days: 7
+      - name: Confirm no server launch
+        run: echo 'Offline tests only - no game binary, production SQL database, VM, or packet ABI touched.'
+      - name: Link real authenticated WorldSvr 0BDA to actual Server01 ODBC SQL transaction adapter
+        run: |
+          set -euo pipefail
+          test -f /usr/include/sql.h || (sudo apt-get update -qq && sudo apt-get install -y unixodbc-dev)
+          g++ -std=c++17 -O2 -Wall -Wextra -Werror -pedantic \
+            diamond-insignia/native/world-session-bridge/deps/EventPassOwnerV282.cpp \
+            diamond-insignia/native/grade2-ingress/DiamondWorld48TicketUnits.cpp \
+            diamond-insignia/native/grade2-ingress/Diamond0BDATicketSelection.cpp \
+            diamond-insignia/native/grade2-ingress/DiamondGradeUp0BDA.cpp \
+            diamond-insignia/native/grade2-ingress/Diamond0BDAGameplayAction.cpp \
+            diamond-insignia/native/grade2-ingress/Diamond0BDAAuthenticatedIngress.cpp \
+            diamond-insignia/native/real-gamedata-transaction/DiamondRealGameDataOdbc.cpp \
+            diamond-insignia/native/real-gamedata-transaction/Diamond0BDARealServer01Bridge.cpp \
+            diamond-insignia/native/real-gamedata-transaction/test_real_server01_dispatch_chain.cpp \
+            diamond-insignia/native/inventory-reconcile/DiamondInventoryReconcile.cpp \
+            -lodbc -o /tmp/diamond_real_server01_fullchain
+          /tmp/diamond_real_server01_fullchain
+      - name: Verify real Server01 GameData ODBC atomic rankup adapter compilation and no-SQL default gates
+        run: |
+          set -euo pipefail
+          test -f /usr/include/sql.h || (sudo apt-get update -qq && sudo apt-get install -y unixodbc-dev)
+          g++ -std=c++17 -O2 -Wall -Wextra -Werror -pedantic \
+            diamond-insignia/native/real-gamedata-transaction/DiamondRealGameDataOdbc.cpp \
+            diamond-insignia/native/real-gamedata-transaction/test_real_gamedata_odbc_preflight.cpp \
+            diamond-insignia/native/inventory-reconcile/DiamondInventoryReconcile.cpp \
+            -lodbc -o /tmp/diamond_real_gamedata_odbc_preflight
+          /tmp/diamond_real_gamedata_odbc_preflight
+      - name: Verify restored clone-only ODBC backend and receipt replay
+        run: |
+          set -euo pipefail
+          test -f /usr/include/sql.h || (sudo apt-get update -qq && sudo apt-get install -y unixodbc-dev)
+          g++ -std=c++17 -O2 -Wall -Wextra -Werror -pedantic -fPIC -shared \
+            diamond-insignia/native/diamond_abi.cpp \
+            diamond-insignia/native/diamond_world_bridge.cpp \
+            -o /tmp/libDiamondNativeOdbcTest.so
+          ln -sf /tmp/libDiamondNativeOdbcTest.so /tmp/libDiamondNative.so
+          g++ -std=c++17 -O2 -Wall -Wextra -Werror -pedantic \
+            -o /tmp/diamond_emit_synthetic_scp \
+            diamond-insignia/native/test_emit_synthetic_scp.cpp
+          /tmp/diamond_emit_synthetic_scp > /tmp/diamond_odbc_synthetic.scp
+          g++ -std=c++17 -O2 -Wall -Wextra -Werror -pedantic -pthread \
+            -Idiamond-insignia/native \
+            -Idiamond-insignia/native/commit-gate \
+            -Idiamond-insignia/native/world-session-bridge/deps \
+            diamond-insignia/native/world-session-bridge/tests/FakeOdbc.cpp \
+            diamond-insignia/native/world-session-bridge/tests/test_diamond_lab_odbc.cpp \
+            diamond-insignia/native/world-session-bridge/deps/DiamondLabOdbcBackend.cpp \
+            diamond-insignia/native/commit-gate/DiamondCommitGate.cpp \
+            -L/tmp -lDiamondNative -Wl,-rpath,/tmp \
+            -o /tmp/diamond_odbc_fake_driver_test
+          /tmp/diamond_odbc_fake_driver_test /tmp/diamond_odbc_synthetic.scp
+          g++ -std=c++17 -O2 -Wall -Wextra -Werror -pedantic -pthread \
+            -Idiamond-insignia/native \
+            -Idiamond-insignia/native/commit-gate \
+            -Idiamond-insignia/native/world-session-bridge \
+            -Idiamond-insignia/native/world-session-bridge/deps \
+            diamond-insignia/native/world-session-bridge/tests/FakeOdbc.cpp \
+            diamond-insignia/native/world-session-bridge/tests/test_diamond_session_odbc_endtoend.cpp \
+            diamond-insignia/native/world-session-bridge/DiamondWorldSessionBridge.cpp \
+            diamond-insignia/native/world-session-bridge/deps/EventPassOwnerV282.cpp \
+            diamond-insignia/native/world-session-bridge/deps/DiamondLabOdbcBackend.cpp \
+            diamond-insignia/native/commit-gate/DiamondCommitGate.cpp \
+            -L/tmp -lDiamondNative -Wl,-rpath,/tmp \
+            -o /tmp/diamond_v14_session_odbc_endtoend
+          /tmp/diamond_v14_session_odbc_endtoend /tmp/diamond_odbc_synthetic.scp
+          g++ -std=c++17 -O2 -Wall -Wextra -Werror -pedantic -fPIC -shared \
+            -Idiamond-insignia/native \
+            -Idiamond-insignia/native/commit-gate \
+            -Idiamond-insignia/native/world-session-bridge/deps \
+            diamond-insignia/native/world-session-bridge/deps/DiamondLabOdbcBackend.cpp \
+            diamond-insignia/native/commit-gate/DiamondCommitGate.cpp \
+            -L/tmp -lDiamondNative -lodbc -Wl,-rpath,/tmp -Wl,-z,defs \
+            -o /tmp/libDiamondLabOdbcCloneOnly.so
+          echo 'CLONE_ONLY_REAL_ODBC_LINK=PASS;ACTUAL_MSSQL=NOT_TESTED'

@@ -1,0 +1,24 @@
+name: Diamond Merit x64 resource V6 native Windows tests
+on:
+  push:
+    branches:
+      - feature/diamond-insignia-v291-20261121
+    paths:
+      - diamond-insignia/client-codec/Inspect-Cabal291-MeritResource-V6.ps1
+      - .github/workflows/diamond-merit-x64-resource-v6.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  windows-power-shell:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify PDATA gap and hex tests without game files
+        shell: powershell
+        run: |
+          & .\diamond-insignia\client-codec\Inspect-Cabal291-MeritResource-V6.ps1 -SelfTestOnly
+      - name: Confirm static-only scope
+        shell: powershell
+        run: |
+          Write-Output 'Synthetic tests only; no CabalMain executable, SQL, VM, or process memory accessed.'

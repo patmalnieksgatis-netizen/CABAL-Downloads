@@ -1,0 +1,21 @@
+name: Diamond Insignia SQL Lab Static Safety
+on:
+  push:
+    branches: [feature/diamond-insignia-v291-20261121]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  lab-safety:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Verify production-DB guards, Platinum isolation, Diamond revision checks
+        run: python3 -m unittest -v diamond-insignia/sql-lab/test_lab_v2_static.py
+      - name: Report limits
+        run: |
+          echo 'Diamond SQL lab scripts passed static validation.'
+          echo 'NO SQL Server execution, NO v291 WorldSvr integration, NO live server changes.'

@@ -1,0 +1,25 @@
+name: Diamond Merit PE XREF Windows PowerShell compile
+on:
+  push:
+    branches:
+      - feature/diamond-insignia-v291-20261121
+    paths:
+      - diamond-insignia/client-codec/Inspect-Cabal291-MeritCodeRefs.ps1
+      - diamond-insignia/client-codec/Compile-Test.ps1
+      - .github/workflows/diamond-merit-pe-xref-compile.yml
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  compile:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compile embedded C# with Windows PowerShell 5.1 and test malformed PE
+        shell: powershell
+        run: |
+          & .\diamond-insignia\client-codec\Compile-Test.ps1
+      - name: Scope
+        shell: powershell
+        run: |
+          Write-Output 'NO CABAL client files, SQL server, game process, or VM needed'
