@@ -20,7 +20,7 @@ class PE64:
         if len(data)<0x400 or data[:2]!=b"MZ":
             raise ValueError("not a PE file")
         pe=struct.unpack_from("<I",data,0x3C)[0]
-        if pe+24>len(data) or data[pe:pe+4]!=b"PE\\x00\\x00":
+        if pe+24>len(data) or data[pe:pe+4]!=b"PE\x00\x00":
             raise ValueError("bad PE header")
         if struct.unpack_from("<H",data,pe+24)[0]!=0x20B:
             raise ValueError("not PE32+ x64")
@@ -30,7 +30,7 @@ class PE64:
         for i in range(count):
             o=pe+24+optsize+i*40
             if o+40>len(data):raise ValueError("truncated section header")
-            name=data[o:o+8].rstrip(b"\\x00").decode("ascii","replace")
+            name=data[o:o+8].rstrip(b"\x00").decode("ascii","replace")
             virtual_size,rva,rawsize,rawptr=struct.unpack_from("<IIII",data,o+8)
             if rawptr+rawsize>len(data):raise ValueError("truncated section")
             self.sections.append((name,rva,virtual_size,rawptr,rawsize))
@@ -71,10 +71,10 @@ SIGNATURES={
 REL_CALLS={0x6F857C:LOOKUP,0x6F859B:LOOKUP,0x6F85AA:LOOKUP}
 STATE_WRITE_CALLS={0x6F858F:0x37FA34,0x6F85D0:0x37F9D8}
 JUMPS={
-    0x6F852A:(b"\\x0f\\x85",0x6F8608), # status != 1
-    0x6F8583:(b"\\x75",0x6F8596),     # first result != 0
-    0x6F85A8:(b"\\x74",0x6F85B9),     # second result == 1
-    0x6F85B2:(b"\\x75",0x6F85D5),     # third result != 2
+    0x6F852A:(b"\x0f\x85",0x6F8608), # status != 1
+    0x6F8583:(b"\x75",0x6F8596),     # first result != 0
+    0x6F85A8:(b"\x74",0x6F85B9),     # second result == 1
+    0x6F85B2:(b"\x75",0x6F85D5),     # third result != 2
 }
 
 def verify(reader):
@@ -127,7 +127,7 @@ def main():
         raise SystemExit("STOP: client SHA mismatch "+digest)
     result=verify(PE64(data))
     result["client_sha256"]=digest
-    if a.json:a.json.write_text(json.dumps(result,indent=2)+"\\n",encoding="utf-8")
+    if a.json:a.json.write_text(json.dumps(result,indent=2)+"\n",encoding="utf-8")
     print("CLIENT291_09F3_SUCCESS_CONDITIONAL_DWORD_BRANCHES=PASS")
     print("LEGACY_7B_SUCCESS_UNIVERSALLY_TRUNCATED=NO")
     print("CLIENT_DWORD_SUCCESS_FIELD_SEMANTICS=UNKNOWN")
