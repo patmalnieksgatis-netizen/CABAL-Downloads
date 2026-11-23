@@ -89,6 +89,8 @@ jobs:
         run: python3 -m unittest discover -s diamond-insignia/native/client291-resource-route/tests -p 'test_loader_callers.py' -v
       - name: Verify exact UI event registration mapping and no off-by-one errors
         run: python3 -m unittest discover -s diamond-insignia/native/client291-semantic-proof -p 'test_ui_event_binding.py' -v
+      - name: Verify v291 Merit UI event 0x216 to dynamic 0x0B10 C2S (offline fixtures)
+        run: python3 -m unittest discover -s diamond-insignia/native/client291-semantic-proof -p 'test_verify_merit_ui_0b10.py' -v
       - name: Verify WorldSvr Merit versus Dimension Inventory opcode registrations
         run: python3 -m unittest discover -s diamond-insignia/native/client291-semantic-proof -p 'test_worldsvr_adjacent_c2s.py' -v
       - name: Publish tested native library (OFFLINE ONLY, not a WorldSvr drop-in)
