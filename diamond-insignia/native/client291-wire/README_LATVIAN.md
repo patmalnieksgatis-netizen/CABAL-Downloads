@@ -30,6 +30,40 @@ Datums: 2026-11-22. **STATUSS: KLIENTA BINĀRĀ IDENTITĀTE APSTIPRINĀTA; REĀL
 - Oriģinālais arhivētais `WorldSvr` pie `0xA3B544–0xA3B569` izveido 7 baitu `E2 B7 07 00 F3 09 01` atbildi, bet pie `0xA3B5CA–0xA3B5F3` — 7 baitu `E2 B7 07 00 F3 09 00`.
 - Tās ir **konkrētas plūsmas**, nevis pierādījums, ka visi šī opcode servera S2C gadījumi ir 7 baiti. Nav pierādīts, ka baitu trūkums pašlaik izraisa spēles kļūmi — atkarīgs no atzara, klienta bufera un tā, kāds pieprasījums no spēles reāli tiek sūtīts.
 
+### 2026-11-23: konkrētie S2C atzari pārbaudīti pret īsto klienta EXE
+
+Neatkarīgi pārbaudīts SHA-piesietais `CabalMain.exe`, tā `.pdata`
+funkcijas robežas `0x6F84FC..0x6F86AA`, trīs izsaukumi uz
+`0x24375C` un abi `[response+7]` DWORD nolasīšanas atzari:
+
+- Ja **pirmā** `0x24375C` meklējuma rezultāts ir `0`,
+  klienta `0x6F8585` nolasa `+7` DWORD un izsauc `0x37FA34`,
+  kas to ieraksta klienta stāvoklī pie `+0xAB6C`.
+- Ja pirmais rezultāts nav `0`, klients meklē **otrreiz**. Rezultāts
+  `1` ved uz `0x6F85B9` DWORD lasījumu. Pretējā gadījumā notiek
+  **trešais** meklējums, un rezultāts `2` ved uz to pašu lasījumu.
+  Lasītā vērtība nonāk `r9d`, pēc tam funkcijā `0x37F9D8`,
+  kas to glabā vienā no klienta datu struktūras ierakstiem pie `+0x14`.
+- Ja šie atzari nenostrādā, **šis konkrētais apstrādātājs** neprasa
+  papildu DWORD. Tādēļ nevar apgalvot, ka oriģinālā 7B success
+  atbilde visos gadījumos ir saīsināta/nepareiza.
+- Trīs izsaukumi tiek veikti atsevišķi: nepamatoti pieņemt, ka
+  starp tiem klienta stāvoklis nevar mainīties.
+
+Pārbaudes kods: `evidence/verify_09f3_response_branch.py` un
+`tests/test_client291_s2c_branches.cpp`. 
+`CheckServerResponseForClient291` tagad 7B success bez zināma
+klienta atzara atgriež `ResponseRouteUnobserved`, nevis nepamatoti
+apgalvo universālu truncation. Papildfunkcija
+`CheckServerResponseForObservedClientRoute` palīdz **tikai offline
+diagnostikā** atšķirt stāvokļus, kuros trūkst 4 baitu, no stāvokļiem,
+kuros minētais DWORD netiek lasīts. **Neviens no šiem statusiem nav
+Diamond transakcijas sekmīguma apliecinājums.**
+
+Laika ziņā svarīgi: līdz šim joprojām nav zināma šo divu klienta
+saglabāšanas lauku spēles nozīme, kā arī nav pierādīts, ka `0x09F3`
+ir Diamond rank-up vai konkrētais Diamond Mastery pirkums.
+
 **Nedrīkst vienkārši pielikt četras nulles un sūtīt 11 baitu success**: vērtības semantika nav zināma, un tās lieto dažādas klienta sistēmas. Nelietot šo kā gatavu patch.
 
 ## Diamond saistītā konfigurācija
@@ -39,7 +73,7 @@ Klienta faktiskajā izpildāmajā failā ir virkne `dia_meritscore_fomula` (ori�
 ## Komplektā
 
 - `src/Client291MeritWire.h/.cpp` — klienta C2S 18B bufera offline builder/parser un drošības vērtējums 0x09F3 atbildēm; NEDARBOJAS kā sūtītājs vai WorldSvr hooks.
-- `tests/test_client291_wire.cpp` — formāta, garuma, kļūdu un 7B success nepilnības testi.
+- `tests/test_client291_wire.cpp` — formāta, garuma un konservatīvas 7B atbildes pārbaudes; `test_client291_s2c_branches.cpp` pārbauda visus novēroto klienta lookup-atbilžu atzarus.
 - `evidence/verify_exact_client_world.py` — read-only pārbaude **pret trim īstajiem** SHA-piesietajiem binārajiem failiem; pārbauda konkrētos opcode, statusa un +7 DWORD lasīšanas instrukciju baitus un `.pdata` funkciju robežas.
 - `evidence/VERIFIED_EVIDENCE.json` — šajā izpildījumā iegūtais pierādījumu apkopojums.
 - `run-tests.sh` — C++17 testi + ASan/UBSan; tiek veikti tikai lokāli.
