@@ -98,7 +98,7 @@ try:
     elif kind in (0x10, 0x1b, 0x66):
         codec = "option_lower_7_bits"
     else:
-        codec = "singleton_other_catalog_kind"
+        codec = "original_helper_fallback_1_NOT_verified_ticket_stack_quantity"
     print(json.dumps({
         "status": "READ_ONLY_WORLD_METADATA",
         "server": "EP36_291_TEST",
@@ -111,6 +111,9 @@ try:
         "kind_field38_hex": hex(kind),
         "stack_field3c_signed": limit,
         "quantity_codec": codec,
+        "safe_to_plan_ticket_debit": limit <= 1 or kind in (
+            0x43, 0x46, 0xaf, 0xb8, 0x10, 0x1b, 0x66),
+        "metadata_B0_999_count_not_proven": kind == 0xB0 and limit == 999,
         "no_game_data_changed": True
     }, sort_keys=True))
 except (OSError, ValueError, subprocess.TimeoutExpired) as exc:
