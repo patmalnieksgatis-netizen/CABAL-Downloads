@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Build v291 0BDD grade-2 candidate gateway (default closed and clone-only trial)
+      - name: Verify 0BDD slot-cancel candidate remains passive under all build flags
         run: |
           set -euo pipefail
           g++ -std=c++17 -O2 -Wall -Wextra -Werror -pedantic \
@@ -30,6 +30,8 @@ jobs:
             diamond-insignia/native/grade2-ingress/test_grade2_ingress.cpp \
             -o /tmp/diamond_grade2_clone_trial
           /tmp/diamond_grade2_clone_trial
+      - name: Prevent 0BDD rank-up misrouting (verified 0B13 slot-cancel mirror)
+        run: python3 -m unittest discover -s diamond-insignia/native/grade2-ingress -p 'test_verify_grade2_mirror.py' -v
       - name: Verify v14 inventory Record30 evidence cannot bypass durable-save barrier
         run: |
           set -euo pipefail
