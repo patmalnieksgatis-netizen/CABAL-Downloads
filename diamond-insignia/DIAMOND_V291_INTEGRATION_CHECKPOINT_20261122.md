@@ -354,3 +354,34 @@ PROCEDUREMAP handler, real inventory/WExp debit in durable
 GameData/MSSQL, exact 0BDA response ABI, relogin/restart/replay
 gameplay proof. Never touch the live WorldSvr or assume item-stack
 metadata without runtime evidence.
+
+
+## 2026-11-23 evening: exact 0BDA gameplay transaction core + read-only real-ticket metadata path
+
+- Added `native/grade2-ingress/Diamond0BDAGameplayAction.h/.cpp` and
+  `test_0bda_gameplay_action.cpp`. A **single locked-character action
+  path** validates the exact candidate packet, source-confirmed inventory,
+  ticket stack totals, authentic Platinum rank state, 30,000 WExp and 100
+  tickets, then calls an explicitly supplied atomically committing *real
+  GameData* host callback. No callback => fail closed. Failure, uncertainty,
+  foreign receipt and original `0x0B10` passthrough are handled. The code
+  **never sends a speculative 0BDA success packet**. All 3 GitHub CI
+  workflows passed on commit `0daa9fccc7356ae9680a42c06ae2d90a47211550`.
+- Added `native/grade2-ingress/Read-DiamondTicketMetadata-291.ps1`.
+  It checks VirtualBox `EP36_291_TEST`, sends a Python script via
+  SSH stdin to `docker exec -i --privileged cabal_main python3 -`,
+  verifies the exact running WorldSvr SHA and PID, then uses
+  `os.pread(8,0x13CAB80)` to read the two real runtime metadata
+  fields for item 33554961. **This repairs the previously failed
+  nested-shell / dd attempt**. It does not alter any CABAL files or
+  inventory; kernel ptrace access could still reject the read.
+  A GitHub CI `pwsh` parser checks the command wrapper and
+  embedded Python AST **without contacting the user's VM**.
+- Real live stack metadata still **has not been collected**, nor does
+  the host implement real WorldSvr handler, GameData persistence or S2C
+  response ABI. All code is GitHub-side; no guest deployment took place.
+- `0x0BDA=3034` is below the `4000+` extension dispatch threshold.
+  Do **not** register it using `RegisterExtendedHandler` (which is for
+  4000..8191 in archived `ProcSystem.cpp`), overwrite Platinum
+  0x0B10, or repeat previously failed replacement/sidecar attempts
+  without resolving exit 78 and preserving full rollback state.
