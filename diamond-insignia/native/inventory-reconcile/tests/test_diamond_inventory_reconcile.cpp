@@ -121,6 +121,15 @@ int main() {
     assert(VerifyPersistedTicketDebit(
         Blob(mixedBefore),Blob(mixedAfter),200,150,
         SyntheticStackCodec,nullptr).status==AuditStatus::TicketStackIncreased);
+    // Matching an arbitrary caller-declared debit is insufficient: the
+    // independently verified rank-up rule requires EXACTLY 100 tickets.
+    const auto partialDebit=Pack({
+        Row(ticket,101,110,48),Row(ticket,102,40,50),
+        Row(555,300,0xABC,49,333),
+    });
+    assert(VerifyPersistedTicketDebit(
+        Blob(mixedBefore),Blob(partialDebit),200,150,
+        SyntheticStackCodec,nullptr).status==AuditStatus::TicketTotalsMismatch);
     // Legitimate debit may reduce two separate existing stacks.
     const auto splitAfter=Pack({
         Row(ticket,101,70,48),Row(ticket,102,30,50),
