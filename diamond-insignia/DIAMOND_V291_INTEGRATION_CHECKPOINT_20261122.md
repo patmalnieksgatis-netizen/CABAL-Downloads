@@ -430,3 +430,40 @@ quantity extraction or a verified game inventory backend and establish
 actual `0x0BDA` server handler, durable save and verified v291 S2C
 response. NEVER convert B0 metadata to AF, treat 999 as current ticket
 units or debit 100 single slots without proof.
+
+
+## 2026-11-23: next practical B0/999 engineering checkpoint — real SQL inventory schema
+
+Official CABAL Triumph Update Review:
+https://cabal.playthisgame.com/en/News/Content/1489
+confirms the Merit Medal Exchange Ticket category changed from
+`Quests` to `Materials`, and maximum stack `127 -> 999`.
+That is corroborating external evidence for the user's exact WorldSvr
+catalog `kind 0xB0 / stack 999`; it does NOT define the item's
+`itemOption` encoding, prove a specific live stack amount or authorize
+an inventory debit.
+
+Implemented **nonmutating metadata discovery** files:
+- `native/inventory-reconcile/audit_live_inventory_schema.py` — via
+  the previously successful `sql_main` / sqlcmd transport, only
+  `sys.tables`, `sys.columns`, `sys.procedures`, `sys.parameters`
+  from `Server01`; redacts password and avoids user row selects,
+  stored procedure invocation, DDL/DML and unknown VM host.
+- `native/inventory-reconcile/Read-DiamondB0-GameDataSchema-291.ps1` —
+  verifies VirtualBox `EP36_291_TEST`, downloads pinned script, sends
+  Python via SSH stdin, validates safety flags and saves JSON to
+  `Downloads`.
+- `native/inventory-reconcile/tests/test_audit_live_inventory_schema.py`
+  plus CI syntax checks — verify metadata-only query, parser
+  and ranked *name-only* inventory/WExp candidates. Returned candidate
+  names are **not** automatically verified GameData layouts.
+
+**This script has not yet been run on the user's VM.** Its output
+will identify likely real inventory / WExp table and procedure schema
+without reading account rows or consuming resources. It is not itself
+a complete Diamond game implementation.
+
+**Previous regression:** `0xB0` special stack type continues to
+fail closed in the World48 / 0BDA planner and transaction core. The
+old synthetic `0xAF` case is not used as substitute for real tickets.
+No VM or server files changed.
