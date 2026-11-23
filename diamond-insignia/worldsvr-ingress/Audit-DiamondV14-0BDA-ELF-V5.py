@@ -43,15 +43,15 @@ def details(path):
     sections=run(["readelf","-SW",str(path)])
     symbols=run(["nm","-D","--defined-only",str(path)])
     return {
-        "elf_class":(re.search(r"Class:\\s*(\\S+)",hdr) or [None,None])[1],
-        "machine":(re.search(r"Machine:\\s*(.+)",hdr) or [None,None])[1],
-        "needed":rows_with(dyn,r"\\(NEEDED\\).*?\\[(.*?)\\]"),
-        "rpath":rows_with(dyn,r"\\((?:RUNPATH|RPATH)\\).*?\\[(.*?)\\]"),
-        "soname":rows_with(dyn,r"\\(SONAME\\).*?\\[(.*?)\\]"),
-        "version_requirements":rows_with(vers,r"Name:\\s*(\\S+)\\s+Flags:"),
-        "version_names":rows_with(vers,r"Name:\\s*(\\S+)"),
-        "build_id":rows_with(run(["readelf","-nW",str(path)]),r"Build ID:\\s*([a-f0-9]+)"),
-        "text_section": next((line.strip() for line in sections.splitlines() if re.search(r"\\s\\.text\\s",line)),None),
+        "elf_class":(re.search(r"Class:\s*(\S+)",hdr) or [None,None])[1],
+        "machine":(re.search(r"Machine:\s*(.+)",hdr) or [None,None])[1],
+        "needed":rows_with(dyn,r"\(NEEDED\).*?\[(.*?)\]"),
+        "rpath":rows_with(dyn,r"\((?:RUNPATH|RPATH)\).*?\[(.*?)\]"),
+        "soname":rows_with(dyn,r"\(SONAME\).*?\[(.*?)\]"),
+        "version_requirements":rows_with(vers,r"Name:\s*(\S+)\s+Flags:"),
+        "version_names":rows_with(vers,r"Name:\s*(\S+)"),
+        "build_id":rows_with(run(["readelf","-nW",str(path)]),r"Build ID:\s*([a-f0-9]+)"),
+        "text_section": next((line.strip() for line in sections.splitlines() if re.search(r"\s\.text\s",line)),None),
         "dynamic_export_count":sum(1 for x in symbols.splitlines() if x.strip()),
     }
 
