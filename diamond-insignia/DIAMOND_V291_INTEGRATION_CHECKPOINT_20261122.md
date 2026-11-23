@@ -309,3 +309,48 @@ All 3 CI suites on code commit `9a441e6bf59b` completed
 **Still no real handler registration, authoritative GameData
 commit or playable Diamond.** Do not install old sidecar or assume
 newer 0BDA server behavior from Platinum 0B10 without proof.
+
+## 2026-11-23 follow-on: 0BDA ticket-list semantic gate and clone metadata capture
+
+The user clarified that the "tickets" are **Merit Medal Exchange
+Ticket** (`33554961 / 0x02000211`), required 100× in the
+staged grade-2 SCP and original grade-1 materials.
+
+**Safety correction:** the new `0x0BDA` client frame is *similar*
+to Platinum `0x0B10` but its `u16[]` entries are NOT yet proven to
+identify this item. The previously added
+`Diamond0BDATicketSelection` immutable planning code is now
+**fail-closed by default**: it requires two extra independent
+semantics attestations and otherwise returns
+`UnverifiedSelectionSemantics` without constructing the 100-ticket
+plan. Only explicitly synthetic fixtures can set these conditions.
+The tests cover failure when either is absent, selection bounds,
+duplicate slots, incomplete totals, wrong item records, partial
+stacks and unchanged inventory.
+
+**Practical next implementation tool:** new
+`native/grade2-ingress/capture_clone_ticket_catalog.py` reads
+exactly the two 32-bit fields (`+0x38`, `+0x3C`) of the
+`33554961` item catalog entry in a separately verified **disposable
+clone WorldSvr process**, never the active server. It requires:
+exact running WorldSvr SHA256/size, per-process
+machine-id/PID/ELF hash authorization marker, valid memory map and
+stable process start time, and reads only eight bytes via
+`/proc/PID/mem` in O_RDONLY mode. This is a genuine path to resolve
+the remaining 7-/10-/16-bit (or singleton) ticket count branch.
+**No clone is presently attached, so the real metadata values
+remain unknown.** Test fixtures never inspect a real process.
+Documentation and clone-only usage contract:
+`native/grade2-ingress/CLONE_METADATA_CAPTURE_20261123.md`.
+
+The entire code/test change passed GitHub native rules workflow at
+commit `5e13047f3250`, including the selection semantics gate and
+clone capture safety test. Both other CI workflows also passed.
+This certifies **offline tests only** and not an installable Diamond.
+
+Still required: prove the `0x0BDA` semantics and runtime ticket
+classification on a clone; implement host-attested WorldSvr
+PROCEDUREMAP handler, real inventory/WExp debit in durable
+GameData/MSSQL, exact 0BDA response ABI, relogin/restart/replay
+gameplay proof. Never touch the live WorldSvr or assume item-stack
+metadata without runtime evidence.
