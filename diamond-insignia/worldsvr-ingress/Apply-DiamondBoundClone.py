@@ -2,8 +2,9 @@
 """Hash-pinned two-stage binding into a COPY of archived WorldSvr lib source.
 
 Never alters original source, game process, SQL server, binary, VM or game data.
-The installed default build can only observe; writing synthetic shadow SQL is
-possible only after a separate deliberate lab build and trusted resolver binding.
+Both normal and synthetic-trial dispatcher builds ONLY observe real packets.
+A separately exported isolated test-only entry may exercise synthetic writes
+without forwarding to the original game handler.
 """
 import argparse
 import hashlib
@@ -24,7 +25,7 @@ def one(data,old,new):
     return data.replace(old,new)
 
 def copy_native_headers(dest):
-    """Copy ABI-v2 headers into an isolated clone, all prerequisites checked."""
+    """Copy ABI-v3 headers into an isolated clone, all prerequisites checked."""
     dest=pathlib.Path(dest)
     headers={
         "DiamondBoundIngress.h": ROOT/"DiamondBoundIngress.h",
@@ -57,9 +58,14 @@ def run(original,output):
         data=proc.read_bytes()
         data=one(data,b'#include "DiamondIngress.h"\r\n',
                     b'#include "DiamondIngress.h"\r\n#include "DiamondBoundIngress.h"\r\n')
-        marker=b'''        if (sample.candidate && DiamondIngress::ShouldLog()) {\r\n'''
-        replacement=b'''        if (sample.candidate) {\r\n            // Source-level native link: read-only in default builds; strictly\r\n            // shadow-test-only in DIAMOND_ENABLE_SHADOW_TRIAL clone builds.\r\n            // Original WorldSvr dispatcher is invoked afterwards in all cases.\r\n            const auto trial=DiamondBoundIngress::Process(\r\n                pProcessDataCtx->pUserCtx, pProcessDataCtx->cpPacket,\r\n                pProcessDataCtx->iLen);\r\n            if (trial==DiamondBoundIngress::Result::ShadowApplied &&\r\n                DiamondIngress::ShouldLog()) {\r\n                Log::Print(LOG_INFO,"DiamondIngress",__LINE__,\r\n                           "SYNTHETIC SHADOW COMMIT; game packet remains original");\r\n            }\r\n        }\r\n        if (sample.candidate && DiamondIngress::ShouldLog()) {\r\n'''
-        data=one(data,marker,replacement)
+        # IMPORTANT: keep original C2S dispatcher observation-only.
+        # The original WorldSvr handler is ALWAYS invoked afterwards.
+        # Calling Process here would mutate a shadow transaction and then
+        # forward the same packet to the original handler (double debit).
+        # The synthetic gate is exercised exclusively by the separately
+        # exported cabal_diamond_proc_test_ingress_clone_v3 function.
+        if b"DiamondBoundIngress::Process(" in data:
+            raise RuntimeError("STOP: game dispatcher unexpectedly writes Diamond")
         data+=b'''\r\n#if defined(DIAMOND_ENABLE_SHADOW_TRIAL)\r\n// Explicit authenticated adapter registration for isolated synthetic clone.\r\n// This symbol is ABSENT from default builds. No host binding => fail closed.\r\nextern "C" __attribute__((visibility("default")))\r\nint cabal_diamond_proc_bind_shadow_clone_v3(\r\n    const DiamondBoundIngress::Binding* binding) {\r\n    return DiamondBoundIngress::InstallOnce(binding) ? 0 : -1;\r\n}\r\n// Synthetic, offline-only test entrance: validates the actual linked clone\r\n// binding without calling the archived WorldSvr dispatcher or using sockets.\r\n// ABSENT from all normal builds, never install this object as game lib.so.\r\nextern "C" __attribute__((visibility("default")))\r\nint cabal_diamond_proc_test_ingress_clone_v3(\r\n    const void* serverOwnedContext,const void* bytes,std::size_t length) {\r\n    return static_cast<int>(\r\n        DiamondBoundIngress::Process(serverOwnedContext,bytes,length));\r\n}\r\n#endif\r\n'''
         proc.write_bytes(data)
         dest=proc.parent
