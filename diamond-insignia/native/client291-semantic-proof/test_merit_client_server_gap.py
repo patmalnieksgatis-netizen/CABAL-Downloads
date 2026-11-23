@@ -46,6 +46,14 @@ class Tests(unittest.TestCase):
         self.assertEqual(gap.S2C_READ_ANCHORS[0x0BDD][0],
                          (0x6DB102,"80790601"))
 
+    def test_two_s2c_paths_write_slot2(self):
+        anchors=gap.STATE_SLOT2_ANCHORS
+        self.assertEqual(anchors[0x6DB10D],"ba02000000")
+        self.assertEqual(anchors[0x6DB019],"bb02000000")
+        self.assertEqual(anchors[0x6DB023],"e808e7b6ff")
+        self.assertEqual(anchors[0x2428A4],"e8876e0000")
+        self.assertEqual(len(anchors),12)
+
     def test_static_client_cluster_and_bad_elf(self):
         self.assertEqual([x[4] for x in gap.CLIENT.values()],
                          [0x0B10,0x0BDA,0x0BDB,0x0BDD,0x0BDF,0x0BE0])
