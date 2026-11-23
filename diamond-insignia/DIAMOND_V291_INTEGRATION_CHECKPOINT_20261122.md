@@ -187,3 +187,44 @@ data-authoring blocker. Still unproven: true client grade-up C2S/S2C
 semantics among `0x0BDA–0x0BE0`, authoritative WorldSvr session binding,
 actual GameData stack codec and atomic inventory/WExp/receipt storage.
 No deployment to active WorldSvr, client, VM or SQL was made.
+
+## 2026-11-23 decisive C2S correction and first guarded 0BDA rank-up bridge
+
+**Correction:** Earlier `0x0BDD` grade-up identification was
+wrong due to an S2C handler attribution error:
+`0x6DBDA0` is the client handler for existing Platinum
+`0x0B13` **Mastery Slot Open Cancel**, NOT Platinum grade-up.
+`0x0BDD` is its newer Merit-state-slot-2 cancellation counterpart,
+with the same fixed 14-byte selector payload structure as 0B13.
+`native/grade2-ingress/DiamondGrade2Ingress.cpp` has been
+permanently made read-only, even if the previous clone macro is defined.
+
+The **correct Platinum grade-up** is `0x0B10` with S2C
+handler `0x6DB688`, and the strongest corresponding grade-2
+client candidate is **`0x0BDA`** with S2C `0x6DA920`.
+Both clients' senders build counted-list packets via
+`0x244D3C`, use the same selection `+0xAB88`,
+and reuse five success state/UI helpers. The callback's
+Merit state index moves from 1 to 2. SHA-pinned evidence:
+`native/grade2-ingress/verify_gradeup_0bda.py`,
+`native/grade2-ingress/verify_grade2_mirror.py` and tests,
+with narrative in
+`native/grade2-ingress/PROTOCOL_CORRECTION_AND_0BDA_GRADEUP_20261123.md`.
+
+**New actual code path:** `native/grade2-ingress/DiamondGradeUp0BDA.h/.cpp`
+parses exact candidate C2S 0BDA headers, counted 16-bit entries and
+length; refuses to trust them without independent server-side
+matching of the entire entry list and authenticated session proof.
+Normal builds have all mutations disabled. A separate compile-time
+clone-only synthetic trial uses the existing Diamond
+`DiamondCommandService` and backend with 30k WExp/100 ticket rank-up
+rules, tests atomic failure and revision replay. It **never sends S2C**
+or claims real game persistence, even on mock backend success.
+GitHub CI builds/tests both configurations.
+
+**Still not playable:** actual 0BDA grade-up action and entry semantics
+need runtime confirmation, exact S2C format and WorldSvr registration,
+actual GameData item 33554961 stack decoder and WExp debit, atomic
+MSSQL/DBAgent receipt, cmd46/47 persistence reconciliation and VM-clone
+relogin/rollback testing. The staged 316-Mastery SCP has already passed
+preservation parity; do not rebuild it or deploy to the active server.
