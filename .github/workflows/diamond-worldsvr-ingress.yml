@@ -20,6 +20,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Check exact-source 0BDA offline builder refusing unknown source and active game locations
+        run: |
+          set -euo pipefail
+          python3 -m py_compile diamond-insignia/worldsvr-ingress/Build-DiamondV14Real0BDAOffline.py
+          python3 -m unittest discover -s diamond-insignia/worldsvr-ingress/tests -p 'test_real0bda_offline_builder.py' -v
       - name: Build exact 0BDA WorldSvr source hook port and verify no unsupported packet consumption
         run: |
           set -euo pipefail
