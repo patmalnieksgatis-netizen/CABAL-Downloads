@@ -98,6 +98,7 @@ jobs:
           fi
           test ! -e /tmp/diamond_never_lib.so
           python3 -m unittest discover -s diamond-insignia/worldsvr-ingress/tests -p 'test_bound_clone_patcher.py' -v
+          python3 -m unittest discover -s diamond-insignia/worldsvr-ingress/tests -p 'test_clone_never_double_debits.py' -v
           if python3 diamond-insignia/worldsvr-ingress/Apply-DiamondIngressClone.py \
                 --source . --output /tmp/diamond_unsafe_source; then
             echo "ERROR: patcher accepted unverified source"
