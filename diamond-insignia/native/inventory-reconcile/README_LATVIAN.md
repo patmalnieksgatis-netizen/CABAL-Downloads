@@ -35,6 +35,8 @@ not prove the number of units in a stack.
 - Rejects malformed lengths, unknown/duplicate serial or slots, untrusted
   snapshots, changes to other inventory items, ticket serial/slot mutations,
   new ticket identities, unknown quantity encodings and incorrect totals.
+  Also rejects any surviving ticket stack whose decoded unit count increases:
+  a valid net debit must not conceal a credit to a separate stack.
 - Requires an **explicit quantity decoder** originating from a separately
   verified GameData item-stack representation. `nullptr` always rejects.
 - `VerifyPersistedTicketDebit` demands an actual decrease in total ticket
