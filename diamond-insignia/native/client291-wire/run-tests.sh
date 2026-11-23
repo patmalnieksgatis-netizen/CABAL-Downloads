@@ -27,3 +27,6 @@ ASAN_OPTIONS=detect_leaks=1 UBSAN_OPTIONS=halt_on_error=1 ./build/test_s2c_branc
 # GitHub does not store the user's private CabalMain.exe. Test the exact
 # read-only branch proof logic on tiny synthetic instruction fixtures.
 python3 -m unittest discover -s tests -p 'test_verify_09f3_response_branch.py' -v
+
+# Offline trace classifier: never infer Diamond purchase from Merit/Dimension frames.
+python3 -m unittest discover -s tests -p 'test_offline_packet_trace.py' -v
