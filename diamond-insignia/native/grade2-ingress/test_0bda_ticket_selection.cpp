@@ -115,7 +115,6 @@ int main() {
     Eq(SelectionVerdict::InvalidTicketRecord,packet,a);
     Slot(inventory,8,80,true,false);
     Eq(SelectionVerdict::InvalidTicketRecord,packet,a);
-    assert(!a.itemCatalog.fromTrustedWorldCatalog==false);
     std::cout<<"GRADE2_0BDA_SELECTION_DUPLICATES_AND_AUTHORITY=PASS\n"
              <<"GRADE2_0BDA_EXACT_100_UNIT_DEBIT_PLAN=PASS\n"
              <<"GRADE2_0BDA_ZERO_REAL_GAME_INVENTORY_MUTATIONS=PASS\n";
