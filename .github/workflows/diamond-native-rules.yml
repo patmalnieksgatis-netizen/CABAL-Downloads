@@ -46,6 +46,15 @@ jobs:
             diamond-insignia/native/grade2-ingress/test_0bda_save_reply_gate.cpp \
             -o /tmp/diamond_0bda_reply_gate_clone
           /tmp/diamond_0bda_reply_gate_clone
+      - name: Verify exact WorldSvr 48-byte ticket quantity decoder and runtime metadata safety
+        run: |
+          set -euo pipefail
+          g++ -std=c++17 -O2 -Wall -Wextra -Werror -pedantic \
+            diamond-insignia/native/grade2-ingress/DiamondWorld48TicketUnits.cpp \
+            diamond-insignia/native/grade2-ingress/test_world_48_ticket_units.cpp \
+            -o /tmp/diamond_world_48_ticket_units
+          /tmp/diamond_world_48_ticket_units
+          python3 -m unittest discover -s diamond-insignia/native/grade2-ingress -p 'test_verify_world_48_ticket_helper.py' -v
       - name: Reject unsafe WorldSvr 0BDA command registration and preserve Platinum slots
         run: |
           set -euo pipefail
