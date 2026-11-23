@@ -1,5 +1,6 @@
 """No-VM tests: source-hash and anti-deployment gates for offline v14 builder."""
 import importlib.util
+import hashlib
 import pathlib
 import tempfile
 import types
@@ -82,6 +83,53 @@ class Safety(unittest.TestCase):
         self.assertEqual(symbols["_Z10CriticalFnv"],("T",0x1010))
         self.assertEqual(mod.RECONSTRUCTED_NAME,
                          "libDiamondV14_ORIGINAL_RECONSTRUCTED_OFFLINE.so")
+    def test_minimal_0bda_patch_adds_no_cpp_and_keeps_original_dispatch(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root=pathlib.Path(tmp)
+            original=root/"original"
+            original.mkdir()
+            proc=original/"hooks/Handlers/ProcSystem.cpp"
+            proc.parent.mkdir(parents=True)
+            source=(
+                '#include "../Packets/OpCodes.h"\n'
+                'int ProcSystem::DoProcessDataCtx(void* pProcessLayer, PROCESSDATACONTEXT* pProcessDataCtx) {\n'
+                '    UINT16 opcode = header->wMainCmd;\n'
+                '    return ((int(*)(void*, PROCESSDATACONTEXT*))oDoProcessDataCtx)(pProcessLayer, pProcessDataCtx);\n'
+                '}\n'
+            )
+            proc.write_text(source)
+            types=original/"include/Types.h"
+            types.parent.mkdir(parents=True)
+            t="struct PROCESSDATACONTEXT {\n    char* cpPacket;\n    // ... other fields\n};\n"
+            types.write_text(t)
+            for i in range(10):
+                (original/f"one{i}.cpp").write_text("void foo() {}\n")
+            def sha(data):
+                return hashlib.sha256(data).hexdigest()
+            def replace_one(before,old,new):
+                if before.count(old)!=1:raise RuntimeError("anchor mismatch")
+                return before.replace(old,new)
+            fake=types.SimpleNamespace(
+                V14_FILE_COUNT=12,V14_TREE_SHA="dummy",
+                PROC_SHA=sha(source.encode()),TYPES_SHA=sha(t.encode()),
+                sha_bytes=sha,manifest=lambda _: (12,"dummy"),
+                replace_one=replace_one
+            )
+            staged=root/"patched"
+            mod.minimal_pure_0bda_patch(original,staged,fake)
+            self.assertEqual(len(mod.source_list(original)),
+                             len(mod.source_list(staged)))
+            self.assertEqual(len(mod.source_list(staged)),11)
+            output=(staged/"hooks/Handlers/ProcSystem.cpp").read_text()
+            self.assertEqual(output.count("DiamondReal0BDAIngressPort::Process"),1)
+            self.assertIn("return ((int(*)(void*, PROCESSDATACONTEXT*))oDoProcessDataCtx)",output)
+            self.assertNotIn("DiamondBoundIngress",output)
+            self.assertNotIn("DiamondIngress::",output)
+            self.assertIn("static_assert(offsetof(PROCESSDATACONTEXT,iLen)==16",
+                          (staged/"include/Types.h").read_text())
+            self.assertEqual(source,proc.read_text())
+            self.assertFalse((original/"hooks/Handlers/DiamondReal0BDAIngressPort.h").exists())
+            self.assertTrue((staged/"hooks/Handlers/DiamondReal0BDAIngressPort.h").exists())
     def test_name_and_includes(self):
         text=(HERE/"Apply-DiamondV14Real0BDAClone.py").read_text()
         self.assertIn("BASE=HERE/\"Apply-DiamondV14BoundClone.py\"",text)
