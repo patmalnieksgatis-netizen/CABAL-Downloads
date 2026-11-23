@@ -69,7 +69,10 @@ class CaptureGateTests(unittest.TestCase):
         self.assertEqual(cap.classification(0x10,0),
                          "singleton_metadata_stack_le_1")
         self.assertEqual(cap.classification(0x47,100),
-                         "singleton_other_metadata_kind")
+                         "original_helper_fallback_one__NOT_verified_ticket_stack_quantity")
+        # Exact WorldSvr live VM item 33554961 tag/stack, Nov 23.
+        self.assertEqual(cap.classification(0xB0,999),
+                         "original_helper_fallback_one__NOT_verified_ticket_stack_quantity")
 
     def test_process_start_time_parsing(self):
         # Kernel stat fields 3..22: a total of 20 fields here.
