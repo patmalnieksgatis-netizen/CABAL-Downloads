@@ -64,3 +64,21 @@ CABAL encoding and must not be used in game.
 **No active VM, game client, WorldSvr process, lib.so, LD_PRELOAD,
 Supervisor, or SQL data were changed.** Private SCP and binaries are not
 committed to public GitHub.
+
+## 2026-11-23 follow-up: offline wire trace and durable-ticket audit hardening
+
+**Repository head `c84f49d33556` before this checkpoint update passed all three GitHub Actions suites**: native C++17 tests, SQL Lab Static Safety, and Mastery Offline Policy Gate. The v291 code remains NOT deployed / NOT playable.
+
+New read-only `native/client291-wire/evidence/classify_offline_packet_trace.py` distinguishes known `0x09F3` Merit request/response *shapes* from `0x09F9/0x09FB/0x09FD` Dimension commands in supplied offline packet trace lines. Its tests run from `native/client291-wire/run-tests.sh`. It does **not** establish Diamond rank-up semantics, capture gameplay traffic or grant success.
+
+`native/inventory-reconcile/DiamondInventoryReconcile.cpp` now checks each surviving ticket stack separately to reject an increased unit count hidden by a larger debit on another serial. It also binds the validated overall rank-up ticket debit to the actual native rule engine's `diamond::kDiamondRankTickets == 100` and statically confirms the donor item ID matches. Both fail-closed cases and legitimate split-stack consumption are covered by native CI. These checks continue to require a verified external quantity decoder; the test's `SyntheticStackCodec` is **not** a real game decoder.
+
+The owner's exact archived `CabalMain.exe` + `meritsystem.enc` files were independently revisited off-server: EXE SHA256 `52e7956d4781fea1f0369cac8ab1eac4c3ddec2d1977c6557be53ec2b79885d9`. The 2026-11-22 observation remains: raw primary `.enc` trailer and initial XOR4 bytes do not establish a valid direct DEFLATE path; runtime-selected file/transform still unverified. The owner's v14 EventPass source provides the 30-byte inventory record shape, **not** the real 33554961 stack-quantity codec. No private binaries or v14 sources were committed to the public repository.
+
+### Remaining blocking work
+- Verify the actual Diamond UI grade-up C2S opcode, all semantic fields and client S2C response.
+- Verify actual Merit file selected/decoded at runtime, not just the static `0x2178E0` loader.
+- Establish authoritative WorldSvr session/registry plus real GameData item quantity encoding and durable WExp/receipt/SQL transaction; only then wire the save barrier and game response.
+- Restrict any future deployment to a disposable VM clone with rollback; do not repeat old live `lib.so` sidecar path after `exit 78`.
+
+**Working WorldSvr, DB, client installation, Supervisor and VM were not altered.**
