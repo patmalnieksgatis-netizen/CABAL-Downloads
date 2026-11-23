@@ -30,6 +30,22 @@ jobs:
             diamond-insignia/native/grade2-ingress/test_grade2_ingress.cpp \
             -o /tmp/diamond_grade2_clone_trial
           /tmp/diamond_grade2_clone_trial
+      - name: Build WorldSvr-context-bound 0BDA ingress (default disabled and synthetic clone)
+        run: |
+          set -euo pipefail
+          g++ -std=c++17 -O2 -Wall -Wextra -Werror -pedantic \
+            diamond-insignia/native/grade2-ingress/DiamondGradeUp0BDA.cpp \
+            diamond-insignia/native/grade2-ingress/Diamond0BDAWorldContext.cpp \
+            diamond-insignia/native/grade2-ingress/test_0bda_world_context.cpp \
+            -o /tmp/diamond_0bda_world_context_default
+          /tmp/diamond_0bda_world_context_default
+          g++ -std=c++17 -O2 -Wall -Wextra -Werror -pedantic \
+            -DDIAMOND_ENABLE_0BDA_CLONE_TRIAL \
+            diamond-insignia/native/grade2-ingress/DiamondGradeUp0BDA.cpp \
+            diamond-insignia/native/grade2-ingress/Diamond0BDAWorldContext.cpp \
+            diamond-insignia/native/grade2-ingress/test_0bda_world_context.cpp \
+            -o /tmp/diamond_0bda_world_context_clone
+          /tmp/diamond_0bda_world_context_clone
       - name: Build 0BDA rank-up candidate gateway (production disabled, clone trial no S2C)
         run: |
           set -euo pipefail
