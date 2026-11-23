@@ -79,6 +79,8 @@ TicketDebitPlan PlanTicketDebit(const Candidate& request,
             case TicketUnitsVerdict::DecodedTicketQuantity:break;
             case TicketUnitsVerdict::UnverifiedMetadata:
                 out.status=SelectionVerdict::ItemMetadataMissing;return out;
+            case TicketUnitsVerdict::UnverifiedStackQuantity:
+                out.status=SelectionVerdict::UnsupportedStackQuantityEncoding;return out;
             case TicketUnitsVerdict::ZeroUnits:
                 out.status=SelectionVerdict::ZeroOrInvalidTicketCount;return out;
             case TicketUnitsVerdict::MalformedRecord:
