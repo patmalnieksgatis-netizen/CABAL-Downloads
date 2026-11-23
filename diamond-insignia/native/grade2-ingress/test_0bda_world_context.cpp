@@ -124,13 +124,12 @@ int main() {
     original[8]=0x10;original[9]=0x0B;
     ctx.cpPacket=original.data();ctx.iLen=350;
     assert(dispatch(350,true,adapter).state==DispatchState::Original);
-    assert(store.calls==
 #ifdef DIAMOND_ENABLE_0BDA_CLONE_TRIAL
-        3
+    constexpr int kExpectedCalls=3;
 #else
-        0
+    constexpr int kExpectedCalls=0;
 #endif
-    );
+    assert(store.calls==kExpectedCalls);
     std::cout<<"WORLDSVR_ABI_LAYOUT=PASS\n"
              <<"WORLDSVR_PLATINUM_PASSTHROUGH=PASS\n"
              <<"WORLDSVR_FOREIGN_SESSION_REJECTED=PASS\n"
