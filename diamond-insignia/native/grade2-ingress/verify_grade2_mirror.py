@@ -62,7 +62,7 @@ def verify(exe:bytes)->dict:
         raise ProofError("EXACT_CLIENT_SHA_OR_SIZE_MISMATCH")
     if exe[:2]!=b"MZ":raise ProofError("NOT_MZ")
     nt,=struct.unpack_from("<I",exe,0x3c)
-    if exe[nt:nt+4]!=b"PE\\x00\\x00" or struct.unpack_from("<H",exe,nt+24)[0]!=0x20b:
+    if exe[nt:nt+4]!=b"PE\x00\x00" or struct.unpack_from("<H",exe,nt+24)[0]!=0x20b:
         raise ProofError("NOT_PE64")
     for rva,raw in ANCHORS.items():
         expected=bytes.fromhex(raw)
