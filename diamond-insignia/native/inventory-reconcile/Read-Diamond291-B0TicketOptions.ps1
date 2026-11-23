@@ -10,7 +10,7 @@ if ($LASTEXITCODE -ne 0 -or
     @($vmInfo | Where-Object { $_ -match '^"EP36_291_TEST"\s+\{' }).Count -ne 1) {
     throw 'STOP: EP36_291_TEST is not running'
 }
-$u='https://raw.githubusercontent.com/patmalnieksgatis-netizen/CABAL-Downloads/94d27dd518c91f0277c15d44c0e3e850ab153418/diamond-insignia/native/inventory-reconcile/probe_live_b0_ticket_options.py'
+$u='https://raw.githubusercontent.com/patmalnieksgatis-netizen/CABAL-Downloads/648928b621c95a98769245237a229bc46b6670e1/diamond-insignia/native/inventory-reconcile/probe_live_b0_ticket_options.py'
 $p=Join-Path $env:TEMP 'probe_live_b0_ticket_options.py'
 Invoke-WebRequest -UseBasicParsing -Uri $u -OutFile $p -ErrorAction Stop
 if ((Get-Item -LiteralPath $p).Length -lt 3000) {
