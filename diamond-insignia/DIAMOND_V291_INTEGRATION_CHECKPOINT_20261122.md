@@ -228,3 +228,37 @@ actual GameData item 33554961 stack decoder and WExp debit, atomic
 MSSQL/DBAgent receipt, cmd46/47 persistence reconciliation and VM-clone
 relogin/rollback testing. The staged 316-Mastery SCP has already passed
 preservation parity; do not rebuild it or deploy to the active server.
+
+## 2026-11-23 exact Platinum server inventory-slot list mapping
+
+The original **registered** WorldSvr Platinum `0x0B10` rank-up
+handler `0xA40F00` was revisited directly in the owner's
+10,596,184-byte SHA-verified ELF, rather than inferred from the
+client alone.
+
+Source-pinned `native/grade2-ingress/verify_platinum_slot_list_worldsvr.py`
+verifies 15 original server x64 anchors and two direct CALLs.
+It proves the `0x0B10` C2S packet contains a `u16` count at
+`+0xA`, entries from `+0xC+2*i`, and a strict length formula
+`12+2×count`. For each element the server checks `<=0x209`
+(521) then uses helper `0x587E30` to index a **48-byte stride**
+server-owned per-character record array. It reads an item-related
+value at record `+8` masked by `0x06000FFF`. This is strong
+evidence the list entries are **inventory selection slot/index values**,
+not quantities, though the actual stack codec remains unknown.
+
+New explanatory file:
+`native/grade2-ingress/ORIGINAL_0B10_SERVER_SLOT_SELECTION_20261123.md`.
+The same *client layout* exists in strong Diamond grade-up candidate
+`0x0BDA`, but the new command has no corresponding registered
+original WorldSvr handler, so its server semantics are still
+**NOT PROVEN**; do not copy old binary addresses or trust client
+selection for a debit.
+
+CI both compiles the default-disabled/clone-only `0x0BDA`
+prototypical ingress, confirms synthetic transaction failure and
+replay safety, and tests synthetic ELF map/proof fixtures.
+Full native rules workflow on source commit `f4c31b09d752`
+completed **success**, including new tests. This is not
+live-game certification or installable Diamond. Neither active
+WorldSvr, VM, SQL nor game account was modified.
