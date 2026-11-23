@@ -17,6 +17,15 @@ TicketDebitPlan PlanTicketDebit(const Candidate& request,
         out.status=SelectionVerdict::MissingOwnerAuthority;
         return out;
     }
+    // The Platinum 0B10 server treats u16 entries as inventory indices,
+    // but the corresponding 0BDA server handler is not in the original ELF.
+    // Similar client packet shape is NOT proof of the new command's meaning.
+    // Reject by default; even synthetic tests must opt in explicitly.
+    if(!world.opcode0bdaSelectionMeansTicketSlotsVerified ||
+       !world.selectionSemanticsBoundToGradeUpVerified) {
+        out.status=SelectionVerdict::UnverifiedSelectionSemantics;
+        return out;
+    }
     if(!world.trustedRecords ||
        world.trustedRecordsBytes!=kWorldInventorySlots*kWorldInventoryEntryBytes) {
         out.status=SelectionVerdict::WrongSnapshotSize;
