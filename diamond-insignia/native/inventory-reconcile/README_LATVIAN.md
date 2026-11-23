@@ -37,6 +37,9 @@ not prove the number of units in a stack.
   new ticket identities, unknown quantity encodings and incorrect totals.
   Also rejects any surviving ticket stack whose decoded unit count increases:
   a valid net debit must not conceal a credit to a separate stack.
+  Rank-up additionally requires exactly 100 units to be debited, using
+  the same `kDiamondRankTickets` constant as the trusted rules engine,
+  rather than accepting arbitrary before/after amounts from a caller.
 - Requires an **explicit quantity decoder** originating from a separately
   verified GameData item-stack representation. `nullptr` always rejects.
 - `VerifyPersistedTicketDebit` demands an actual decrease in total ticket
