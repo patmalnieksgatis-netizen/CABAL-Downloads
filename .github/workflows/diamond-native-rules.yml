@@ -46,6 +46,18 @@ jobs:
             diamond-insignia/native/grade2-ingress/test_0bda_save_reply_gate.cpp \
             -o /tmp/diamond_0bda_reply_gate_clone
           /tmp/diamond_0bda_reply_gate_clone
+      - name: Verify B0 actual GameData SQL metadata audit safety and result parser
+        run: python3 -m unittest discover -s diamond-insignia/native/inventory-reconcile/tests -p 'test_audit_live_inventory_schema.py' -v
+      - name: Parse read-only B0 GameData PowerShell wrapper (no SSH or SQL)
+        shell: pwsh
+        run: |
+          $path = 'diamond-insignia/native/inventory-reconcile/Read-DiamondB0-GameDataSchema-291.ps1'
+          $source = Get-Content $path -Raw
+          $tokens = $null
+          $errors = $null
+          [System.Management.Automation.Language.Parser]::ParseInput($source, [ref]$tokens, [ref]$errors) | Out-Null
+          if ($errors.Count -gt 0) { throw ($errors | Out-String) }
+          Write-Output 'B0_GAMEDATA_METADATA_WRAPPER_PARSE=PASS'
       - name: Parse EP36_291_TEST PowerShell ticket metadata transport and embedded Python (no SSH)
         shell: pwsh
         run: |
