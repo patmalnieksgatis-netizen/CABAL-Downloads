@@ -90,6 +90,34 @@ def decode_sys_catalog(stdout: str):
         raise ValueError("NOT_EXPECTED_SERVER01_DATABASE")
     return rows
 
+def inventory_wexp_candidates(rows):
+    # Candidates are SQL CATALOG names, not verified game storage paths.
+    candidate_columns=[]
+    for schema,table,column,kind,max_len,nullable in rows["COLUMN"]:
+        key=column.lower().replace("_","")
+        name=table.lower()
+        score=0
+        if "inventory" in key or "itemdata" in key: score+=8
+        if "warfareexp" in key or "warexp" in key or "wexp" in key: score+=10
+        if "inventory" in name: score+=4
+        if "character" in name: score+=2
+        if kind in ("binary","varbinary","image"): score+=2
+        if score:
+            candidate_columns.append({
+                "table":schema+"."+table,"column":column,
+                "type":kind,"score":score,
+            })
+    candidate_columns.sort(key=lambda r:(-r["score"],r["table"],r["column"]))
+    candidate_procs=[]
+    for schema,name in rows["PROCEDURE"]:
+        normalized=name.lower()
+        if any(token in normalized for token in
+               ("inventory","wexp","war_exp","warexp","item","character")):
+            candidate_procs.append(schema+"."+name)
+    return {"column_candidates":candidate_columns[:35],
+            "procedure_candidates":candidate_procs[:35],
+            "proof_status":"CATALOG_NAME_MATCH_ONLY_NOT_GAME_ABI"}
+
 def run():
     try:
         host = subprocess.run(["hostname"],capture_output=True,text=True,timeout=5)
@@ -116,6 +144,7 @@ def run():
             "actual_world_kind_field38":"0xB0",
             "actual_world_stack_field3c":999,
             "catalog":rows,
+            "inventory_wexp_candidates":inventory_wexp_candidates(rows),
             "counts":{key:len(value) for key,value in rows.items()},
             "limit_by_type":{"TABLE":120,"COLUMN":600,
                              "PROCEDURE":180,"PARAMETER":500},
