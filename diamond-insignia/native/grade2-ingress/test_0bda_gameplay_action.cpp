@@ -108,6 +108,17 @@ int main() {
     assert(state.lastPlannedTickets==100 && state.lastWexpDelta==30000);
     assert(rows==untouched); // mock callback never edits any world state
 
+    // Real EP36_291_TEST item catalog kind=0xB0, stack setting=999.
+    // The original quantity helper would return 1, but there is no
+    // verified true-stack debit codec. Do not even reach commit().
+    auto observedOwner=owner;
+    observedOwner.selectedInventory.itemCatalog.kindField38=kObservedTicketKind38;
+    observedOwner.selectedInventory.itemCatalog.stackField3C=kObservedTicketStack3C;
+    const auto unsafe=PrepareAndCommitRealGradeUp(
+        pkt.data(),pkt.size(),observedOwner,host);
+    assert(unsafe.state==GameActionState::InventoryNotVerified);
+    assert(unsafe.inventory==SelectionVerdict::UnsupportedStackQuantityEncoding);
+    assert(state.calls==1);
     // All failure paths must avoid the actual persistence callback.
     auto c=pkt;c[8]=0x10; // original 0B10 Platinum, never intercepted
     assert(PrepareAndCommitRealGradeUp(c.data(),c.size(),owner,host).state==
@@ -158,7 +169,8 @@ int main() {
     assert(PrepareAndCommitRealGradeUp(pkt.data(),pkt.size(),owner,host).state==
            GameActionState::InDoubtRecoveryRequired);
     assert(rows==untouched);
-    std::cout<<"0BDA_GAMEPLAY_ENTRY_ORIGINAL_PLATINUM_PASSTHROUGH=PASS\n"
+    std::cout<<"0BDA_REAL_B0_999_TICKET_METADATA_COMMIT_BLOCKED=PASS\n"
+             <<"0BDA_GAMEPLAY_ENTRY_ORIGINAL_PLATINUM_PASSTHROUGH=PASS\n"
              <<"0BDA_GAMEPLAY_RULES_SELECTED_TICKETS_AND_WEXP_IN_ONE_PATH=PASS\n"
              <<"0BDA_GAMEPLAY_FAIL_CLOSED_AND_NO_S2C_WITHOUT_DURABLE_SAVE=PASS\n"
              <<"REAL_GAMEDATA_BACKEND=NOT_CONNECTED\n";
