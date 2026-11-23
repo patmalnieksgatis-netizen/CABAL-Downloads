@@ -37,6 +37,25 @@ class CatalogTests(unittest.TestCase):
         self.assertEqual(result["DATABASE"],[["Server01"]])
         self.assertEqual(result["TABLE"],[["dbo","cabal_character_table"]])
         self.assertEqual(result["COLUMN"][0][-3:],["bigint","8","0"])
+    def test_ranked_candidates_are_only_column_and_proc_names(self):
+        rows={
+          "DATABASE":[["Server01"]],
+          "TABLE":[],
+          "COLUMN":[
+            ["dbo","cabal_character_table","WExp","bigint","8","0"],
+            ["dbo","cabal_inventory_table","InventoryData","varbinary","-1","0"],
+            ["dbo","cabal_character_table","Level","int","4","0"]],
+          "PROCEDURE":[
+            ["dbo","cabal_sp_inventory_get"],
+            ["dbo","cabal_sp_eventpass_inventory_snapshot_v282"]],
+          "PARAMETER":[]
+        }
+        result=audit.inventory_wexp_candidates(rows)
+        self.assertEqual(result["proof_status"],
+                         "CATALOG_NAME_MATCH_ONLY_NOT_GAME_ABI")
+        self.assertEqual(result["column_candidates"][0]["column"],"InventoryData")
+        self.assertIn("dbo.cabal_sp_inventory_get",result["procedure_candidates"])
+        self.assertNotIn("user_data",str(result).lower())
     def test_reject_player_data_and_wrong_database(self):
         with self.assertRaisesRegex(ValueError,"NOT_EXPECTED"):
             audit.decode_sys_catalog("DATABASE|Account\n")
