@@ -30,6 +30,22 @@ jobs:
             diamond-insignia/native/grade2-ingress/test_grade2_ingress.cpp \
             -o /tmp/diamond_grade2_clone_trial
           /tmp/diamond_grade2_clone_trial
+      - name: Gate 0BDA clone response on cmd46-47 durable persisted reconciliation
+        run: |
+          set -euo pipefail
+          g++ -std=c++17 -O2 -Wall -Wextra -Werror -pedantic \
+            diamond-insignia/native/world-save-barrier/DiamondWorldSaveBarrier.cpp \
+            diamond-insignia/native/grade2-ingress/Diamond0BDASaveReplyGate.cpp \
+            diamond-insignia/native/grade2-ingress/test_0bda_save_reply_gate.cpp \
+            -o /tmp/diamond_0bda_reply_gate_default
+          /tmp/diamond_0bda_reply_gate_default
+          g++ -std=c++17 -O2 -Wall -Wextra -Werror -pedantic \
+            -DDIAMOND_ENABLE_0BDA_CLONE_TRIAL \
+            diamond-insignia/native/world-save-barrier/DiamondWorldSaveBarrier.cpp \
+            diamond-insignia/native/grade2-ingress/Diamond0BDASaveReplyGate.cpp \
+            diamond-insignia/native/grade2-ingress/test_0bda_save_reply_gate.cpp \
+            -o /tmp/diamond_0bda_reply_gate_clone
+          /tmp/diamond_0bda_reply_gate_clone
       - name: Build WorldSvr-context-bound 0BDA ingress (default disabled and synthetic clone)
         run: |
           set -euo pipefail
