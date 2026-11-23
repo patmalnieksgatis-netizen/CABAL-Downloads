@@ -26,7 +26,7 @@ int main(){
   assert(ReadClientRequest(nullptr,18,req)==Status::Null);
   std::array<std::uint8_t,7> oldSuccess{0xe2,0xb7,7,0,0xf3,9,1};
   std::array<std::uint8_t,7> oldFailure{0xe2,0xb7,7,0,0xf3,9,0};
-  assert(CheckServerResponseForClient291(oldSuccess.data(),7)==Status::ResponseTruncatedSuccess);
+  assert(CheckServerResponseForClient291(oldSuccess.data(),7)==Status::ResponseRouteUnobserved);
   assert(CheckServerResponseForClient291(oldFailure.data(),7)==Status::ResponseRejected);
   std::array<std::uint8_t,11> candidate{0xe2,0xb7,11,0,0xf3,9,1,0,0,0,0};
   assert(CheckServerResponseForClient291(candidate.data(),candidate.size())==Status::ResponseSuccessShapeUnknown);
