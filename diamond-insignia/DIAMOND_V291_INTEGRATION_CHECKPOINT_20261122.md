@@ -385,3 +385,48 @@ metadata without runtime evidence.
   4000..8191 in archived `ProcSystem.cpp`), overwrite Platinum
   0x0B10, or repeat previously failed replacement/sidecar attempts
   without resolving exit 78 and preserving full rollback state.
+
+
+## 2026-11-23 runtime milestone: exact ticket 33554961 type 0xB0, stack config 999
+
+Owner ran the SHA-verified precise WorldSvr metadata read on
+`EP36_291_TEST`, Docker `cabal_main`, WorldSvr PID 438:
+- WorldSvr SHA256 `caec7772acd22fd8918cfac386845c644451781e48c51975eaefed334c6705c3` (exact binary match)
+- item 33554961, catalog index 529, variant 1
+- `metadata +0x38 = 0xB0`
+- `metadata +0x3C = 999` (signed int)
+- read-only memory snapshot succeeded; no guest data modified
+
+**Important discovery:** exact original WorldSvr `0xAE0E90` quantity
+helper for `0xB0` falls through to numerical **1**. That is NOT proof
+of the actual quantity of a ticket in a slot configured with 999 at
+`+0x3C`. The old 0xAF/999 synthetic fixtures were not representative
+of the running game.
+
+After this finding:
+1. `DiamondWorld48TicketUnits` returns an explicit
+   `UnverifiedStackQuantity` verdict (alongside the mirrored numerical
+   1 for diagnostics) on unknown metadata classes with stackField3C>1.
+2. `Diamond0BDATicketSelection` reports
+   `UnsupportedStackQuantityEncoding`; the 100-ticket debit plan
+   cannot be formed using an unproven quantity.
+3. `Diamond0BDAGameplayAction` returns `InventoryNotVerified`
+   BEFORE invoking any GameData atomic commit callback.
+4. Tests cover the actual `0xB0/999` combination at quantity,
+   inventory-plan and 0BDA transaction layers.
+5. Both read-only metadata tools explicitly report unknown stack
+   encoding rather than the misleading name `singleton_other`.
+6. `WORLD_48_TICKET_UNITS_20261123.md` contains the captured values
+   and why real ticket debit remains blocked.
+
+**GitHub CI all PASS** on source/docs commit
+`359e41c7dad0fca34843922d5384e179dd9b6c50`:
+native C++17 rules, Diamond SQL Lab Static Safety and
+Diamond Mastery Offline Policy Gate.
+No production WorldSvr/client/SCP/SQL/VM updates occurred.
+
+**Next true engineering task:** locate the 0xB0-specific game
+quantity extraction or a verified game inventory backend and establish
+actual `0x0BDA` server handler, durable save and verified v291 S2C
+response. NEVER convert B0 metadata to AF, treat 999 as current ticket
+units or debit 100 single slots without proof.
