@@ -12,6 +12,11 @@
 namespace diamond_v291::gradeup0bda {
 constexpr std::size_t kWorldInventorySlots=kWorldInventoryMaxSlot+1u; // 0..521
 constexpr std::uint32_t kRequiredRankUpTickets=100u;
+// Verified from the running EP36_291_TEST exact WorldSvr, Nov 23 2026.
+// For B0 + stack setting 999, original 0xAE0E90 falls through to 1,
+// which may NOT represent the actual quantity of a stackable item.
+constexpr std::uint32_t kObservedTicketKind38=0xB0u;
+constexpr std::int32_t kObservedTicketStack3C=999;
 struct AttestedInventory {
     const void* authenticatedWorldSession=nullptr;
     const void* boundWorldSession=nullptr;
@@ -33,6 +38,7 @@ enum class SelectionVerdict : std::uint8_t {
     InvalidPacket, MissingOwnerAuthority, UnverifiedSelectionSemantics,
     WrongSnapshotSize, SlotOutOfRange,
     DuplicateSlot, InvalidTicketRecord, ItemMetadataMissing,
+    UnsupportedStackQuantityEncoding,
     ZeroOrInvalidTicketCount, InsufficientTickets, ExactDebitPlan
 };
 struct SlotDebit {
