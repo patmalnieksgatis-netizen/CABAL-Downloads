@@ -8,6 +8,7 @@
 #include <cstdint>
 #include <cstring>
 #include <set>
+#include <utility>
 #include <vector>
 
 namespace diamond_v291::inventory {
@@ -107,9 +108,9 @@ inline B0PartialDebitProposal StageB0TicketPartialDebit100(
                     id,serial,internal::GetU64(row+16),
                     slot,internal::GetU32(row+26)
                 };
+                auto attestedPersisted=proof.persisted;
                 if(!DecodeVerifiedB0PersistedRecord(
-                       const_cast<PersistedB0QuantityAuthority*>(&proof.persisted),
-                       src,&verifiedUnits) ||
+                       &attestedPersisted,src,&verifiedUnits) ||
                    verifiedUnits!=proof.expectedStackAmount) {
                     out.status=B0PartialDebitStatus::WrongTicketOrQuantity;
                     return out;
