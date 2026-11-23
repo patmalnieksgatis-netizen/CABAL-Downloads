@@ -96,6 +96,8 @@ jobs:
           Write-Output 'TICKET_METADATA_POWERSHELL_AND_PYTHON_PARSE=PASS'
       - name: Audit disposable-clone-only ticket metadata capture safety (no process attach)
         run: python3 -m unittest discover -s diamond-insignia/native/grade2-ingress -p 'test_capture_clone_ticket_catalog.py' -v
+      - name: Verify actual Server01 atomic inventory WarExp rank receipt SQL offline safety
+        run: python3 -m unittest discover -s diamond-insignia/native/real-gamedata-transaction -p 'test_atomic_sql_static.py' -v
       - name: Verify authenticated WorldSvr 0BDA v14 owner lease lasts through real game action callback
         run: |
           set -euo pipefail
