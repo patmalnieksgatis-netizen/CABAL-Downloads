@@ -30,3 +30,7 @@ python3 -m unittest discover -s tests -p 'test_verify_09f3_response_branch.py' -
 
 # Offline trace classifier: never infer Diamond purchase from Merit/Dimension frames.
 python3 -m unittest discover -s tests -p 'test_offline_packet_trace.py' -v
+
+# SHA-pinned real-client sender anchors plus offline 0BDA-0BE0 shape validation.
+# These are read-only parsers; never promote a matching frame to Diamond success.
+python3 -m unittest discover -s tests -p 'test_merit_family_c2s.py' -v
