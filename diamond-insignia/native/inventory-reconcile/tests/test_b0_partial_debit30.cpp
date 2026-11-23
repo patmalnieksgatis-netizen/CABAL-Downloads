@@ -118,8 +118,26 @@ int main() {
     assert(low16.status==B0PartialDebitStatus::PreparedClone);
     assert(internal::GetU64(low16.proposedGameData.data()+16)==899);
     assert(original==blob);
+    // New plain-positive mode is not a guess about low10/low16.
+    // Both count interpretations agree for a full 1..999 no-flag option.
+    authority.persisted.codecProof.provenProfile=
+        B0CountProfile::PlainPositiveOptionNoFlags;
+    authority.persisted.codecProof.independentlyMatchedKnownQuantity=false;
+    assert(StageB0TicketPartialDebit100(blob.data(),blob.size(),authority).status==
+           B0PartialDebitStatus::WrongTicketOrQuantity);
+    authority.persisted.codecProof.independentlyMatchedKnownQuantity=true;
+    const auto plain=StageB0TicketPartialDebit100(
+        blob.data(),blob.size(),authority);
+    assert(plain.status==B0PartialDebitStatus::PreparedClone);
+    assert(internal::GetU64(plain.proposedGameData.data()+16)==899);
+    assert(blob==original);
+    invalid=blob;
+    U64(invalid.data()+16,0x100000000ULL|999ULL);
+    assert(StageB0TicketPartialDebit100(invalid.data(),invalid.size(),authority).status==
+           B0PartialDebitStatus::WrongTicketOrQuantity);
 
-    std::cout<<"B0_REAL_SAVED_OPTION_999_CLONE_TO_899_PROPOSAL=PASS\n"
+    std::cout<<"B0_PLAIN_NO_FLAGS_999_TO_899_WITHOUT_LOW10_LOW16_GUESS=PASS\n"
+             <<"B0_REAL_SAVED_OPTION_999_CLONE_TO_899_PROPOSAL=PASS\n"
              <<"B0_ALL_UNRELATED_INVENTORY_BYTES_PRESERVED=PASS\n"
              <<"B0_ZERO_LIVE_SQL_OR_WORLD_MUTATIONS=PASS\n"
              <<"B0_PROOF_SLOT_IDENTITY_COUNT_AND_FLAGS_REQUIRED=PASS\n";
