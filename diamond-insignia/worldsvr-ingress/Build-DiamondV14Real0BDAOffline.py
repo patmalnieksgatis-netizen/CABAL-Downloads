@@ -108,6 +108,22 @@ def run(args):
         old_symbols=symbols(original)
         candidate_symbols=symbols(built)
         missing=sorted(old_symbols-candidate_symbols)
+        # The earlier source-matched lib.so replacement moved over 100
+        # exported RVAs and failed startup with exit 78. This static
+        # audit quantifies the same risk but NEVER approves deployment.
+        def addresses(data):
+            parsed={}
+            for line in data.splitlines():
+                fields=line.split()
+                if len(fields)>=3 and fields[-2] in ("T","W"):
+                    try:parsed[fields[-1]]=int(fields[0],16)
+                    except ValueError:pass
+            return parsed
+        orig_addresses=addresses(original)
+        new_addresses=addresses(built)
+        changed_rvas=sorted(n for n in orig_addresses.keys() &
+                            new_addresses.keys()
+                            if orig_addresses[n]!=new_addresses[n])
         if missing or len(old_symbols)<100:
             raise RuntimeError("STOP: exported ABI loss: "+
                                ",".join(missing[:8]))
@@ -130,6 +146,9 @@ def run(args):
             "baseline_exported_symbols":len(old_symbols),
             "candidate_exported_symbols":len(candidate_symbols),
             "missing_original_exports":0,
+            "changed_exported_function_rvas":len(changed_rvas),
+            "rva_layout_matches_original":len(changed_rvas)==0,
+            "example_changed_symbol_names":changed_rvas[:12],
             "source_cpp_units_compiled":len(included),
             "disabled_binder":True,
             "worldsvr_process_started":False,
@@ -148,6 +167,8 @@ def run(args):
         raise
     print(RESULT_MARKER+"=PASS")
     print("ORIGINAL_EXPORTS_PRESERVED="+str(len(old_symbols)))
+    print("CHANGED_EXPORTED_FUNCTION_RVAS="+str(len(changed_rvas)))
+    print("RUNTIME_ABI_OR_STARTUP_VERIFIED=NO")
     print("OFFLINE_BUNDLE="+str(output))
     print("ACTIVE_LIB_AND_WORLDSVR_CHANGED=NO")
     print("DIAMOND_GAMEPLAY_ENABLED=NO")
