@@ -19,7 +19,7 @@ struct AttestedItemMetadata {
 };
 enum class TicketUnitsVerdict : std::uint8_t {
     MalformedRecord, NotTicket, UnverifiedMetadata, ZeroUnits,
-    DecodedTicketQuantity
+    DecodedTicketQuantity, UnverifiedStackQuantity
 };
 struct TicketUnitsResult {
     TicketUnitsVerdict verdict=TicketUnitsVerdict::MalformedRecord;
@@ -27,6 +27,10 @@ struct TicketUnitsResult {
     std::uint32_t rawItemKind=0;
     std::uint32_t rawOptionLow32=0;
 };
+// A metadata +0x3C > 1 with unrecognized +0x38 type (the REAL B0/999
+// case) reports UnverifiedStackQuantity even though the original helper
+// falls through and returns numerical 1. Consumers must never debit it.
+//
 // Reads +4 occupancy, +8 itemKind and +0x18 item option, which is
 // exactly +0x10 from the item pointer passed to original 0xAE0E90.
 // Caller must attest original x64 slot memory, exclusive owner lock,
