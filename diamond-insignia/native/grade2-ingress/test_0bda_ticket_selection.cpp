@@ -73,6 +73,19 @@ int main() {
     unverified=a;
     unverified.selectionSemanticsBoundToGradeUpVerified=false;
     Eq(SelectionVerdict::UnverifiedSelectionSemantics,packet,unverified);
+    // Actual running VM report: item 33554961 / kind 0xB0 /
+    // metadata field3C=999. Original helper falls back to singleton,
+    // but the real amount could be encoded on another path. NO debit.
+    auto actualRuntime=a;
+    actualRuntime.itemCatalog.kindField38=kObservedTicketKind38;
+    actualRuntime.itemCatalog.stackField3C=kObservedTicketStack3C;
+    Eq(SelectionVerdict::UnsupportedStackQuantityEncoding,packet,actualRuntime);
+    auto unknownStack=a;
+    unknownStack.itemCatalog.kindField38=0x47u;
+    unknownStack.itemCatalog.stackField3C=999;
+    Eq(SelectionVerdict::UnsupportedStackQuantityEncoding,packet,unknownStack);
+    // A true singleton item is still handled by the original helper,
+    // but 0xB0/999 must not be silently treated as 1.
     const auto plan=PlanTicketDebit(packet,a);
     assert(plan.status==SelectionVerdict::ExactDebitPlan);
     assert(plan.selectedCount==2 && plan.selectedUnits==140);
@@ -127,7 +140,8 @@ int main() {
     Eq(SelectionVerdict::InvalidTicketRecord,packet,a);
     Slot(inventory,8,80,true,false);
     Eq(SelectionVerdict::InvalidTicketRecord,packet,a);
-    std::cout<<"GRADE2_0BDA_UNVERIFIED_SELECTION_SEMANTICS_BLOCKED=PASS\n"
+    std::cout<<"GRADE2_0BDA_ACTUAL_TICKET_B0_999_UNSAFE_DEBIT_BLOCKED=PASS\n"
+             <<"GRADE2_0BDA_UNVERIFIED_SELECTION_SEMANTICS_BLOCKED=PASS\n"
              <<"GRADE2_0BDA_SELECTION_DUPLICATES_AND_AUTHORITY=PASS\n"
              <<"GRADE2_0BDA_EXACT_100_UNIT_DEBIT_PLAN=PASS\n"
              <<"GRADE2_0BDA_ZERO_REAL_GAME_INVENTORY_MUTATIONS=PASS\n";
