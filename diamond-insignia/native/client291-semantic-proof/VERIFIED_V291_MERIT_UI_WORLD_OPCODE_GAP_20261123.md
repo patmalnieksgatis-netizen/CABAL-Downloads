@@ -66,3 +66,14 @@ length or fill missing DWORDs with zero.
 4. Regression-test original Merit/Platinum, Costume, EventPass, dungeons, re-login and request retries. Never re-run previous live `lib.so`/sidecar deployer, which produced `exit 78`.
 
 No active WorldSvr, SQL, Supervisor, game account, client installation or VM was modified.
+
+## EP45 server-file candidate was checked (negative finding)
+
+The owner's archived `EP45_WorldSvr` (10,596,184 bytes) was
+independently hashed and compared byte-for-byte with
+`WorldSvr_FULLCHAIN_20261108`. Both are **identical**, SHA256
+`caec7772acd22fd8918cfac386845c644451781e48c51975eaefed334c6705c3`.
+Consequently this specific EP45-labeled server ELF is **not** a source of
+new `0x0BDA..0x0BE0` implementations beyond the running candidate.
+Do not infer that every other EP45 artifact or actual newer EP45 source is
+identical; this result applies only to this exact file pair.
