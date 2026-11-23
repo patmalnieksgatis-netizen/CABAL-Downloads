@@ -262,3 +262,50 @@ Full native rules workflow on source commit `f4c31b09d752`
 completed **success**, including new tests. This is not
 live-game certification or installable Diamond. Neither active
 WorldSvr, VM, SQL nor game account was modified.
+
+## 2026-11-23 WorldSvr ABI ingress, durability gate and real item quantity decoder
+
+This continuation makes significant **native integration** progress:
+
+1. The owner's archived WorldSvrRealm `PROCESSDATACONTEXT` header
+   was reconciled with original WorldSvr `0xA40F14` and `0xA40F31`
+   instruction reads. `native/grade2-ingress/Diamond0BDAWorldContext.h/.cpp`
+   now performs fail-closed read-only guest process-context ABI and
+   frame integrity checks, binds proof to the owner session, and
+   forwards only a verified 0BDA candidate. Both default (disabled)
+   and clone-mock transactional tests compile and pass CI.
+2. `Diamond0BDASaveReplyGate.h/.cpp` stages a **candidate-only**
+   7-byte 0BDA status response after `DiamondWorldSaveBarrier`
+   cmd46/47 save ACK **and independent persistent inventory/WExp/
+   receipt reconciliation**. It cannot send any S2C packet, and
+   production builds cannot even encode synthetic success.
+3. `DiamondWorldProcRegistryPreflight.h` asserts the actual
+   `g_sUsrProcedureMap` registry structure/slots while preserving
+   original Platinum 0B10/0B13; it is read-only, refuses occupied
+   0BDA slots and **does not authorize installation** without
+   verified host `PROCEDUREMAP` allocator/ABI.
+4. **New original WorldSvr stack quantity breakthrough**:
+   `0xA413AF` calls `0xAE0E90` on a selected 48-byte
+   inventory slot. The helper derives quantities from item option
+   `slot+0x18` using metadata-class-dependent upper 10, lower 16
+   or lower 7 bits (or singleton). New
+   `DiamondWorld48TicketUnits.h/.cpp` and synthetic CI tests
+   implement these exact branches, but require an independently
+   attested original runtime item catalog.
+5. For exchange ticket `33554961 = 0x02000211`,
+   item catalog key = index **529**, variant **1**,
+   runtime metadata VA **`0x13CAB48`**. This address is proven
+   in a memory-only, non-file-backed ELF segment. **The actual
+   class fields +0x38/+0x3C are unavailable from this binary**,
+   so the exact ticket-specific stack encoding is still a hard
+   clone-run data dependency.
+
+Source narrative:
+`native/grade2-ingress/WORLDSVR_0BDA_CONTEXT_AND_SAVE_GATE_20261123.md`;
+`native/grade2-ingress/WORLD_48_TICKET_UNITS_20261123.md`.
+
+All 3 CI suites on code commit `9a441e6bf59b` completed
+**success**. Live WorldSvr, client and SQL were not changed.
+**Still no real handler registration, authoritative GameData
+commit or playable Diamond.** Do not install old sidecar or assume
+newer 0BDA server behavior from Platinum 0B10 without proof.
