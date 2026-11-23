@@ -50,7 +50,18 @@ TicketDebitPlan PlanTicketDebit(const Candidate& request,
                                kind==0xAFu || kind==0xB8u ||
                                kind==0x10u || kind==0x1Bu ||
                                kind==0x66u);
-        if(!recognized) {
+        // B0 is NOT supported merely because real ItemOption=999;
+        // require a separately verified quantity profile. The decoder
+        // rejects nonzero option flags and invalid counts later, too.
+        const auto& proof=world.itemCatalog.b0QuantityProof;
+        const bool verifiedB0=(kind==0xB0u &&
+            world.itemCatalog.stackField3C==999 &&
+            proof.provenProfile!=diamond_v291::inventory::B0CountProfile::Unknown &&
+            proof.independentlyMatchedKnownQuantity &&
+            proof.sameGameBuildAndMaterialKindVerified &&
+            proof.optionLayoutVerified &&
+            proof.extraOptionFlagsProvenAbsent);
+        if(!recognized && !verifiedB0) {
             out.status=SelectionVerdict::UnsupportedStackQuantityEncoding;
             return out;
         }
