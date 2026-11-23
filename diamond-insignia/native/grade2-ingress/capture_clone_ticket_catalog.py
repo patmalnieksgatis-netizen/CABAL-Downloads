@@ -34,7 +34,7 @@ def classification(kind,stack):
         return "option_unsigned_lower_16_bits"
     if kind in (0x10,0x1B,0x66):
         return "option_unsigned_lower_7_bits"
-    return "singleton_other_metadata_kind"
+    return "original_helper_fallback_one__NOT_verified_ticket_stack_quantity"
 
 def machine_id_text(text):
     token=text.strip()
@@ -118,6 +118,12 @@ def capture(pid:int,marker:Path)->dict:
         "kind_field38":kind,"kind_field38_hex":hex(kind),
         "stack_field3c_signed":stack,
         "quantity_decode_branch":classification(kind,stack),
+        "safe_to_plan_real_game_ticket_debit": (
+            stack<=1 or kind in (0x43,0x46,0xAF,0xB8,0x10,0x1B,0x66)
+        ),
+        "unknown_stack_count_type": (
+            stack>1 and kind not in (0x43,0x46,0xAF,0xB8,0x10,0x1B,0x66)
+        ),
         "metadata_from_real_verified_process":True,
         "runtime_write_attempted":False,
         "inventory_modified":False,"sql_modified":False,
