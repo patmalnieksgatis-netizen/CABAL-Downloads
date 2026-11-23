@@ -16,7 +16,7 @@ int main() {
   assert(CheckServerResponseForObservedClientRoute(
       legacy.data(),7,absent)==Status::ResponseRouteUnobserved);
   assert(CheckServerResponseForClient291(
-      legacy.data(),7)==Status::ResponseTruncatedSuccess); // strict legacy
+      legacy.data(),7)==Status::ResponseRouteUnobserved); // strict legacy
   for(std::int32_t first=-3;first<=3;++first) {
     for(std::int32_t second=-3;second<=3;++second) {
       for(std::int32_t third=-3;third<=3;++third) {
