@@ -124,3 +124,49 @@ proving semantics and receipt recovery; do not touch live WorldSvr.
 
 All work in this checkpoint: offline binary analysis and GitHub source
 changes only. No game server, VM, client, SQL data, or account changed.
+
+## 2026-11-23 follow-up: exact Merit-family packet shapes and real SCP grade gate
+
+New implementation files:
+- `native/client291-wire/evidence/verify_merit_family_c2s.py`:
+  **42** original x64 instruction anchors across five sender functions
+  `0x0BDA,0x0BDB,0x0BDD,0x0BDF,0x0BE0` and five verified
+  `0x2B7A40` send calls; read-only conservative packet header, size,
+  counted-list, singleton and sender-gating checks. Local SHA-pinned
+  real-client evidence 42/42 PASS.
+- `native/client291-wire/tests/test_merit_family_c2s.py`: count-bound,
+  negative and positive synthetic parser tests, now in `run-tests.sh`.
+- `native/client291-wire/MERIT_FAMILY_SENDER_SHAPES_20261123.md`:
+  exact fields and packet length formulas, with all opaque fields
+  explicitly unspecified; a parsed packet is **not** a Diamond transaction.
+- `native/catalog-audit/audit_real_merit_grade.py` and tests:
+  fail-closed real-SCP grade-2 presence and rank-up-material audit.
+- `native/catalog-audit/README_LATVIAN.md`: owner’s actual 54 866-byte
+  `MeritSystem.scp` SHA256
+  `307fc981ec3efe66f6cc1b0606ed7d86cd9e5a6e46205769a9bb34b012464295`
+  contains 158 mastery rows, grade 0=64, grade 1=94, **grade 2=0**.
+  Its sole `UpGrade_Material` row is grade 1, 20,000 WExp, item 33554961 ×100,
+  **not** the isolated Diamond rule’s grade 2 30,000 WExp.
+- `native/client291-semantic-proof/verify_merit_client_server_gap.py`
+  has 12 additional actual bytes proving both `0x0BDB` and `0x0BDD`
+  response paths feed **client Merit state slot 2** via `0x249730`.
+  This is important state evidence, not confirmation of purchase semantics.
+
+### First playable Diamond: remaining non-negotiable gates
+
+1. Identify which verified `0x0BDA..0x0BE0` UI sender actually executes
+   for Diamond **rank-up purchase**, the semantic meaning of the outgoing
+   fields, and exact S2C success/failure response; preferably an isolated
+   client runtime trace. No guessed `0x0BDD`=Diamond claim.
+2. Add a **clone-only** valid `Badge_Grade=2` Mastery/resource catalog
+   only from verified owner source; never replace existing Platinum config
+   or `0x0B10` behavior blindly.
+3. Implement authenticated WorldSvr registry/session binding, actual
+   `GameData` ticket-stack quantity codec and durable WExp/item/receipt
+   transaction with confirmed save barrier and rollback/retry parity.
+4. Demonstrate actual player rank-up + relogin + duplicate-packet
+   safety in a disposable VM, without breaking EventPass, Platinum,
+   Costume, dungeons, SQL or existing accounts.
+
+**Product status remains NOT PLAYABLE and NOT DEPLOYED; local simulations and CI
+cannot substitute for the first real clone gameplay test. No live systems changed.**
