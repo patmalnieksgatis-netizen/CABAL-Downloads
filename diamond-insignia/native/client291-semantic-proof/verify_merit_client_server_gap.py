@@ -36,6 +36,16 @@ S2C = {
     0x0BE0: (0x6D00BA,0x6D00D1,0x6DB3B4),
 }
 
+# Verified *client instruction reads*, not a certified packet serializer.
+S2C_READ_ANCHORS = {
+    0x0BDB: ((0x6DAF09,"41807f0601"),(0x6DAF14,"41837f07ff")),
+    0x0BDC: ((0x6DB176,"4c8d7106"),(0x6DB17A,"41833eff"),
+             (0x6DB18F,"bd03000000"),(0x6DB194,"8b17"),
+             (0x6DB1CE,"488d7f04")),
+    0x0BDD: ((0x6DB102,"80790601"),),
+    0x0BDF: ((0x6DADB0,"807e0601"),(0x6DADBF,"448b4e07")),
+}
+
 # (RIP-relative opcode prefix, full instruction length)
 PATTERNS = (
     (bytes.fromhex("48833d"),8), # cmp qword [rip+disp32], imm8
@@ -136,6 +146,11 @@ def verify_client(exe):
         if bind[0]!=0xe8 or lea_rva+16+struct.unpack_from("<i",bind,1)[0]!=0x2879E4:
             raise ProofError("S2C_BINDER_ANCHOR_"+hex(opcode))
 
+    for opcode,anchors in S2C_READ_ANCHORS.items():
+        for rva,expected in anchors:
+            if read(rva,len(bytes.fromhex(expected)))!=bytes.fromhex(expected):
+                raise ProofError("S2C_READ_ANCHOR_"+hex(opcode)+"_"+hex(rva))
+
 def audit(client,world):
     verify_client(client)
     checked_sha(world,WORLD_SHA,"WORLD")
@@ -161,6 +176,12 @@ def audit(client,world):
                  "paired_c2s_ui_event": next(
                      (f"0x{ui:X}" for ui,entry in CLIENT.items() if entry[4]==opcode),None)}
                 for opcode,parts in S2C.items()
+            ],
+            "s2c_verified_client_read_paths":[
+                {"opcode":"0x0BDB","reads":["status_byte_at_6","dword_at_7_in_success_path"]},
+                {"opcode":"0x0BDC","reads":["three_dwords_at_6_10_14_in_three_iteration_path"]},
+                {"opcode":"0x0BDD","reads":["status_byte_at_6"]},
+                {"opcode":"0x0BDF","reads":["status_byte_at_6","dword_at_7_in_success_path"]},
             ],
             "game_modified":False}
 
