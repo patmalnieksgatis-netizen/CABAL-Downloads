@@ -78,3 +78,82 @@ Existing `DiamondWorld48TicketUnits` /
 `Diamond0BDAGameplayAction` still reject real B0/999
 stack debits until exact count and debit preservation are
 independently verified. All source changes are confined to GitHub.
+
+
+## Owner's actual B0 ticket sample (2026-11-23 20:28 Europe/Riga)
+
+User uploaded `CABAL_V291_B0_TICKET_OPTIONS_20261123_202810.json`.
+The READ ONLY query succeeded on actual `EP36_291_TEST`, item
+`33554961`:
+
+```
+anonymous GameData Data lengths: 120, 1830, 210
+  (all multiples of the v14 reference 30-byte record size)
+ticket records found: 2, sample truncated: false
+both itemOption64: 0x00000000000003E7
+both item kind high 32 bits: 0
+both itemOption lower10 = 999
+both itemOption lower16 = 999
+```
+
+The raw data **supports** a quantity stored in `ItemOption`,
+but **CANNOT DISTINGUISH** low10 from low16 because 999 fits both.
+It also does **not** establish that these two records belong to the
+same character, or that actual UI stacks display 999, or that the
+current WorldSvr 48-byte count field and persisted GameData
+`itemOption` are the same. Never claim a verified sum of 1998
+for one player or use 999 as proof of low10.
+
+The minimal, deidentified observation is saved at
+`fixtures/owner_ep36_291_b0_999_option_observation_20261123.json`.
+No character names, account numbers, full item blobs or serials.
+
+### Native implementation added, still default-disabled
+
+1. `DiamondB0QuantityCodec.h` contains pure read-only candidate
+   `OptionLow10` and `OptionLow16` interpreters.
+   `InspectUnprovenB0Option(0x3E7)` reports BOTH 999 and
+   `profileIdentified=false`.
+2. `DiamondWorld48TicketUnits.cpp` delegates for real kind
+   `0xB0/999` to this helper only when its per-owner
+   `B0QuantityEvidence` includes independently matched
+   known UI/native quantity, confirmed same game build, verified
+   option layout and no unknown option flags. Default evidence
+   is all false; the real WorldSvr therefore still refuses a
+   debit, rather than treating B0 as a singleton.
+3. `Diamond0BDATicketSelection.cpp` permits a B0 debit
+   plan only behind the **same** independently attested proof,
+   and still requires the independently verified 0BDA inventory
+   slot meaning / WorldSvr session.
+4. `DiamondB0PersistedQuantity.h` gates real 30-byte GameData
+   persisted material count decoding behind the UI/native proof
+   PLUS validated live row layout, character snapshot and SQL
+   identity.
+5. `DiamondB0PartialDebit30.h` stages a **100-unit partial
+   consumption in a cloned inventory blob**. Its synthetic
+   verified codec fixture transforms item option 999→899,
+   preserving the item ID, serial, slot, duration and unrelated
+   inventory rows byte-for-byte. It rejects absent owner lock,
+   unmatched physical slot mapping, missing codec evidence,
+   duplicate item serial or slot, invalid blobs, option flags,
+   >999 units and full-stack deletion. It sets
+   `wroteLiveGameData=false` and NEVER writes SQL or RAM.
+6. Native tests `test_world_48_ticket_units.cpp`,
+   `test_0bda_ticket_selection.cpp`,
+   `test_b0_quantity_profile.cpp`, and
+   `test_b0_partial_debit30.cpp` cover fail-closed defaults
+   and future **synthetic-only** 999→899 plans.
+
+### Next proof required before any deployment
+
+Obtain ONE independently known actual game UI stack count for
+the corresponding raw `ItemOption`, or match the v291
+client/native `0xB0` material count decoder, and confirm the
+WorldSvr live slot ID maps to the same persisted `Record30`
+physical slot. The two 999 samples alone cannot provide this.
+Full-stack deletion, real durable GameData write, WExp subtraction,
+Diamond rank-state representation, WorldSvr opcode 0BDA
+registration and v291 S2C success ABI remain unimplemented.
+
+The assistant has NOT altered the owner's VM or SQL. No in-game
+Diamond has been activated by these GitHub source changes.
