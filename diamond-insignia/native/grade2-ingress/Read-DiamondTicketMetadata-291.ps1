@@ -8,8 +8,8 @@ if (-not (Test-Path -LiteralPath $vbox -PathType Leaf)) {
 }
 $running = @(& $vbox list runningvms)
 if ($LASTEXITCODE -ne 0) { throw 'STOP: VirtualBox VM status nav nolasāms.' }
-$matches = @($running | Where-Object { $_ -match '^"EP36_291_TEST"\s+\{' })
-if ($matches.Count -ne 1) {
+$foundVm = @($running | Where-Object { $_ -match '^"EP36_291_TEST"\s+\{' })
+if ($foundVm.Count -ne 1) {
     throw 'STOP: EP36_291_TEST nedarbojas vai neatbilst VM nosaukums.'
 }
 $py = @'
@@ -58,7 +58,7 @@ try:
     with open(path + "maps", "r") as maps:
         for line in maps:
             columns = line.split()
-            if len(columns) < 2 or "r" not in columns[1][:1]:
+            if len(columns) < 2 or not columns[1].startswith("r"):
                 continue
             start_end = columns[0].split("-")
             if len(start_end) != 2:
@@ -69,6 +69,15 @@ try:
                 break
     if not mapped:
         fail("WORLD_CATALOG_METADATA_ADDRESS_NOT_READABLE")
+    # Bind the memory read to the same process incarnation.
+    def process_start_time():
+        with open(path + "stat", "r") as info:
+            line = info.read()
+        tail = line[line.rfind(")") + 2:].split()
+        if len(tail) < 20:
+            fail("WORLDSVR_PROC_STAT_INVALID")
+        return int(tail[19])
+    started_before = process_start_time()
     # This is a read-only seek by offset, NOT a dd skip of 20 MB.
     fd = os.open(path + "mem", os.O_RDONLY | os.O_CLOEXEC)
     try:
@@ -77,6 +86,8 @@ try:
         os.close(fd)
     if len(data) != 8:
         fail("SHORT_METADATA_READ")
+    if process_start_time() != started_before:
+        fail("WORLDSVR_PID_REUSED_DURING_CAPTURE")
     kind, limit = struct.unpack("<Ii", data)
     if limit <= 1:
         codec = "singleton_if_stack_limit_le_1"
