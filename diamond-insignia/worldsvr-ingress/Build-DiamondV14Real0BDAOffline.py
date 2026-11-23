@@ -26,6 +26,9 @@ BASELINE_SHA="6679e46aa2ee915d97de9501ba027cae3eec153f1cd82e7c16ed47221c63ecab"
 OFFLINE_NAME="libDiamondV14_0BDA_UNINSTALLED.so"
 RECONSTRUCTED_NAME="libDiamondV14_ORIGINAL_RECONSTRUCTED_OFFLINE.so"
 MINIMAL_NAME="libDiamondV14_MINIMAL_0BDA_OFFLINE.so"
+OBSERVER_NAME="libDiamondV14_OBSERVE_0BDA_OFFLINE.so"
+OBSERVER_EXPORT="cabal_diamond_0bda_passive_hits_v1"
+DISPATCH_SYMBOL="_ZN10ProcSystem16DoProcessDataCtxEPvP18PROCESSDATACONTEXT"
 RESULT_MARKER="DIAMOND_WORLD_0BDA_SOURCE_COMPILE_OFFLINE_ONLY"
 EXCLUDED={
     "hooks/Handlers/C2SHandler.cpp",
@@ -178,6 +181,80 @@ def minimal_pure_0bda_patch(original,staged,base):
         raise RuntimeError("STOP: minimal patch changed original source")
     return staged
 
+def passive_observer_patch(minimal_source,observer_source):
+    """Turn the optimized-away minimal no-op into a measurable passive hook.
+
+    NO additional .cpp, threads, calls to SQL or game callback. The only
+    side effect is an atomic counter private to the offline shared object.
+    Its exported read-only getter permits verifying the code was retained.
+    It never consumes a packet and forwards the ORIGINAL native dispatch.
+    """
+    if observer_source.exists():
+        raise RuntimeError("STOP: observer output already exists")
+    shutil.copytree(minimal_source,observer_source)
+    proc=observer_source/"hooks/Handlers/ProcSystem.cpp"
+    code=proc.read_text(encoding="utf-8")
+    mark='#include "DiamondReal0BDAIngressPort.h"'
+    declaration="""
+// OFFLINE ONLY. Atomic counter contains NO player IDs, IP or packet bytes.
+// Exported getter allows read-only verification without mutating gameplay.
+static unsigned long long g_diamond0bda_passive_hits = 0;
+extern "C" __attribute__((visibility("default")))
+unsigned long long cabal_diamond_0bda_passive_hits_v1() noexcept {
+    return __atomic_load_n(&g_diamond0bda_passive_hits, __ATOMIC_RELAXED);
+}
+"""
+    hook="        int unusedReturn=0;\n"
+    code=code.replace(mark,mark+declaration,1)
+    if code.count(hook)!=1:
+        raise RuntimeError("STOP: minimal passive hook marker missing")
+    code=code.replace(hook,
+      """        // Keep the minimal 0BDA branch observable; native dispatch still
+        // always executes as before. No SQL/game state or response changes.
+        __atomic_fetch_add(&g_diamond0bda_passive_hits, 1ULL,
+                           __ATOMIC_RELAXED);
+""" + hook,1)
+    if code.count(OBSERVER_EXPORT)!=1 or code.count(
+            "__atomic_fetch_add(&g_diamond0bda_passive_hits")!=1:
+        raise RuntimeError("STOP: exactly one passive counter was not inserted")
+    if ("    return ((int(*)(void*, PROCESSDATACONTEXT*))oDoProcessDataCtx)"
+        "(pProcessLayer, pProcessDataCtx);" not in code):
+        raise RuntimeError("STOP: observer would lose original native dispatch")
+    proc.write_text(code,encoding="utf-8")
+    if len(source_list(observer_source))!=len(source_list(minimal_source)):
+        raise RuntimeError("STOP: observer introduced new translation units")
+    return observer_source
+
+def dispatch_bytes(path):
+    """Extract dispatch function instruction BYTES (not relabeled offsets).
+
+    Original and no-op minimal should be byte-identical; we require the
+    counter-instrumented observer to differ, or STOP. Changes in relative
+    jumps/calls can also differ with linker layout; this is a necessary,
+    NOT sufficient, proof that an observable hook was compiled.
+    """
+    out=subprocess.run(["objdump","-d","--disassemble="+DISPATCH_SYMBOL,
+                        str(path)],capture_output=True,text=True,
+                       check=True,timeout=10).stdout
+    body=[]
+    seen=False
+    for line in out.splitlines():
+        if "<"+DISPATCH_SYMBOL+">:" in line:
+            seen=True
+            continue
+        if not seen:
+            continue
+        if line and not line.startswith((" ","\t")) and line.endswith(":"):
+            break
+        # objdump often aligns hex-byte column with tabs.
+        import re
+        m=re.match(r'^\s*[0-9a-f]+:\s+((?:[0-9a-f]{2}\s+)+)',line)
+        if m:
+            body.extend(bytes.fromhex(m.group(1)))
+    if not body:
+        raise RuntimeError("STOP: could not disassemble "+DISPATCH_SYMBOL)
+    return bytes(body)
+
 def build(compiler,src,destination,name):
     cmd=[compiler,"-std=c++17","-O2","-fPIC","-shared",
          "-Wl,--no-undefined","-Wl,-soname,"+name,
@@ -217,6 +294,7 @@ def run(a):
     output.mkdir(parents=True,exist_ok=False)
     reconstructed=output/RECONSTRUCTED_NAME
     minimal=output/MINIMAL_NAME
+    observer=output/OBSERVER_NAME
     candidate=output/OFFLINE_NAME
     result_file=output/"OFFLINE_BUILD_RESULT.json"
     try:
@@ -225,6 +303,12 @@ def run(a):
         minimal_count=build(a.compiler,output/"minimal-source",minimal,MINIMAL_NAME)
         if unit_count!=minimal_count:
             raise RuntimeError("STOP: 0BDA minimal variant changed compile units")
+        passive_observer_patch(
+            output/"minimal-source",output/"observer-source")
+        observer_count=build(
+            a.compiler,output/"observer-source",observer,OBSERVER_NAME)
+        if observer_count!=unit_count:
+            raise RuntimeError("STOP: observer added extra C++ files")
         patch.patch(original,output/"source")
         patched_units=build(a.compiler,output/"source",candidate,OFFLINE_NAME)
         if not (output/"source/hooks/Handlers/ProcSystem.cpp").read_text().count(
@@ -232,6 +316,7 @@ def run(a):
             raise RuntimeError("STOP: safe 0BDA port was not hooked once")
         for lib,soname in ((reconstructed,RECONSTRUCTED_NAME),
                            (minimal,MINIMAL_NAME),
+                           (observer,OBSERVER_NAME),
                            (candidate,OFFLINE_NAME)):
             dynamic=subprocess.run(["readelf","-d",str(lib)],
                 capture_output=True,text=True,timeout=10,check=True).stdout
@@ -245,10 +330,26 @@ def run(a):
         live_exports=nm(saved)
         original_exports=nm(reconstructed)
         minimal_exports=nm(minimal)
+        observer_exports=nm(observer)
         final_exports=nm(candidate)
+        # Verify a real, *observable* branch survived compiler DCE.
+        if OBSERVER_EXPORT not in observer_exports or (
+            OBSERVER_EXPORT in original_exports or
+            OBSERVER_EXPORT in minimal_exports):
+            raise RuntimeError("STOP: 0BDA passive counter export collision")
+        original_dispatch=dispatch_bytes(reconstructed)
+        minimal_dispatch=dispatch_bytes(minimal)
+        observer_dispatch=dispatch_bytes(observer)
+        observer_bytes_differ=observer_dispatch!=original_dispatch
+        if not observer_bytes_differ:
+            raise RuntimeError("STOP: passive 0BDA observer optimized away")
         assessment=compare_exports(live_exports,original_exports,final_exports)
         minimal_assessment=compare_exports(
             live_exports,original_exports,minimal_exports)
+        observer_assessment=compare_exports(
+            live_exports,original_exports,observer_exports)
+        observer_new_losses=observer_assessment["patch_lost_reconstructed_exports"]
+        observer_strong_losses=observer_assessment["missing_strong_exports_patched"]
         minimal_new_losses=minimal_assessment["patch_lost_reconstructed_exports"]
         minimal_strong_losses=minimal_assessment["missing_strong_exports_patched"]
         strong_fail=(assessment["missing_strong_exports_reconstructed"] or
@@ -256,7 +357,8 @@ def run(a):
         source_new_loss=assessment["patch_lost_reconstructed_exports"]
         weak_other=assessment["unexplained_weak_exports_missing"]
         if strong_fail or source_new_loss or weak_other or (
-            minimal_new_losses or minimal_strong_losses):
+            minimal_new_losses or minimal_strong_losses or
+            observer_new_losses or observer_strong_losses):
             verdict="STOP_ABI_INCOMPATIBLE"
         elif assessment["strict_live_export_parity"]:
             verdict="OFFLINE_STRICT_EXPORT_PARITY_PASS"
@@ -286,6 +388,23 @@ def run(a):
             "minimal_strict_live_export_parity":
                 minimal_assessment["strict_live_export_parity"],
             "minimal_hook_unused_by_game":True,
+            "minimal_dispatch_bytes_equal_original":
+                minimal_dispatch==original_dispatch,
+            "observer_candidate_sha256":sha256(observer),
+            "observer_soname":OBSERVER_NAME,
+            "observer_compiled_cpp_units":observer_count,
+            "observer_exported_counter":OBSERVER_EXPORT,
+            "observer_counter_is_read_only":True,
+            "observer_dispatch_bytes_differ_from_original":
+                observer_bytes_differ,
+            "observer_newly_lost_exports":observer_new_losses,
+            "observer_missing_strong_exports":observer_strong_losses,
+            "observer_rva_moves_vs_rebuilt_original":
+                observer_assessment["source_hook_changed_exported_function_rvas"],
+            "observer_rva_moves_vs_original_live_lib":
+                observer_assessment["changed_exported_function_rvas_vs_live"],
+            "observer_changes_world_inventory_sql":False,
+            "observer_forwards_all_packets_to_original_dispatch":True,
             "candidate_soname":OFFLINE_NAME,
             "source_v14_manifest":base.V14_TREE_SHA,
             "unchanged_v14_cpp_units":unit_count,
@@ -308,6 +427,12 @@ def run(a):
         print("MINIMAL_0BDA_FUNCTION_RVA_MOVES="+str(
             minimal_assessment["source_hook_changed_exported_function_rvas"]))
         print("MINIMAL_0BDA_NEW_EXPORT_LOSSES="+str(len(minimal_new_losses)))
+        print("OBSERVER_0BDA_DISPATCH_CODE_RETAINED="+
+              ("YES" if observer_bytes_differ else "NO"))
+        print("OBSERVER_0BDA_ORIGINAL_CPP_UNITS="+str(observer_count))
+        print("OBSERVER_0BDA_RVA_MOVES="+str(
+            observer_assessment["source_hook_changed_exported_function_rvas"]))
+        print("OBSERVER_0BDA_NEW_EXPORT_LOSSES="+str(len(observer_new_losses)))
         print("ALL_ACTIVE_GAME_AND_SQL_UNCHANGED=YES")
         print("BUILD_REPORT="+str(result_file))
         # ABI incompatibility is an analyzed, informative STOP outcome.
@@ -316,6 +441,7 @@ def run(a):
         # An error must never leave a misleading candidate .so.
         candidate.unlink(missing_ok=True)
         minimal.unlink(missing_ok=True)
+        observer.unlink(missing_ok=True)
         raise
 
 if __name__=="__main__":
