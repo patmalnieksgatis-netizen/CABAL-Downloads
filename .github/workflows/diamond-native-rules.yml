@@ -46,6 +46,8 @@ jobs:
             diamond-insignia/native/grade2-ingress/test_0bda_save_reply_gate.cpp \
             -o /tmp/diamond_0bda_reply_gate_clone
           /tmp/diamond_0bda_reply_gate_clone
+      - name: Audit disposable-clone-only ticket metadata capture safety (no process attach)
+        run: python3 -m unittest discover -s diamond-insignia/native/grade2-ingress -p 'test_capture_clone_ticket_catalog.py' -v
       - name: Verify authoritative 0BDA ticket selection plans and exact 100-unit debit
         run: |
           set -euo pipefail
