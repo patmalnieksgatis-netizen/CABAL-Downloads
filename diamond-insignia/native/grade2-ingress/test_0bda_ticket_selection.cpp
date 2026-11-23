@@ -33,6 +33,10 @@ AttestedInventory Authority(const std::uint8_t* p,std::size_t n,
     a.trustedRecordsBytes=n;
     a.acquiredUnderExclusiveOwnerLock=true;
     a.recordsVerifiedFromWorldSession=true;
+    // SYNTHETIC TEST FIXTURE ONLY. Neither attestation is currently
+    // available from the real v291 WorldSvr, so the real default is false.
+    a.opcode0bdaSelectionMeansTicketSlotsVerified=true;
+    a.selectionSemanticsBoundToGradeUpVerified=true;
     a.registeredUserNum=9911;
     a.registeredCharacterIdx=5001;
     a.trustedRevision=21;
@@ -61,6 +65,14 @@ int main() {
     auto a=Authority(inventory.data(),inventory.size(),&owner);
     const auto original=inventory;
     auto packet=Request(5,8);
+    // Real-world default: no verified 0BDA inventory semantics available,
+    // even when host session, records and synthetic metadata are present.
+    auto unverified=a;
+    unverified.opcode0bdaSelectionMeansTicketSlotsVerified=false;
+    Eq(SelectionVerdict::UnverifiedSelectionSemantics,packet,unverified);
+    unverified=a;
+    unverified.selectionSemanticsBoundToGradeUpVerified=false;
+    Eq(SelectionVerdict::UnverifiedSelectionSemantics,packet,unverified);
     const auto plan=PlanTicketDebit(packet,a);
     assert(plan.status==SelectionVerdict::ExactDebitPlan);
     assert(plan.selectedCount==2 && plan.selectedUnits==140);
@@ -115,7 +127,8 @@ int main() {
     Eq(SelectionVerdict::InvalidTicketRecord,packet,a);
     Slot(inventory,8,80,true,false);
     Eq(SelectionVerdict::InvalidTicketRecord,packet,a);
-    std::cout<<"GRADE2_0BDA_SELECTION_DUPLICATES_AND_AUTHORITY=PASS\n"
+    std::cout<<"GRADE2_0BDA_UNVERIFIED_SELECTION_SEMANTICS_BLOCKED=PASS\n"
+             <<"GRADE2_0BDA_SELECTION_DUPLICATES_AND_AUTHORITY=PASS\n"
              <<"GRADE2_0BDA_EXACT_100_UNIT_DEBIT_PLAN=PASS\n"
              <<"GRADE2_0BDA_ZERO_REAL_GAME_INVENTORY_MUTATIONS=PASS\n";
 }
