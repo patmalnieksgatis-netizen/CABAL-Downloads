@@ -20,6 +20,21 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Parse one-command Windows offline WorldSvr 0BDA staging wrapper (do not execute SSH)
+        shell: pwsh
+        run: |
+          $file = 'diamond-insignia/worldsvr-ingress/Stage-DiamondV14-0BDA-Windows.ps1'
+          $source = Get-Content -LiteralPath $file -Raw
+          $tokens = $null
+          $errors = $null
+          [System.Management.Automation.Language.Parser]::ParseInput($source, [ref]$tokens, [ref]$errors) | Out-Null
+          if ($errors.Count -ne 0) { throw ($errors | Out-String) }
+          if ($source -match '(?im)supervisorctl\s+(restart|stop|update)' -or
+              $source -match '(?im)LD_PRELOAD=' -or
+              $source -match '(?im)\bsqlcmd\s') {
+            throw 'STOP: forbidden server mutation in source staging wrapper'
+          }
+          Write-Output 'WIN_OFFLINE_0BDA_VM_BUILD_WRAPPER_PARSE=PASS'
       - name: Check exact-source 0BDA offline builder refusing unknown source and active game locations
         run: |
           set -euo pipefail
