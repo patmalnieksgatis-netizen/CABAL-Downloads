@@ -130,7 +130,9 @@ inline B0PartialDebitProposal StageB0TicketPartialDebit100(
         const auto mode=proof.persisted.codecProof.provenProfile;
         const std::uint64_t mask=
             mode==B0CountProfile::OptionLow10 ? 0x3FFULL :
-            mode==B0CountProfile::OptionLow16 ? 0xFFFFULL : 0ULL;
+            mode==B0CountProfile::OptionLow16 ? 0xFFFFULL :
+            mode==B0CountProfile::PlainPositiveOptionNoFlags ?
+                ~std::uint64_t{0} : 0ULL;
         if(!mask || (raw&~mask)) {
             out.status=B0PartialDebitStatus::WrongTicketOrQuantity;
             return out;
