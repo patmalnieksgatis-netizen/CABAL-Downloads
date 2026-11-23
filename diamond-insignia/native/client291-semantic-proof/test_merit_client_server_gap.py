@@ -32,6 +32,12 @@ class Tests(unittest.TestCase):
         with self.assertRaisesRegex(gap.ProofError,"WORLD_SHA_MISMATCH"):
             gap.checked_sha(b"fake",gap.WORLD_SHA,"WORLD")
 
+    def test_s2c_client_registration_map(self):
+        self.assertEqual(list(gap.S2C),[0x0BDA,0x0BDB,0x0BDC,0x0BDD,0x0BDF,0x0BE0])
+        self.assertEqual(gap.S2C[0x0BDC][2],0x6DB154)
+        self.assertNotIn(0x0BDC,[row[4] for row in gap.CLIENT.values()])
+        self.assertEqual(gap.S2C[0x0BDF][2],0x6DAD14)
+
     def test_static_client_cluster_and_bad_elf(self):
         self.assertEqual([x[4] for x in gap.CLIENT.values()],
                          [0x0B10,0x0BDA,0x0BDB,0x0BDD,0x0BDF,0x0BE0])
