@@ -23,3 +23,7 @@ g++ -std=c++17 -O1 -g -Wall -Wextra -Werror -Wpedantic \
   src/Client291MeritWire.cpp tests/test_client291_s2c_branches.cpp \
   -o build/test_s2c_branches_asan
 ASAN_OPTIONS=detect_leaks=1 UBSAN_OPTIONS=halt_on_error=1 ./build/test_s2c_branches_asan
+
+# GitHub does not store the user's private CabalMain.exe. Test the exact
+# read-only branch proof logic on tiny synthetic instruction fixtures.
+python3 -m unittest discover -s tests -p 'test_verify_09f3_response_branch.py' -v
