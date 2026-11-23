@@ -54,10 +54,31 @@ struct AtomicCommitOutcome {
 using AtomicCommitCallback = AtomicCommitOutcome (*)(
     void* trustedHostContext,const void* worldUserCtx,
     const AtomicGradeUpRequest&) noexcept;
+// Verified schema from the owner's EP36_291_TEST / Server01 catalog:
+//   cabal_Inventory_table(CharacterIdx PK,Data varbinary(max))
+//   cabal_WarExp_Table(CharacterIdx PK,WarExp/WarExpEarn/WarExpUsed)
+//   cabal_merit_platinum_table(UserNum PK)
+//   cabal_merit_platinum_mastery_table(UserNum PK)
+// DISTINCT PKs require validated character->user identity binding.
+// These are host-backend promises, NOT invented results from the catalog.
+// The catalog's separate existing inventory_set / WarExp_Set procedures
+// do NOT provide a proven cross-table transaction.
+struct RealGameDataBackendContract {
+    std::uint32_t characterIdx=0;
+    std::uint32_t userNum=0;
+    bool exactServer01PrimaryKeysVerified=false;
+    bool verifiedCharacterBelongsToUser=false;
+    bool singleSerializableTransactionAcrossAllFourTables=false;
+    bool revisionAndIntentReplayProtectionEnforced=false;
+    bool lockedBeforeRowsComparedInsideThatTransaction=false;
+    bool transactionReceiptDurablyCommitted=false;
+    bool notChainingIndependentToolSetProcedures=false;
+};
 struct GameHost {
     std::uint32_t abiVersion=1;
     void* context=nullptr;
     AtomicCommitCallback commit=nullptr; // null: fail CLOSED
+    RealGameDataBackendContract sql{}; // missing attestation: fail CLOSED
 };
 enum class GameActionState : std::uint8_t {
     NotDiamondCommand, InvalidPacket, MissingWorldAuthority,
