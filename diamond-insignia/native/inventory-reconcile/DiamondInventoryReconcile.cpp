@@ -1,10 +1,13 @@
 #include "DiamondInventoryReconcile.h"
+#include "../diamond_rules.hpp"
 #include <cstring>
 #include <limits>
 #include <map>
 #include <set>
 
 namespace diamond_v291::inventory {
+static_assert(kExchangeTicketItemId == diamond::kRequiredDonorItemId,
+              "Diamond inventory and rules must identify the same ticket");
 namespace {
 Record30 ReadRow(const unsigned char* p) noexcept {
     Record30 row{};
@@ -143,7 +146,9 @@ Audit VerifyInternal(PersistedBlob before,PersistedBlob after,
             }
         }
         if((requireUnchanged && expectedBeforeUnits!=expectedAfterUnits) ||
-           (!requireUnchanged && expectedBeforeUnits<=expectedAfterUnits) ||
+           (!requireUnchanged &&
+            (expectedBeforeUnits<=expectedAfterUnits ||
+             expectedBeforeUnits-expectedAfterUnits!=diamond::kDiamondRankTickets)) ||
            original.units!=expectedBeforeUnits ||
            saved.units!=expectedAfterUnits) {
             result.status=AuditStatus::TicketTotalsMismatch;
