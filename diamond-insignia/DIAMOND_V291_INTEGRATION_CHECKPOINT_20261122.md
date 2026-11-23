@@ -82,3 +82,45 @@ The owner's exact archived `CabalMain.exe` + `meritsystem.enc` files were indepe
 - Restrict any future deployment to a disposable VM clone with rollback; do not repeat old live `lib.so` sidecar path after `exit 78`.
 
 **Working WorldSvr, DB, client installation, Supervisor and VM were not altered.**
+
+## 2026-11-23 major client/server protocol gap: actionable v291 Merit-adjacent opcode family
+
+Owner's previously archived **original** 15,089,000-byte v291 client and
+10,596,184-byte actual `WorldSvr_FULLCHAIN_20261108` were simultaneously
+available and independently SHA-checked. New source:
+
+- `native/client291-semantic-proof/verify_merit_client_server_gap.py`
+- `native/client291-semantic-proof/test_merit_client_server_gap.py`
+- `native/client291-semantic-proof/VERIFIED_V291_MERIT_UI_WORLD_OPCODE_GAP_20261123.md`
+
+The v291 client has locally registered UI event sender callbacks for the
+C2S family `0x0BDA, 0x0BDB, 0x0BDD, 0x0BDF, 0x0BE0`. It also registers
+client S2C response handlers for `0x0BDA, 0x0BDB, 0x0BDC, 0x0BDD, 0x0BDF,
+0x0BE0`. For all six receiver commands, precise original-client
+instructions, RIP-relative callback addresses and binder target were
+verified. `0x0BDC` lacks an identified outgoing callback within this
+local five-command UI group, not necessarily globally.
+
+In the exact WorldSvr executable, **zero recognized direct static
+RIP-relative registration-slot references** were found for the five
+client C2S opcodes, while `0x0B10` (existing Platinum grade-up) has
+three directly verified positive-control references. This identifies
+a real candidate compatibility gap. It does **not** rule out every
+dynamic/indirect registration path or establish which commands are
+actually Diamond rank-up. Do NOT repurpose Platinum `0x0B10`.
+
+Owner's saved `lib.so_current_v291`, SHA256
+`6679e46aa2ee915d97de9501ba027cae3eec153f1cd82e7c16ed47221c63ecab`,
+contains generic `ProcSystem::RegisterExtendedHandler` code but no
+obvious direct `0x0BDA..0x0BE0` immediate references in a static
+disassembly grep. This alone does not rule out dynamic registration.
+
+**New practical next step:** reconstruct the exact C2S fields and S2C
+success/error semantics of the proven v291 command family. Correlate
+them with the actual client UI grade-up interaction and later the
+compatible newer WorldSvr reference. Integrate one real authoritative
+GameData/WExp/Diamond transaction on an isolated VM clone only after
+proving semantics and receipt recovery; do not touch live WorldSvr.
+
+All work in this checkpoint: offline binary analysis and GitHub source
+changes only. No game server, VM, client, SQL data, or account changed.
