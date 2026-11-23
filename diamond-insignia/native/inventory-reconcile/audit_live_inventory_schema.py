@@ -116,7 +116,14 @@ def run():
             "actual_world_kind_field38":"0xB0",
             "actual_world_stack_field3c":999,
             "catalog":rows,
-            "counts":{key:len(value) for key,value in rows.items()}
+            "counts":{key:len(value) for key,value in rows.items()},
+            "limit_by_type":{"TABLE":120,"COLUMN":600,
+                             "PROCEDURE":180,"PARAMETER":500},
+            "result_may_be_truncated": (
+                len(rows["TABLE"])>=120 or len(rows["COLUMN"])>=600
+                or len(rows["PROCEDURE"])>=180
+                or len(rows["PARAMETER"])>=500
+            )
         }
     except (ValueError,OSError,subprocess.TimeoutExpired) as ex:
         return {
