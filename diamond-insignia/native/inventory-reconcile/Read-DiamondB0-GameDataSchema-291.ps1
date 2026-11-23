@@ -8,7 +8,7 @@ if ($LASTEXITCODE -ne 0 -or
     @($running | Where-Object { $_ -match '^"EP36_291_TEST"\s+\{' }).Count -ne 1) {
     throw 'STOP: wrong VM; EP36_291_TEST not running'
 }
-$u = 'https://raw.githubusercontent.com/patmalnieksgatis-netizen/CABAL-Downloads/c723b38a0f4a7608ad3ed9584aa42d733f2f993a/diamond-insignia/native/inventory-reconcile/audit_live_inventory_schema.py'
+$u = 'https://raw.githubusercontent.com/patmalnieksgatis-netizen/CABAL-Downloads/012d0b04dc0ef0fade894a8ff9c91ffc5377edb8/diamond-insignia/native/inventory-reconcile/audit_live_inventory_schema.py'
 $p = Join-Path $env:TEMP 'audit_live_inventory_schema.py'
 Invoke-WebRequest -UseBasicParsing -Uri $u -OutFile $p -ErrorAction Stop
 if (-not (Test-Path -LiteralPath $p) -or
@@ -44,5 +44,8 @@ foreach ($name in @('TABLE','COLUMN','PROCEDURE','PARAMETER')) {
     Write-Host "SQL_$name=$($report.counts.$name)"
 }
 Write-Host "SCHEMA_MAY_BE_TRUNCATED=$($report.result_may_be_truncated)"
+foreach ($entry in @($report.inventory_wexp_candidates.column_candidates | Select-Object -First 8)) {
+    Write-Host "STORAGE_CANDIDATE=$($entry.table).$($entry.column) [$($entry.type)]"
+}
 Write-Host "UPLOAD_SCHEMA_JSON=$dest"
 Write-Host 'LIVE_GAME_FILES_SQL_WORLD_UNCHANGED=YES'
