@@ -20,6 +20,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Parse single-SSH Windows offline 0BDA ABI resume wrapper without running VM
+        shell: pwsh
+        run: |
+          $source = Get-Content -LiteralPath 'diamond-insignia/worldsvr-ingress/Resume-DiamondV14-0BDA-ABI-Windows.ps1' -Raw
+          $tokens = $null
+          $errors = $null
+          [System.Management.Automation.Language.Parser]::ParseInput($source, [ref]$tokens, [ref]$errors) | Out-Null
+          if ($errors.Count -ne 0) { throw ($errors | Out-String) }
+          if ($source -match '(?im)supervisorctl\s+(restart|stop|update)' -or
+              $source -match '(?im)LD_PRELOAD=' -or
+              $source -match '(?im)\bsqlcmd\s') {
+            throw 'STOP: unsafe active-game operation in offline ABI resume wrapper'
+          }
+          Write-Output 'WIN_0BDA_ABI_RESUME_OFFLINE_SYNTAX=PASS'
       - name: Parse one-command Windows offline WorldSvr 0BDA staging wrapper (do not execute SSH)
         shell: pwsh
         run: |
