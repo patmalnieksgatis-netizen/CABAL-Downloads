@@ -43,7 +43,7 @@ int main() {
         0xe2, 0xb7, 7, 0, 0xf3, 9, 0
     };
     assert(CheckServerResponseForClient291(legacySuccess.data(), 7) ==
-           Status::ResponseTruncatedSuccess);
+           Status::ResponseRouteUnobserved);
     assert(CheckServerResponseForClient291(legacyFailure.data(), 7) ==
            Status::ResponseRejected);
     for (std::size_t size = 0; size < 7; ++size) {
