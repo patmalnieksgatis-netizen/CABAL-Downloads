@@ -28,8 +28,10 @@ ORDER BY CharacterIdx;
 -- v14 independently identified 30-byte GameData rows:
 -- itemId +0 (8 bytes), itemSerial +8 (8), itemOption +16 (8),
 -- physicalSlot +24 (2), duration +26 (4).
--- Restrict projection to ItemOption of exact 33554961 matches.
--- 0x02000211 as little-endian QWORD = 0x1102000200000000.
+-- Match the ticket's fixed LOW 32-bit catalog code rather than all
+-- 8 kind bytes: high 32 bits may carry item flags (do NOT assume zero).
+-- 0x02000211 as little-endian DWORD = 0x11020002.
+-- Export the high 4 kind bytes, too; NEVER export the item serial.
 WITH Slots AS (
  SELECT TOP (522)
    CONVERT(int,ROW_NUMBER() OVER(ORDER BY (SELECT NULL)))-1 AS n
@@ -38,12 +40,13 @@ WITH Slots AS (
 SELECT TOP (48)
        N'TICKET_OPTION|' +
        CONVERT(varchar(16),SUBSTRING(inv.Data,Slots.n*30+17,8),2)
+       + N'|' + CONVERT(varchar(8),SUBSTRING(inv.Data,Slots.n*30+5,4),2)
 FROM dbo.cabal_Inventory_table AS inv
 CROSS JOIN Slots
 WHERE inv.Data IS NOT NULL
   AND DATALENGTH(inv.Data) % 30=0
   AND DATALENGTH(inv.Data)>=Slots.n*30+30
-  AND SUBSTRING(inv.Data,Slots.n*30+1,8)=0x1102000200000000
+  AND SUBSTRING(inv.Data,Slots.n*30+1,4)=0x11020002
 OPTION (MAXDOP 1);
 """
 # Only local sql_main; credential never appears in CLI or stdout.
@@ -72,15 +75,20 @@ def parse(output):
             if len(lengths)>=3:
                 raise ValueError("TOO_MANY_LENGTHS")
             lengths.append({"bytes":int(length),"mod30":int(remainder)})
-        elif parts[0]=="TICKET_OPTION" and len(parts)==2:
+        elif parts[0]=="TICKET_OPTION" and len(parts)==3:
             token=parts[1]
+            kind_hi=parts[2]
             if len(token)!=16 or any(x not in "0123456789abcdefABCDEF" for x in token):
                 raise ValueError("BAD_ITEM_OPTION")
+            if len(kind_hi)!=8 or any(x not in "0123456789abcdefABCDEF" for x in kind_hi):
+                raise ValueError("BAD_ITEM_KIND_FLAGS")
             if len(options)>=MAX_RECORDS:
                 raise ValueError("TOO_MANY_OPTIONS")
             raw=int.from_bytes(bytes.fromhex(token),"little")
             options.append({
                 "raw_option_le_hex":"0x"+token.lower(),
+                "raw_ticket_item_kind_upper32_le_hex":"0x"+kind_hi.lower(),
+                "item_kind_upper32_value":int.from_bytes(bytes.fromhex(kind_hi),"little"),
                 "option_low32":raw & 0xffffffff,
                 "candidate_low16":raw & 0xffff,
                 "candidate_low10":raw & 0x3ff,
