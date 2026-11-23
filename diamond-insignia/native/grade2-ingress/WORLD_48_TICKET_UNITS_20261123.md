@@ -116,3 +116,62 @@ DB serialization before proving the game save mapping.
 **Status:** actual server count algorithm recovered; specific ticket
 classification and real persistence still unknown. No active
 WorldSvr/SQL/client/VM changes performed.
+
+
+## 2026-11-23: OWNER'S RUNNING VM ITEM 33554961 METADATA CAPTURED
+
+The owner ran the precise, read-only `Read-DiamondTicketMetadata-291.ps1`
+against the **actual running** `EP36_291_TEST`, Docker `cabal_main`,
+WorldSvr PID **438**. The runtime WorldSvr SHA256 matched the exact
+10,596,184-byte ELF:
+
+```text
+WorldSvr sha256: caec7772acd22fd8918cfac386845c644451781e48c51975eaefed334c6705c3
+item:          33554961 / 0x02000211
+catalog index: 529
+variant:       1
+kind +0x38:    0xB0
+stack +0x3C:   999 (signed)
+```
+
+This replaces the previous `UNKNOWN METADATA` blocker with a **specific
+and surprising incompatible encoding**. In the *exact* original WorldSvr
+`0xAE0E90` helper, tag 0xB0 is NOT among the recognized
+0x10/0x1B/0x66, 0x43/0x46, 0xAF/0xB8 branches. The helper's default
+returns **1**. This is a statement about what **this helper** returns,
+NOT proof that the item's actual physical stack contains one ticket:
+metadata +0x3C is 999, and the count may be represented through
+another item-specific game code path.
+
+### Critical software correction
+
+- `DiamondWorld48TicketUnits.cpp` preserves the **exact behavior**
+  of `0xAE0E90` for read-only static equivalence: B0/999 yields 1.
+  The test now explicitly covers this result.
+- `Diamond0BDATicketSelection.cpp` separately **refuses to plan
+  any deduction** when metadata stackField3C >1 and kindField38 is
+  not among the proven count-encoded classes. In this real case it
+  returns `UnsupportedStackQuantityEncoding`, not a 100-ticket
+  selection plan.
+- `Diamond0BDAGameplayAction.cpp` propagates this refusal as
+  `InventoryNotVerified`; its commit callback is NOT invoked
+  even when other host proof flags are synthetic-true.
+- Tests explicitly verify B0/999 is rejected for both the inventory
+  planner and 0BDA gameplay action. The 0xAF/999 positive tests are
+  **synthetic only** and intentionally do not represent the owner's
+  running ticket class.
+- The capture tools' output now explicitly distinguishes
+  `original_helper_fallback_1` from a **verified ticket stack
+  quantity**; no longer call B0 a proven singleton.
+
+### Still unknown before a REAL rank-up
+
+Find the real 0xB0-specific inventory quantity codec / precise
+GameData storage representation, confirm exact 0BDA C2S selection
+semantics, and implement a durable game inventory+WExp+grade-2 commit,
+WorldSvr handler and client reply. Do NOT debit "100 single tickets",
+assume 999 equals current ticket count, silently switch 0xB0 to 0xAF,
+or emit an invented 7-byte success packet.
+
+The owner VM memory capture was strictly read only; no game
+files, SQL, inventory, or WorldSvr process were modified.
