@@ -46,6 +46,13 @@ jobs:
             diamond-insignia/native/grade2-ingress/test_0bda_save_reply_gate.cpp \
             -o /tmp/diamond_0bda_reply_gate_clone
           /tmp/diamond_0bda_reply_gate_clone
+      - name: Reject unsafe WorldSvr 0BDA command registration and preserve Platinum slots
+        run: |
+          set -euo pipefail
+          g++ -std=c++17 -O2 -Wall -Wextra -Werror -pedantic \
+            diamond-insignia/native/grade2-ingress/test_world_registry_preflight.cpp \
+            -o /tmp/diamond_0bda_world_registry_preflight
+          /tmp/diamond_0bda_world_registry_preflight
       - name: Build WorldSvr-context-bound 0BDA ingress (default disabled and synthetic clone)
         run: |
           set -euo pipefail
