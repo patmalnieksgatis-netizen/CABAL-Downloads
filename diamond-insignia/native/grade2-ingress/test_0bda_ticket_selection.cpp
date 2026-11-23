@@ -97,6 +97,31 @@ int main() {
     assert(plan.slots[1].expectedRemaining==40);
     assert(!plan.slots[1].removeEmptyRecord);
     assert(inventory==original); // never changed live memory
+    // A future independently verified B0 stack decoder can reuse the
+    // real planner. This branch is synthetic ONLY; the two observed
+    // 999/999 saved rows cannot supply independent count evidence.
+    Slot(inventory,5,999);
+    auto material=a;
+    material.itemCatalog.kindField38=kObservedTicketKind38;
+    material.itemCatalog.stackField3C=kObservedTicketStack3C;
+    material.itemCatalog.b0QuantityProof.provenProfile=
+        diamond_v291::inventory::B0CountProfile::OptionLow10;
+    material.itemCatalog.b0QuantityProof.sameGameBuildAndMaterialKindVerified=true;
+    material.itemCatalog.b0QuantityProof.optionLayoutVerified=true;
+    material.itemCatalog.b0QuantityProof.extraOptionFlagsProvenAbsent=true;
+    Candidate one=Request(5,8);
+    one.count=1;
+    Eq(SelectionVerdict::UnsupportedStackQuantityEncoding,one,material);
+    material.itemCatalog.b0QuantityProof.independentlyMatchedKnownQuantity=true;
+    const auto materialPlan=PlanTicketDebit(one,material);
+    assert(materialPlan.status==SelectionVerdict::ExactDebitPlan);
+    assert(materialPlan.selectedUnits==999);
+    assert(materialPlan.slots[0].availableBefore==999);
+    assert(materialPlan.slots[0].debitPlanned==100);
+    assert(materialPlan.slots[0].expectedRemaining==899);
+    assert(!materialPlan.slots[0].removeEmptyRecord);
+    Slot(inventory,5,60); // restore exact original synthetic inventory
+    assert(inventory==original);
     // A whole 150-unit stack plans a *partial* debit of exactly 100.
     packet.state=PacketState::Candidate;packet.count=1;
     packet.rawEntries[0]=521;
@@ -140,7 +165,8 @@ int main() {
     Eq(SelectionVerdict::InvalidTicketRecord,packet,a);
     Slot(inventory,8,80,true,false);
     Eq(SelectionVerdict::InvalidTicketRecord,packet,a);
-    std::cout<<"GRADE2_0BDA_ACTUAL_TICKET_B0_999_UNSAFE_DEBIT_BLOCKED=PASS\n"
+    std::cout<<"GRADE2_0BDA_PROVEN_B0_999_TO_899_SYNTHETIC_PLAN=PASS\n"
+             <<"GRADE2_0BDA_ACTUAL_TICKET_B0_999_UNSAFE_DEBIT_BLOCKED=PASS\n"
              <<"GRADE2_0BDA_UNVERIFIED_SELECTION_SEMANTICS_BLOCKED=PASS\n"
              <<"GRADE2_0BDA_SELECTION_DUPLICATES_AND_AUTHORITY=PASS\n"
              <<"GRADE2_0BDA_EXACT_100_UNIT_DEBIT_PLAN=PASS\n"
