@@ -18,8 +18,10 @@ class GameContractTests(unittest.TestCase):
         self.assertIn("sys.sql_modules",sql)
         self.assertIn("sys.index_columns",sql)
         self.assertIn("sys.parameters",sql)
-        # Only SQL Server system catalog sources may appear in FROM / JOIN.
-        for name in re.findall(r"\b(?:FROM|JOIN)\s+([\w.]+)",sql,re.I):
+        # Strip SQL comment lines before scanning FROM and JOIN; words
+        # like "from procedure" in comments are not SQL table sources.
+        sql_no_comments=re.sub(r"--[^\n]*","",sql)
+        for name in re.findall(r"\b(?:FROM|JOIN)\s+([\w.]+)",sql_no_comments,re.I):
             self.assertTrue(name.lower().startswith("sys."),name)
         self.assertIsNone(re.search(
             r"\b(?:UPDATE|DELETE|INSERT|ALTER|DROP|EXEC|EXECUTE|MERGE|TRUNCATE)\s",
