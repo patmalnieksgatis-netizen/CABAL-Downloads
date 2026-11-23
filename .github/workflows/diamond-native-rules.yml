@@ -46,6 +46,17 @@ jobs:
             diamond-insignia/native/grade2-ingress/test_0bda_save_reply_gate.cpp \
             -o /tmp/diamond_0bda_reply_gate_clone
           /tmp/diamond_0bda_reply_gate_clone
+      - name: Verify bounded B0 Merit Ticket sample parser and deidentification gates
+        run: python3 -m unittest discover -s diamond-insignia/native/inventory-reconcile/tests -p 'test_probe_live_b0_ticket_options.py' -v
+      - name: Parse B0 actual ticket inventory options probe PowerShell wrapper
+        shell: pwsh
+        run: |
+          $src = Get-Content 'diamond-insignia/native/inventory-reconcile/Read-Diamond291-B0TicketOptions.ps1' -Raw
+          $tokens = $null
+          $errors = $null
+          [System.Management.Automation.Language.Parser]::ParseInput($src, [ref]$tokens, [ref]$errors) | Out-Null
+          if ($errors.Count -gt 0) { throw ($errors | Out-String) }
+          Write-Output 'B0_INVENTORY_TICKET_OPTIONS_PS_PARSE=PASS'
       - name: Verify exact GameData inventory WarExp Merit catalog-only SQL contract and parser
         run: python3 -m unittest discover -s diamond-insignia/native/inventory-reconcile/tests -p 'test_audit_verified_gamedata_contract.py' -v
       - name: Parse exact GameData contract PowerShell wrapper without SSH
