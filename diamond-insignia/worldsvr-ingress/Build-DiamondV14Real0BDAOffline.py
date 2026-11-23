@@ -25,6 +25,7 @@ HERE=pathlib.Path(__file__).resolve().parent
 BASELINE_SHA="6679e46aa2ee915d97de9501ba027cae3eec153f1cd82e7c16ed47221c63ecab"
 OFFLINE_NAME="libDiamondV14_0BDA_UNINSTALLED.so"
 RECONSTRUCTED_NAME="libDiamondV14_ORIGINAL_RECONSTRUCTED_OFFLINE.so"
+MINIMAL_NAME="libDiamondV14_MINIMAL_0BDA_OFFLINE.so"
 RESULT_MARKER="DIAMOND_WORLD_0BDA_SOURCE_COMPILE_OFFLINE_ONLY"
 EXCLUDED={
     "hooks/Handlers/C2SHandler.cpp",
@@ -120,6 +121,63 @@ def compare_exports(live,base,patched):
         "no_new_export_loss_caused_by_hook":not new_patch_losses,
     }
 
+def minimal_pure_0bda_patch(original,staged,base):
+    """No extra translation unit, no 09F3 observer; only passive 0BDA.
+
+    Verifies the same original 64-file manifest as the full patch.
+    This port is deliberately UNBOUND: not a working Diamond handler.
+    """
+    if staged.exists():
+        raise RuntimeError("STOP: minimal output already exists")
+    if base.manifest(original)!=(base.V14_FILE_COUNT,base.V14_TREE_SHA):
+        raise RuntimeError("STOP: minimal patch source is not original v14")
+    if base.sha_bytes((original/"hooks/Handlers/ProcSystem.cpp").read_bytes())!=base.PROC_SHA:
+        raise RuntimeError("STOP: unrecognized v14 ProcSystem.cpp")
+    if base.sha_bytes((original/"include/Types.h").read_bytes())!=base.TYPES_SHA:
+        raise RuntimeError("STOP: unrecognized v14 Types.h")
+    shutil.copytree(original,staged)
+    types=staged/"include/Types.h"
+    t=types.read_text(encoding="utf-8")
+    t=base.replace_one(t,"    char* cpPacket;\n    // ... other fields",
+        "    char* cpPacket;\n"
+        "    std::size_t iLen; // WorldSvr packet length, offset 16\n"
+        "    // ... other fields")
+    t+='\nstatic_assert(offsetof(PROCESSDATACONTEXT,iLen)==16, "packet context ABI changed");\n'
+    types.write_text(t,encoding="utf-8")
+    proc=staged/"hooks/Handlers/ProcSystem.cpp"
+    source=proc.read_text(encoding="utf-8")
+    source=base.replace_one(source,'#include "../Packets/OpCodes.h"',
+        '#include "../Packets/OpCodes.h"\n#include "DiamondReal0BDAIngressPort.h"')
+    source=base.replace_one(source,"    UINT16 opcode = header->wMainCmd;\n",
+        """    UINT16 opcode = header->wMainCmd;
+    // Minimal original-v14-only passive candidate. This 0BDA port
+    // ALWAYS returns false; no WorldSvr/SQL mutation or S2C send.
+    if (opcode == DiamondReal0BDAIngressPort::kOpcode &&
+        pProcessDataCtx->pUserCtx &&
+        DiamondReal0BDAIngressPort::IsCandidate(
+            pProcessDataCtx->cpPacket,pProcessDataCtx->iLen)) {
+        int unusedReturn=0;
+        if (DiamondReal0BDAIngressPort::Process(
+            pProcessDataCtx->pUserCtx,pProcessDataCtx->cpPacket,
+            pProcessDataCtx->iLen,&unusedReturn)) {
+            return unusedReturn;
+        }
+    }
+""")
+    if ("    return ((int(*)(void*, PROCESSDATACONTEXT*))oDoProcessDataCtx)"
+        "(pProcessLayer, pProcessDataCtx);" not in source):
+        raise RuntimeError("STOP: original WorldSvr dispatcher missing")
+    proc.write_text(source,encoding="utf-8")
+    port=HERE/"DiamondReal0BDAIngressPort.h"
+    if not port.is_file():
+        raise RuntimeError("STOP: no fail-closed 0BDA port header")
+    shutil.copy2(port,proc.parent/port.name)
+    if len(source_list(staged))!=len(source_list(original)):
+        raise RuntimeError("STOP: minimal 0BDA stage added C++ translation units")
+    if base.manifest(original)!=(base.V14_FILE_COUNT,base.V14_TREE_SHA):
+        raise RuntimeError("STOP: minimal patch changed original source")
+    return staged
+
 def build(compiler,src,destination,name):
     cmd=[compiler,"-std=c++17","-O2","-fPIC","-shared",
          "-Wl,--no-undefined","-Wl,-soname,"+name,
@@ -158,16 +216,22 @@ def run(a):
             raise RuntimeError("STOP: missing "+executable)
     output.mkdir(parents=True,exist_ok=False)
     reconstructed=output/RECONSTRUCTED_NAME
+    minimal=output/MINIMAL_NAME
     candidate=output/OFFLINE_NAME
     result_file=output/"OFFLINE_BUILD_RESULT.json"
     try:
         unit_count=build(a.compiler,original,reconstructed,RECONSTRUCTED_NAME)
+        minimal_pure_0bda_patch(original,output/"minimal-source",base)
+        minimal_count=build(a.compiler,output/"minimal-source",minimal,MINIMAL_NAME)
+        if unit_count!=minimal_count:
+            raise RuntimeError("STOP: 0BDA minimal variant changed compile units")
         patch.patch(original,output/"source")
         patched_units=build(a.compiler,output/"source",candidate,OFFLINE_NAME)
         if not (output/"source/hooks/Handlers/ProcSystem.cpp").read_text().count(
             "if (opcode == DiamondReal0BDAIngressPort::kOpcode")==1:
             raise RuntimeError("STOP: safe 0BDA port was not hooked once")
         for lib,soname in ((reconstructed,RECONSTRUCTED_NAME),
+                           (minimal,MINIMAL_NAME),
                            (candidate,OFFLINE_NAME)):
             dynamic=subprocess.run(["readelf","-d",str(lib)],
                 capture_output=True,text=True,timeout=10,check=True).stdout
@@ -178,12 +242,21 @@ def run(a):
             return compiled_exports(subprocess.run(
                 ["nm","-D","--defined-only",str(path)],capture_output=True,
                 text=True,timeout=10,check=True).stdout)
-        assessment=compare_exports(nm(saved),nm(reconstructed),nm(candidate))
+        live_exports=nm(saved)
+        original_exports=nm(reconstructed)
+        minimal_exports=nm(minimal)
+        final_exports=nm(candidate)
+        assessment=compare_exports(live_exports,original_exports,final_exports)
+        minimal_assessment=compare_exports(
+            live_exports,original_exports,minimal_exports)
+        minimal_new_losses=minimal_assessment["patch_lost_reconstructed_exports"]
+        minimal_strong_losses=minimal_assessment["missing_strong_exports_patched"]
         strong_fail=(assessment["missing_strong_exports_reconstructed"] or
                      assessment["missing_strong_exports_patched"])
         source_new_loss=assessment["patch_lost_reconstructed_exports"]
         weak_other=assessment["unexplained_weak_exports_missing"]
-        if strong_fail or source_new_loss or weak_other:
+        if strong_fail or source_new_loss or weak_other or (
+            minimal_new_losses or minimal_strong_losses):
             verdict="STOP_ABI_INCOMPATIBLE"
         elif assessment["strict_live_export_parity"]:
             verdict="OFFLINE_STRICT_EXPORT_PARITY_PASS"
@@ -200,7 +273,19 @@ def run(a):
             "diamond_gameplay_enabled":False,
             "original_lib_sha256":BASELINE_SHA,
             "reconstructed_sha256":sha256(reconstructed),
+            "minimal_candidate_sha256":sha256(minimal),
             "candidate_sha256":sha256(candidate),
+            "minimal_candidate_soname":MINIMAL_NAME,
+            "minimal_source_cpp_units":minimal_count,
+            "minimal_hook_newly_lost_exports":minimal_new_losses,
+            "minimal_hook_missing_strong_exports":minimal_strong_losses,
+            "minimal_vs_original_function_rva_moves":
+                minimal_assessment["source_hook_changed_exported_function_rvas"],
+            "minimal_vs_live_function_rva_moves":
+                minimal_assessment["changed_exported_function_rvas_vs_live"],
+            "minimal_strict_live_export_parity":
+                minimal_assessment["strict_live_export_parity"],
+            "minimal_hook_unused_by_game":True,
             "candidate_soname":OFFLINE_NAME,
             "source_v14_manifest":base.V14_TREE_SHA,
             "unchanged_v14_cpp_units":unit_count,
@@ -219,6 +304,10 @@ def run(a):
         print("HOOK_CREATED_NEW_EXPORT_LOSSES="+str(len(source_new_loss)))
         print("SOURCE_HOOK_FUNCTION_RVA_MOVES="+
               str(assessment["source_hook_changed_exported_function_rvas"]))
+        print("MINIMAL_0BDA_UNCHANGED_CPP_UNITS="+str(minimal_count))
+        print("MINIMAL_0BDA_FUNCTION_RVA_MOVES="+str(
+            minimal_assessment["source_hook_changed_exported_function_rvas"]))
+        print("MINIMAL_0BDA_NEW_EXPORT_LOSSES="+str(len(minimal_new_losses)))
         print("ALL_ACTIVE_GAME_AND_SQL_UNCHANGED=YES")
         print("BUILD_REPORT="+str(result_file))
         # ABI incompatibility is an analyzed, informative STOP outcome.
@@ -226,6 +315,7 @@ def run(a):
     except Exception:
         # An error must never leave a misleading candidate .so.
         candidate.unlink(missing_ok=True)
+        minimal.unlink(missing_ok=True)
         raise
 
 if __name__=="__main__":
