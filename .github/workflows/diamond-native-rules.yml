@@ -75,6 +75,8 @@ jobs:
           /tmp/diamond_mssql_shadow_smoke 2>/tmp/diamond_shadow_no_args.stderr && exit 44 || test $? -eq 2
       - name: Verify actual Merit grade definitions cannot be presumed from Platinum SCP
         run: python3 -m unittest discover -s diamond-insignia/native/catalog-audit -p 'test_audit_real_merit_grade.py' -v
+      - name: Verify staged Diamond SCP preserves original catalog rows and all 2442 additions
+        run: python3 -m unittest discover -s diamond-insignia/native/catalog-audit -p 'test_verify_staged_scp_parity.py' -v
       - name: Validate exact v291 Merit wire boundaries (offline only)
         run: bash diamond-insignia/native/client291-wire/run-tests.sh
       - name: Validate Merit candidate ENC audit and ZIP safety (offline only)
