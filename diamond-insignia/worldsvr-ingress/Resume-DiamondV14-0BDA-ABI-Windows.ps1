@@ -10,9 +10,9 @@ if ($LASTEXITCODE -ne 0 -or
     @($running | Where-Object { $_ -match '^"EP36_291_TEST"\s+\{' }).Count -ne 1) {
     throw 'STOP: EP36_291_TEST is not running'
 }
-$rev='5dc807153b5ed06ab827704d2e3bf558ae0b7c2f'
+$rev='ea9f3b7da93188a523221e7a6e39a8d67998d592'
 $url="https://raw.githubusercontent.com/patmalnieksgatis-netizen/CABAL-Downloads/$rev/diamond-insignia/worldsvr-ingress/Build-DiamondV14Real0BDAOffline.py"
-$local=Join-Path $env:TEMP 'Build-DiamondV14Real0BDAOffline-v3.py'
+$local=Join-Path $env:TEMP 'Build-DiamondV14Real0BDAOffline-v4.py'
 Invoke-WebRequest -UseBasicParsing -Uri $url -OutFile $local -ErrorAction Stop
 if ((Get-Item -LiteralPath $local).Length -lt 8000) {
     throw 'STOP: unexpected short offline source'
@@ -25,7 +25,7 @@ if (-not $script.Contains('OFFLINE_RECONSTRUCTED_TOOLCHAIN_WEAK_DRIFT') -or
 }
 $remoteRoot='/tmp/cabal_diamond_v291_0bda_source_20261123/diamond-insignia/worldsvr-ingress'
 $remoteScript="$remoteRoot/Build-DiamondV14Real0BDAOffline.py"
-$out='/tmp/cabal_diamond_v291_0bda_offline_build_20261123_v3'
+$out='/tmp/cabal_diamond_v291_0bda_offline_build_20261123_v4'
 $src='/root/CABAL_V282_LIVE_MERGE_CANDIDATE_v14/source_tree/src'
 $base='/root/cabal_diamond_backup/lib.so_before_diamond_20261122'
 $guest='root@192.168.56.101'
