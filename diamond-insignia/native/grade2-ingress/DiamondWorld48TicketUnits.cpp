@@ -42,6 +42,23 @@ TicketUnitsResult DecodeTicketSlot48(
                 units=option&0xFFFFu;break;
             case 0x10u: case 0x1Bu: case 0x66u:
                 units=option&0x7Fu;break;
+            case 0xB0u: {
+                // This is NOT original 0xAE0E90: it is a separately
+                // attested *new* materials-stack decode path. The
+                // real 999/999 sample alone leaves its proof disabled.
+                const auto verified=diamond_v291::inventory::
+                    DecodeB0QuantityWithIndependentProof(
+                        option,meta.kindField38,meta.stackField3C,
+                        meta.b0QuantityProof);
+                if(verified.verdict!=diamond_v291::inventory::
+                   B0QuantityVerdict::VerifiedCount) {
+                    out.quantity=1u; // original helper fallback, NEVER debit
+                    out.verdict=TicketUnitsVerdict::UnverifiedStackQuantity;
+                    return out;
+                }
+                units=verified.quantity;
+                break;
+            }
             default:
                 // Exact original WorldSvr 0xAE0E90 returns 1 here, but
                 // 0xB0/999 was OBSERVED for item 33554961 on the VM.
