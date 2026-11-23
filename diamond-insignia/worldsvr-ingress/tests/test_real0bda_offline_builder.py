@@ -43,7 +43,7 @@ class Safety(unittest.TestCase):
             with self.assertRaisesRegex(RuntimeError,"output must be an isolated /tmp directory"):
                 mod.run(self.fake(src,root/"missing.so",
                                   pathlib.Path("/usr/lib/cabal/diamond_bad.so")))
-            with self.assertRaisesRegex(RuntimeError,"source/output paths overlap"):
+            with self.assertRaisesRegex(RuntimeError,"source/output overlap"):
                 mod.run(self.fake(src,root/"missing.so",src/"clone"))
             self.assertFalse((src/"clone").exists())
     def test_real_weak_cpp_symbol_needs_same_loss_in_unpatched_rebuild(self):
