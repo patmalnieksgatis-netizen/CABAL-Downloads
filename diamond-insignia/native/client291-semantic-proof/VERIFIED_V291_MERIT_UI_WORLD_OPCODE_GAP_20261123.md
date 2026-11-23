@@ -97,3 +97,27 @@ whether other handlers validate lengths elsewhere, or that the user has
 invoked a Diamond action. Do **not** fabricate a response by padding it
 with zeros. Verified anchors and C++-free Python test fixtures are kept
 in `verify_merit_client_server_gap.py` and GitHub CI.
+
+## Additional read-only proof: two S2C handlers update Merit state slot 2
+
+The client's `0x0BDD` success response at `0x6DB102`
+(`[packet+6]==1`) loads index `2` into `EDX` at `0x6DB10D`
+and calls `0x242888` at `0x6DB115`. The wrapper
+`0x242888` calls the common state writer `0x249730`.
+
+Separately, the `0x0BDB` successful response uses `EBX=2`
+at `0x6DB019`, moves it into `EDX` at `0x6DB01E`
+and calls **the same** `0x249730` at `0x6DB023`.
+The state writer stores index-selective values in several arrays
+in the Merit singleton (at `+0x158`, `+0x164`, `+0x170`,
+`+0x180`, `+0x198`).
+
+All 12 sites are SHA-anchored in `verify_merit_client_server_gap.py`
+and covered by CI fixtures. The index `2` may represent a newer
+Merit state group, but **neither callback is established as a Diamond
+rank-up purchase**. The state writer is not a trustworthy server
+resource-debit primitive.
+
+The owner's `server/active-v291/MeritSystem.scp` separately contains
+no `Badge_Grade=2` rows; this is an independent real-config blocker,
+documented in `../catalog-audit/README_LATVIAN.md`.
