@@ -63,8 +63,13 @@ SIGNATURES={
     0x6F86A9:"c3",              # function ret before next INT3
     0x24375C:"4883ec284c8b81a0000000", # lookup accesses singleton+0xA0
     0x243795:"8b4120",          # lookup returns map entry+0x20
+    0x6F85C8:"448bcb458bc68bd0", # ebx (packet+7) -> r9d,
+                                     # singleton+0x120 -> r8d; lookup -> edx
+    0x37FA34:"89916cab0000",    # first branch writes to context+0xAB6C
+    0x37FA1B:"895814",          # second branch writes r9d to map node+0x14
 }
 REL_CALLS={0x6F857C:LOOKUP,0x6F859B:LOOKUP,0x6F85AA:LOOKUP}
+STATE_WRITE_CALLS={0x6F858F:0x37FA34,0x6F85D0:0x37F9D8}
 JUMPS={
     0x6F852A:(b"\\x0f\\x85",0x6F8608), # status != 1
     0x6F8583:(b"\\x75",0x6F8596),     # first result != 0
@@ -79,7 +84,7 @@ def verify(reader):
         expected=bytes.fromhex(hexbytes)
         if reader.read(rva,len(expected))!=expected:
             raise ValueError("S2C instruction changed at RVA %X" % rva)
-    for rva,callee in REL_CALLS.items():
+    for rva,callee in {**REL_CALLS,**STATE_WRITE_CALLS}.items():
         raw=reader.read(rva,5)
         if raw[0]!=0xE8 or rva+5+struct.unpack_from("<i",raw,1)[0]!=callee:
             raise ValueError("S2C lookup call changed at RVA %X" % rva)
@@ -100,6 +105,10 @@ def verify(reader):
         "first_map_return_equals_0_reads_dword_at_rva":"0x6F8585",
         "otherwise_second_equals_1_or_third_equals_2_reads_dword_at_rva":"0x6F85B9",
         "other_observed_lookup_results":"no packet+7 read in this handler",
+        "dword_route_zero_client_store":"context + 0xAB6C through RVA 0x37FA34",
+        "dword_route_one_or_two_client_store":"map node + 0x14 through RVA 0x37F9D8",
+        "client_state_field_passed_as_r8d":"singleton + 0x120",
+        "client_state_store_semantics":"unknown; not a Diamond S2C schema",
         "7_byte_success_universally_truncated":False,
         "unknowns":["whether real UI triggers this request",
                     "runtime lookup values and possible state changes",
