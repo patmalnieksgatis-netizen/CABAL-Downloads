@@ -48,6 +48,17 @@ jobs:
           /tmp/diamond_0bda_reply_gate_clone
       - name: Audit disposable-clone-only ticket metadata capture safety (no process attach)
         run: python3 -m unittest discover -s diamond-insignia/native/grade2-ingress -p 'test_capture_clone_ticket_catalog.py' -v
+      - name: Verify real-host WorldSvr 0BDA gameplay transaction path and pending-save gate
+        run: |
+          set -euo pipefail
+          g++ -std=c++17 -O2 -Wall -Wextra -Werror -pedantic \
+            diamond-insignia/native/grade2-ingress/DiamondWorld48TicketUnits.cpp \
+            diamond-insignia/native/grade2-ingress/Diamond0BDATicketSelection.cpp \
+            diamond-insignia/native/grade2-ingress/DiamondGradeUp0BDA.cpp \
+            diamond-insignia/native/grade2-ingress/Diamond0BDAGameplayAction.cpp \
+            diamond-insignia/native/grade2-ingress/test_0bda_gameplay_action.cpp \
+            -o /tmp/diamond_real_world_gameplay_action
+          /tmp/diamond_real_world_gameplay_action
       - name: Verify authoritative 0BDA ticket selection plans and exact 100-unit debit
         run: |
           set -euo pipefail
