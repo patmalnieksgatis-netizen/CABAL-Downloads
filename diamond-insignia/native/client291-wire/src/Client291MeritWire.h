@@ -20,7 +20,8 @@ struct RequestFields {
 
 enum class Status : std::uint8_t {
   Ok, Null, Short, LengthMismatch, MagicMismatch, OpcodeMismatch,
-  ResponseRejected, ResponseTruncatedSuccess, ResponseSuccessShapeUnknown
+  ResponseRejected, ResponseTruncatedSuccess, ResponseSuccessShapeUnknown,
+  ResponseRouteUnobserved, ResponseLegacyNoDwordReadOnObservedPath
 };
 
 // Exact client builder observed at RVA 0x6FF14C: checksum/transport slot
@@ -37,5 +38,27 @@ Status ReadClientRequest(const void* packet, std::size_t size,
 // WorldSvr cannot contain that DWORD. Unknown semantics prevent encoding it.
 Status CheckServerResponseForClient291(const void* packet,
                                        std::size_t size) noexcept;
+// This classifies three *separate* returns of the client's tree-map
+// lookup at RVA 0x24375C. No assumption that the state stays constant
+// between lookups. Caller-supplied results are for OFFLINE diagnostics;
+// do NOT derive proof from a C2S or S2C payload.
+struct ClientLookupCalls {
+  bool hasFirst=false; std::int32_t first=0;
+  bool hasSecond=false; std::int32_t second=0;
+  bool hasThird=false; std::int32_t third=0;
+};
+enum class SuccessDwordPath : std::uint8_t {
+  Unobserved, ReadAt6F8585, ReadAt6F85B9, NoDwordReadOnObservedPath
+};
+SuccessDwordPath ClassifyClientSuccessDwordPath(
+    const ClientLookupCalls& calls) noexcept;
+
+// Observed-route-aware risk checker, NOT a success-approval API.
+// A 7B legacy reply is only conditionally non-truncated if the actual
+// client route does not access response+7; semantics remain unknown.
+Status CheckServerResponseForObservedClientRoute(
+    const void* packet,std::size_t size,
+    const ClientLookupCalls& calls) noexcept;
+
 const char* Name(Status v) noexcept;
 }
