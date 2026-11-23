@@ -51,7 +51,7 @@ if ($LASTEXITCODE -ne 0) { throw 'STOP: source and baseline preflight failed on 
 if ($LASTEXITCODE -ne 0) { throw 'STOP: cannot prepare isolated VM /tmp staging' }
 & scp.exe -r -o ConnectTimeout=12 "$ingress" "$native" "$($hostTarget):$remote/diamond-insignia/"
 if ($LASTEXITCODE -ne 0) { throw 'STOP: isolated source upload failed' }
-$cmd="python3 '$remote/diamond-insignia/worldsvr-ingress/Build-DiamondV14Real0BDAOffline.py' --source /root/CABAL_V282_LIVE_MERGE_CANDIDATE_v14/source_tree/src --baseline-lib /root/cabal_diamond_backup/lib.so_before_diamond_20261122 --output-dir '$out'"
+$cmd="python3 '$remote/diamond-insignia/worldsvr-ingress/Build-DiamondV14Real0BDAOffline.py' --source /root/CABAL_V282_LIVE_MERGE_CANDIDATE_v14/source_tree/src --baseline-lib /root/cabal_diamond_backup/lib.so_before_diamond_20261122 --output-dir '$out' && cat '$out/OFFLINE_BUILD_RESULT.json'"
 & ssh.exe -T -o ConnectTimeout=12 $hostTarget $cmd
 if ($LASTEXITCODE -ne 0) { throw 'STOP: build failed, live WorldSvr/lib.so unchanged' }
 Write-Host 'DIAMOND_WORLD_0BDA_OFFLINE_BUILD=PASS'
