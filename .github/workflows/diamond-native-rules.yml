@@ -301,6 +301,16 @@ jobs:
           retention-days: 7
       - name: Confirm no server launch
         run: echo 'Offline tests only - no game binary, production SQL database, VM, or packet ABI touched.'
+      - name: Verify real Server01 GameData ODBC atomic rankup adapter compilation and no-SQL default gates
+        run: |
+          set -euo pipefail
+          test -f /usr/include/sql.h || (sudo apt-get update -qq && sudo apt-get install -y unixodbc-dev)
+          g++ -std=c++17 -O2 -Wall -Wextra -Werror -pedantic \
+            diamond-insignia/native/real-gamedata-transaction/DiamondRealGameDataOdbc.cpp \
+            diamond-insignia/native/real-gamedata-transaction/test_real_gamedata_odbc_preflight.cpp \
+            diamond-insignia/native/inventory-reconcile/DiamondInventoryReconcile.cpp \
+            -lodbc -o /tmp/diamond_real_gamedata_odbc_preflight
+          /tmp/diamond_real_gamedata_odbc_preflight
       - name: Verify restored clone-only ODBC backend and receipt replay
         run: |
           set -euo pipefail
