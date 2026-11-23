@@ -76,6 +76,25 @@ class Safety(unittest.TestCase):
         c=mod.compare_exports(live,rebuilt,patched)
         self.assertIn("_Z10CriticalFnv",c["missing_strong_exports_patched"])
         self.assertFalse(c["strict_live_export_parity"])
+    def test_dispatch_bytes_extracted_from_compiled_cpp(self):
+        import subprocess
+        import shutil
+        if not shutil.which("g++") or not shutil.which("objdump"):
+            self.skipTest("compiler or objdump unavailable")
+        with tempfile.TemporaryDirectory() as temp:
+            base=pathlib.Path(temp)
+            src=base/"proc.cpp"
+            src.write_text(
+                'struct PROCESSDATACONTEXT {};\\n'
+                'struct ProcSystem { int DoProcessDataCtx(void*,PROCESSDATACONTEXT*); };\\n'
+                'int ProcSystem::DoProcessDataCtx(void*,PROCESSDATACONTEXT*) { return 42; }\\n'
+            .replace('\\\\n','\\n'))
+            so=base/"fixture.so"
+            subprocess.run(["g++","-std=c++17","-O2","-shared","-fPIC",
+                            str(src),"-o",str(so)],check=True)
+            body=mod.dispatch_bytes(so)
+            self.assertGreater(len(body),1)
+            self.assertLess(len(body),256)
     def test_gcc_nm_export_parser_and_status(self):
         data="0000000000002220 W _ZNSt6vectorIPvSaIS0_EE17_M_realloc_appendIJRKS0_EEEvDpOT_\n0000000000001010 T _Z10CriticalFnv\n                 U puts@GLIBC_2.2.5\n"
         symbols=mod.compiled_exports(data)
