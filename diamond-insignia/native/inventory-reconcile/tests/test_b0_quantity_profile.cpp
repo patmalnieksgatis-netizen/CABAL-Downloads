@@ -59,6 +59,30 @@ int main(){
     assert(DecodeB0QuantityWithIndependentProof(999,0xB0,127,x).verdict==
            B0QuantityVerdict::UnexpectedMetadata);
 
+    // The actual observed option 999 is plain and cannot distinguish
+    // low10 from low16, but those yield the SAME count for ALL 1..999
+    // when no option flags exist. This is a future independently
+    // attested profile, not unlocked by the two samples themselves.
+    x=SyntheticProof();
+    x.provenProfile=B0CountProfile::PlainPositiveOptionNoFlags;
+    x.independentlyMatchedKnownQuantity=false;
+    assert(DecodeB0QuantityWithIndependentProof(999,0xB0,999,x).verdict==
+           B0QuantityVerdict::MissingIndependentEvidence);
+    x.independentlyMatchedKnownQuantity=true;
+    for(std::uint64_t amount=1;amount<=999;++amount) {
+        const auto d=DecodeB0QuantityWithIndependentProof(amount,0xB0,999,x);
+        assert(d.verdict==B0QuantityVerdict::VerifiedCount);
+        assert(d.quantity==amount);
+        assert((amount&0x3FFu)==(amount&0xFFFFu));
+    }
+    assert(DecodeB0QuantityWithIndependentProof(
+        0x100000000ULL+899ULL,0xB0,999,x).verdict==
+        B0QuantityVerdict::InvalidCount);
+    assert(DecodeB0QuantityWithIndependentProof(
+        0x10000ULL+899ULL,0xB0,999,x).verdict==
+        B0QuantityVerdict::InvalidCount);
+    assert(DecodeB0QuantityWithIndependentProof(
+        1000,0xB0,999,x).verdict==B0QuantityVerdict::InvalidCount);
     auto before=Row(999);
     auto after=Row(899);
     const PersistedBlob old{before.data(),before.size(),true};
@@ -90,7 +114,8 @@ int main(){
         &DecodeVerifiedB0PersistedRecord,&authority).status==
         AuditStatus::QuantityCodecFailed);
     assert(before==Row(999) && after==Row(899)); // never write to buffers
-    std::cout<<"B0_SAVED_TWO_RAW_999_VALUES_NOT_A_VERIFIED_PROFILE=PASS\n"
+    std::cout<<"B0_PLAIN_POSITIVE_1_TO_999_INDEPENDENT_OF_LOW10_LOW16=PASS\n"
+             <<"B0_SAVED_TWO_RAW_999_VALUES_NOT_A_VERIFIED_PROFILE=PASS\n"
              <<"B0_SYNTHETIC_INDEPENDENT_COUNT_999_TO_899_RECONCILIATION=PASS\n"
              <<"B0_UNVERIFIED_CATALOG_AND_PERSISTED_OWNER_FAIL_CLOSED=PASS\n";
 }
