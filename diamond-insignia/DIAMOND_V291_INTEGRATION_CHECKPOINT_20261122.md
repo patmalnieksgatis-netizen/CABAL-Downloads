@@ -170,3 +170,20 @@ New implementation files:
 
 **Product status remains NOT PLAYABLE and NOT DEPLOYED; local simulations and CI
 cannot substitute for the first real clone gameplay test. No live systems changed.**
+
+## 2026-11-23 staged SCP parity closed — not a live runtime claim
+
+The owner's **already-staged** private 116,812-byte
+`MeritSystem.DIAMOND_STAGED_DO_NOT_INSTALL.scp` was independently
+SHA-verified (`26c9c4cbe3136f67f0298c8e412a4aa7620ba46d62b5c3950880fe821f2ee2e5`).
+It preserves all 19 original sections and every original row,
+adds exactly 2442 rows including **316 Diamond grade-2 Mastery** and
+the grade-2 30,000 WExp + 100 ticket material rule. New offline source
+`native/catalog-audit/verify_staged_scp_parity.py` with regression tests
+is now tracked and required in the native GitHub CI workflow.
+
+**Updated assessment:** Diamond catalog staging itself is NOT a remaining
+data-authoring blocker. Still unproven: true client grade-up C2S/S2C
+semantics among `0x0BDA–0x0BE0`, authoritative WorldSvr session binding,
+actual GameData stack codec and atomic inventory/WExp/receipt storage.
+No deployment to active WorldSvr, client, VM or SQL was made.
