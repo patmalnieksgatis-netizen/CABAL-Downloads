@@ -77,3 +77,23 @@ Consequently this specific EP45-labeled server ELF is **not** a source of
 new `0x0BDA..0x0BE0` implementations beyond the running candidate.
 Do not infer that every other EP45 artifact or actual newer EP45 source is
 identical; this result applies only to this exact file pair.
+
+## Verified client S2C response read paths (no invented wire schema)
+
+Byte-level verification against the SHA-pinned owner's real v291 client,
+including concrete RIP/client-reader instruction anchors, now separates
+these command handlers:
+
+| S2C | Branch-sensitive client reads | Consequence |
+| --- | --- | --- |
+| `0x0BDB` | `[packet+6]` status `==1`, and `DWORD [packet+7]` checked against `0xFFFFFFFF` | A successful route accesses a 4-byte field beyond the 7-byte header |
+| `0x0BDC` | first `DWORD [packet+6]` checked against `0xFFFFFFFF`; a three-iteration loop consumes DWORDs at `+6,+10,+14` | This route accesses at least 18 bytes, not a generic 7-byte status ACK |
+| `0x0BDD` | `BYTE [packet+6]` compared with `1` in its short verified handler | Only status-byte use proved in this handler |
+| `0x0BDF` | `BYTE [packet+6]` compared with `1`; successful branch reads `DWORD [packet+7]` | Success uses a field beyond the 7-byte header |
+
+These are **conditional native reads**. They do not prove that the
+transport buffer is exactly this length, how the server populates fields,
+whether other handlers validate lengths elsewhere, or that the user has
+invoked a Diamond action. Do **not** fabricate a response by padding it
+with zeros. Verified anchors and C++-free Python test fixtures are kept
+in `verify_merit_client_server_gap.py` and GitHub CI.
