@@ -15,7 +15,7 @@ class TestB0TicketOptionProbe(unittest.TestCase):
         sql=re.sub(r"--[^\n]*","",probe.SQL)
         self.assertEqual(probe.ITEM_ID,33554961)
         self.assertEqual(probe.MAX_RECORDS,48)
-        self.assertIn("SUBSTRING(inv.Data,Slots.n*30+1,8)=0x1102000200000000",sql)
+        self.assertIn("SUBSTRING(inv.Data,Slots.n*30+1,4)=0x11020002",sql)
         self.assertIn("SUBSTRING(inv.Data,Slots.n*30+17,8)",sql)
         self.assertIn("TOP (48)",sql)
         self.assertIn("TOP (3)",sql)
@@ -26,10 +26,11 @@ class TestB0TicketOptionProbe(unittest.TestCase):
         self.assertNotIn("ItemSerial",sql)
         self.assertNotIn("Name",sql)
     def test_parser_for_one_ticket_without_inventing_stack_count(self):
-        result=probe.parse("BLOB_LENGTH|2790|0\nTICKET_OPTION|2c01000000000000")
+        result=probe.parse("BLOB_LENGTH|2790|0\nTICKET_OPTION|2c01000000000000|01000000")
         self.assertEqual(result["anonymous_blob_length_samples"][0]["bytes"],2790)
         row=result["matching_ticket_option_sample"][0]
         self.assertEqual(row["option_low32"],300)
+        self.assertEqual(row["item_kind_upper32_value"],1)
         self.assertEqual(row["candidate_low16"],300)
         self.assertEqual(row["candidate_low7"],44)
         self.assertEqual(row["candidate_upper10_of_low32"],0)
@@ -40,11 +41,13 @@ class TestB0TicketOptionProbe(unittest.TestCase):
         r=probe.parse("BLOB_LENGTH|0|0")
         self.assertFalse(r["matching_ticket_option_sample"])
         self.assertFalse(r["quantity_codec_verified"])
-        options="\n".join(["TICKET_OPTION|0000000000000000"]*49)
+        options="\n".join(["TICKET_OPTION|0000000000000000|00000000"]*49)
         with self.assertRaisesRegex(ValueError,"TOO_MANY_OPTIONS"):
             probe.parse(options)
         with self.assertRaisesRegex(ValueError,"BAD_ITEM_OPTION"):
-            probe.parse("TICKET_OPTION|1234")
+            probe.parse("TICKET_OPTION|1234|00000000")
+        with self.assertRaisesRegex(ValueError,"BAD_ITEM_KIND_FLAGS"):
+            probe.parse("TICKET_OPTION|2c01000000000000|1234")
         with self.assertRaisesRegex(ValueError,"UNEXPECTED_OUTPUT"):
             probe.parse("ACCOUNT|1234")
     def test_no_credentials_in_arguments_or_output(self):
