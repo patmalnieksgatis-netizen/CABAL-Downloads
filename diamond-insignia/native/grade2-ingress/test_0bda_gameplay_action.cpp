@@ -130,6 +130,42 @@ int main() {
     assert(unsafe.state==GameActionState::InventoryNotVerified);
     assert(unsafe.inventory==SelectionVerdict::UnsupportedStackQuantityEncoding);
     assert(state.calls==1);
+    // Full synthetic path for the REAL observed B0 material kind and
+    // raw 999 count: independent UI/native proof is SYNTHETIC ONLY here.
+    // The owner's two saved raw 999 rows are not such an attestation.
+    Ticket(rows,5,999);
+    auto plainOwner=owner;
+    plainOwner.before.tickets=999;
+    plainOwner.selectedInventory.itemCatalog.kindField38=kObservedTicketKind38;
+    plainOwner.selectedInventory.itemCatalog.stackField3C=kObservedTicketStack3C;
+    auto& b0=plainOwner.selectedInventory.itemCatalog.b0QuantityProof;
+    b0.provenProfile=diamond_v291::inventory::B0CountProfile::
+        PlainPositiveOptionNoFlags;
+    b0.independentlyMatchedKnownQuantity=true; // SYNTHETIC
+    b0.sameGameBuildAndMaterialKindVerified=true; // SYNTHETIC
+    b0.optionLayoutVerified=true; // SYNTHETIC
+    b0.extraOptionFlagsProvenAbsent=true; // SYNTHETIC
+    const std::array<std::uint8_t,14> singleRequest={
+        0xe2,0xb7,14,0,0,0,0,0,0xda,0x0b,1,0,5,0
+    };
+    HostFixture plainFixture{};
+    auto plainHost=host;
+    plainHost.context=&plainFixture;
+    b0.independentlyMatchedKnownQuantity=false;
+    const auto blocked=PrepareAndCommitRealGradeUp(
+        singleRequest.data(),singleRequest.size(),plainOwner,plainHost);
+    assert(blocked.state==GameActionState::InventoryNotVerified);
+    assert(plainFixture.calls==0);
+    b0.independentlyMatchedKnownQuantity=true;
+    const auto plain=PrepareAndCommitRealGradeUp(
+        singleRequest.data(),singleRequest.size(),plainOwner,plainHost);
+    assert(plain.state==GameActionState::CommittedPendingSaveProof);
+    assert(plain.inventory==SelectionVerdict::ExactDebitPlan);
+    assert(plain.plannedTickets==100 && plain.plannedWexp==30000);
+    assert(plainFixture.calls==1 && plainFixture.lastPlannedTickets==100);
+    assert(!plain.maySendClientSuccess);
+    Ticket(rows,5,60); // the real owner's WorldSvr is never touched
+    assert(rows==untouched);
     // All failure paths must avoid the actual persistence callback.
     auto c=pkt;c[8]=0x10; // original 0B10 Platinum, never intercepted
     assert(PrepareAndCommitRealGradeUp(c.data(),c.size(),owner,host).state==
@@ -210,7 +246,8 @@ int main() {
     assert(PrepareAndCommitRealGradeUp(pkt.data(),pkt.size(),owner,host).state==
            GameActionState::InDoubtRecoveryRequired);
     assert(rows==untouched);
-    std::cout<<"0BDA_SERVER01_REAL_PK_AND_SINGLE_SQL_TX_GATE=PASS\n"
+    std::cout<<"0BDA_B0_PLAIN_999_TO_899_SYNTHETIC_END_TO_END=PASS\n"
+             <<"0BDA_SERVER01_REAL_PK_AND_SINGLE_SQL_TX_GATE=PASS\n"
              <<"0BDA_REAL_B0_999_TICKET_METADATA_COMMIT_BLOCKED=PASS\n"
              <<"0BDA_GAMEPLAY_ENTRY_ORIGINAL_PLATINUM_PASSTHROUGH=PASS\n"
              <<"0BDA_GAMEPLAY_RULES_SELECTED_TICKETS_AND_WEXP_IN_ONE_PATH=PASS\n"
