@@ -16,6 +16,20 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Build v291 0BDD grade-2 candidate gateway (default closed and clone-only trial)
+        run: |
+          set -euo pipefail
+          g++ -std=c++17 -O2 -Wall -Wextra -Werror -pedantic \
+            diamond-insignia/native/grade2-ingress/DiamondGrade2Ingress.cpp \
+            diamond-insignia/native/grade2-ingress/test_grade2_ingress.cpp \
+            -o /tmp/diamond_grade2_default_disabled
+          /tmp/diamond_grade2_default_disabled
+          g++ -std=c++17 -O2 -Wall -Wextra -Werror -pedantic \
+            -DDIAMOND_ENABLE_GRADE2_CLONE_TRIAL \
+            diamond-insignia/native/grade2-ingress/DiamondGrade2Ingress.cpp \
+            diamond-insignia/native/grade2-ingress/test_grade2_ingress.cpp \
+            -o /tmp/diamond_grade2_clone_trial
+          /tmp/diamond_grade2_clone_trial
       - name: Verify v14 inventory Record30 evidence cannot bypass durable-save barrier
         run: |
           set -euo pipefail
