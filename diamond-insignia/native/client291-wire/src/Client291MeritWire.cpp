@@ -48,7 +48,9 @@ Status CheckServerResponseForClient291(const void* packet,std::size_t size) noex
   if(R16(p+2)!=size) return Status::LengthMismatch;
   if(R16(p+4)!=kMeritOpcode) return Status::OpcodeMismatch;
   if(p[6]!=1) return Status::ResponseRejected;
-  if(size<kClientSuccessMinBytes) return Status::ResponseTruncatedSuccess;
+  // No observation of the client\u0027s three map returns means 7B safety is UNKNOWN.
+  // Only the branch-aware checker may call it truncated after a proven DWORD read.
+  if(size<kClientSuccessMinBytes) return Status::ResponseRouteUnobserved;
   // At least 11B exist; exact success payload meaning, fields, and effects
   // NOT known. Do NOT emit or interpret as a confirmed Diamond success.
   return Status::ResponseSuccessShapeUnknown;
@@ -75,7 +77,7 @@ Status CheckServerResponseForObservedClientRoute(
   // Preserve the existing conservative/strict parser for header, size,
   // opcode, status, and 11B success. Only refine the 7B risk classification.
   const auto basic=CheckServerResponseForClient291(packet,size);
-  if(basic!=Status::ResponseTruncatedSuccess)return basic;
+  if(basic!=Status::ResponseRouteUnobserved)return basic;
   const auto branch=ClassifyClientSuccessDwordPath(calls);
   if(branch==SuccessDwordPath::Unobserved)
     return Status::ResponseRouteUnobserved;
