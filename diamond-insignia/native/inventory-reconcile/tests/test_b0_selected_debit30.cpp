@@ -1,4 +1,5 @@
 #include "../DiamondB0SelectedDebit30.h"
+#include <algorithm>
 #include <array>
 #include <cassert>
 #include <cstdint>
