@@ -33,14 +33,14 @@ class Safety(unittest.TestCase):
             src=root/"src";src.mkdir()
             output=pathlib.Path("/tmp")/("diamond_real0bda_nonexistent_source_"+root.name)
             if output.exists():self.skipTest("test output exists from another run")
-            with self.assertRaisesRegex(RuntimeError,"original exact v291"):
+            with self.assertRaisesRegex(RuntimeError,"original v291 baseline lib.so SHA mismatch"):
                 mod.run(self.fake(src,root/"missing.so",output))
             self.assertFalse(output.exists())
     def test_output_overlap_and_install_dirs_rejected_first(self):
         with tempfile.TemporaryDirectory() as temp:
             root=pathlib.Path(temp)
             src=root/"src";src.mkdir()
-            with self.assertRaisesRegex(RuntimeError,"destination MUST be inside /tmp"):
+            with self.assertRaisesRegex(RuntimeError,"output must be an isolated /tmp directory"):
                 mod.run(self.fake(src,root/"missing.so",
                                   pathlib.Path("/usr/lib/cabal/diamond_bad.so")))
             with self.assertRaisesRegex(RuntimeError,"source/output paths overlap"):
