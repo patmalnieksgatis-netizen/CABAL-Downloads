@@ -20,7 +20,9 @@ if ((Get-Item -LiteralPath $local).Length -lt 8000) {
 $script=[System.IO.File]::ReadAllText($local)
 if (-not $script.Contains('OFFLINE_RECONSTRUCTED_TOOLCHAIN_WEAK_DRIFT') -or
     -not $script.Contains('minimal_pure_0bda_patch') -or
-    -not $script.Contains('MINIMAL_NAME')) {
+    -not $script.Contains('MINIMAL_NAME') -or
+    -not $script.Contains('OBSERVER_EXPORT') -or
+    -not $script.Contains('observer_dispatch=dispatch_bytes(observer)')) {
     throw 'STOP: downloaded source missing dual-build diagnostics'
 }
 $remoteRoot='/tmp/cabal_diamond_v291_0bda_source_20261123/diamond-insignia/worldsvr-ingress'
@@ -58,5 +60,9 @@ Write-Host "MINIMAL_0BDA_CPP_UNITS=$($report.minimal_source_cpp_units)"
 Write-Host "MINIMAL_0BDA_RVA_MOVES=$($report.minimal_vs_original_function_rva_moves)"
 Write-Host "MINIMAL_0BDA_NEW_EXPORT_LOSSES=$(@($report.minimal_hook_newly_lost_exports).Count)"
 Write-Host "MINIMAL_0BDA_MISSING_STRONG=$(@($report.minimal_hook_missing_strong_exports).Count)"
+Write-Host "OBSERVER_0BDA_RETAINED_MACHINE_CODE=$($report.observer_dispatch_bytes_differ_from_original)"
+Write-Host "OBSERVER_0BDA_RVA_MOVES=$($report.observer_rva_moves_vs_rebuilt_original)"
+Write-Host "OBSERVER_NEW_EXPORT_LOSSES=$(@($report.observer_newly_lost_exports).Count)"
+Write-Host "OBSERVER_CPP_FILE_COUNT=$($report.observer_compiled_cpp_units)"
 Write-Host 'WORLD_SVR_SQL_GAME_FILES_UNCHANGED=YES'
 Write-Host 'UPLOAD_OR_PASTE_REPORT_ABOVE=YES'
