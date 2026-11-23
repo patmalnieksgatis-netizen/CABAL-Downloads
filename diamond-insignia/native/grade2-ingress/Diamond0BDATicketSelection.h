@@ -19,13 +19,19 @@ struct AttestedInventory {
     std::size_t trustedRecordsBytes=0;
     bool acquiredUnderExclusiveOwnerLock=false;
     bool recordsVerifiedFromWorldSession=false;
+    // CRITICAL: still UNPROVEN whether 0BDA's u16 list selects ticket
+    // slots. Only an independently verified WorldSvr grade-up handler
+    // or isolated gameplay trace may set these true. Default false.
+    bool opcode0bdaSelectionMeansTicketSlotsVerified=false;
+    bool selectionSemanticsBoundToGradeUpVerified=false;
     std::uint32_t registeredUserNum=0;
     std::uint32_t registeredCharacterIdx=0;
     std::uint32_t trustedRevision=0;
     AttestedItemMetadata itemCatalog{};
 };
 enum class SelectionVerdict : std::uint8_t {
-    InvalidPacket, MissingOwnerAuthority, WrongSnapshotSize, SlotOutOfRange,
+    InvalidPacket, MissingOwnerAuthority, UnverifiedSelectionSemantics,
+    WrongSnapshotSize, SlotOutOfRange,
     DuplicateSlot, InvalidTicketRecord, ItemMetadataMissing,
     ZeroOrInvalidTicketCount, InsufficientTickets, ExactDebitPlan
 };
@@ -45,6 +51,8 @@ struct TicketDebitPlan {
     bool mayMutateLiveInventory=false;  // always false: plan only
     bool durableTransactionCommitted=false;
 };
+// WARNING: 0BDA inventory-list meaning is not yet proven. Default
+// behavior MUST return UnverifiedSelectionSemantics, not a debit plan.
 // Validates EVERY submitted slot before planning a debit. Does not consume
 // ticket units, overwrite records, derive item counts from client, or
 // authorize an S2C success. The returned plan is bound to the snapshot at
