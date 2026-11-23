@@ -15,7 +15,7 @@ class FakeReader:
         self.range=(MODULE.HANDLER,MODULE.END)
         self.pieces={rva:bytes.fromhex(h) for rva,h in MODULE.SIGNATURES.items()}
         for rva,target in {**MODULE.REL_CALLS,**MODULE.STATE_WRITE_CALLS}.items():
-            self.pieces[rva]=b"\\xe8"+struct.pack("<i",target-rva-5)
+            self.pieces[rva]=b"\xe8"+struct.pack("<i",target-rva-5)
         for rva,(opcode,target) in MODULE.JUMPS.items():
             delta=target-rva-(6 if len(opcode)==2 else 2)
             self.pieces[rva]=opcode+(
@@ -44,31 +44,31 @@ class TestResponseBranches(unittest.TestCase):
 
     def test_fail_on_changed_status_instruction(self):
         fake=FakeReader()
-        fake.pieces[0x6F851C]=b"\\x80\\x7d\\x06\\x00"
+        fake.pieces[0x6F851C]=b"\x80\x7d\x06\x00"
         with self.assertRaisesRegex(ValueError,"6F851C"):
             MODULE.verify(fake)
 
     def test_fail_on_wrong_jump_destination(self):
         fake=FakeReader()
-        fake.pieces[0x6F85B2]=b"\\x75\\x22"
+        fake.pieces[0x6F85B2]=b"\x75\x22"
         with self.assertRaisesRegex(ValueError,"6F85B2"):
             MODULE.verify(fake)
 
     def test_fail_on_wrong_client_state_writer(self):
         fake=FakeReader()
-        fake.pieces[0x37FA34]=b"\\x90"*6
+        fake.pieces[0x37FA34]=b"\x90"*6
         with self.assertRaisesRegex(ValueError,"37FA34"):
             MODULE.verify(fake)
 
     def test_fail_on_wrong_secondary_writer_call(self):
         fake=FakeReader()
-        fake.pieces[0x6F85D0]=b"\\xe8\\x00\\x00\\x00\\x00"
+        fake.pieces[0x6F85D0]=b"\xe8\x00\x00\x00\x00"
         with self.assertRaisesRegex(ValueError,"6F85D0"):
             MODULE.verify(fake)
 
     def test_fail_on_wrong_lookup_target(self):
         fake=FakeReader()
-        fake.pieces[0x6F85AA]=b"\\xe8\\x00\\x00\\x00\\x00"
+        fake.pieces[0x6F85AA]=b"\xe8\x00\x00\x00\x00"
         with self.assertRaisesRegex(ValueError,"6F85AA"):
             MODULE.verify(fake)
 
