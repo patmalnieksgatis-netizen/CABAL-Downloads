@@ -108,6 +108,27 @@ int main() {
         SyntheticStackCodec,nullptr).status==AuditStatus::TicketTotalsMismatch);
     assert(VerifyPersistedTicketDebit(Blob(original),Blob(original),120,20,
         SyntheticStackCodec,nullptr).status==AuditStatus::TicketTotalsMismatch);
+    // A net debit must not mask a credit to a different ticket stack.
+    // 120 + 80 -> 130 + 20 reduces the total by 50, but stack 101 grows.
+    const auto mixedBefore=Pack({
+        Row(ticket,101,120,48),Row(ticket,102,80,50),
+        Row(555,300,0xABC,49,333),
+    });
+    const auto mixedAfter=Pack({
+        Row(ticket,101,130,48),Row(ticket,102,20,50),
+        Row(555,300,0xABC,49,333),
+    });
+    assert(VerifyPersistedTicketDebit(
+        Blob(mixedBefore),Blob(mixedAfter),200,150,
+        SyntheticStackCodec,nullptr).status==AuditStatus::TicketStackIncreased);
+    // Legitimate debit may reduce two separate existing stacks.
+    const auto splitAfter=Pack({
+        Row(ticket,101,70,48),Row(ticket,102,30,50),
+        Row(555,300,0xABC,49,333),
+    });
+    assert(VerifyPersistedTicketDebit(
+        Blob(mixedBefore),Blob(splitAfter),200,100,
+        SyntheticStackCodec,nullptr).Verified());
     auto foreign=Pack({Row(ticket,101,20,48),Row(555,300,0xABC,50,333)});
     assert(VerifyPersistedTicketDebit(Blob(original),Blob(foreign),120,20,
         SyntheticStackCodec,nullptr).status==AuditStatus::UnrelatedInventoryChanged);
