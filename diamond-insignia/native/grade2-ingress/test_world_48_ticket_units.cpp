@@ -53,13 +53,19 @@ int main() {
     Expect(Ticket(100),Meta(0x10,1000),100);
     Expect(Ticket(100),Meta(0x1B,1000),100);
     Expect(Ticket(100),Meta(0x66,1000),100);
-    // Unrecognized type returns singleton rather than guessed count.
-    Expect(Ticket(123),Meta(0x47,1000),1);
+    // Unrecognized type yields numerical 1 in original 0xAE0E90, but
+    // MUST NOT be accepted as verified quantity for a stack configured >1.
+    const auto unknownFallback=Read(Ticket(123),Meta(0x47,1000));
+    assert(unknownFallback.verdict==TicketUnitsVerdict::UnverifiedStackQuantity);
+    assert(unknownFallback.quantity==1);
     // REAL VM metadata captured 2026-11-23: item 33554961 kind=0xB0,
-    // metadata signed stack field=999. This is an EXACT mirror of 0xAE0E90,
-    // NOT proof that 1 is the quantity of a 999-configured inventory stack.
-    Expect(Ticket(123),Meta(0xB0,999),1);
-    Expect(Ticket(500),Meta(0xB0,999),1);
+    // metadata signed stack field=999. The helper returns numerical 1,
+    // but this is NOT evidence that the actual stack has one ticket.
+    const auto realB0a=Read(Ticket(123),Meta(0xB0,999));
+    const auto realB0b=Read(Ticket(500),Meta(0xB0,999));
+    assert(realB0a.verdict==TicketUnitsVerdict::UnverifiedStackQuantity);
+    assert(realB0b.verdict==TicketUnitsVerdict::UnverifiedStackQuantity);
+    assert(realB0a.quantity==1 && realB0b.quantity==1);
     auto none=Read(Ticket(0),Meta(0x46,1000));
     assert(none.verdict==TicketUnitsVerdict::ZeroUnits);
     auto unknown=Meta(0x46,1000);
