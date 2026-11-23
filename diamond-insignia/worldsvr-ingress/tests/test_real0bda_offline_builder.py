@@ -84,11 +84,12 @@ class Safety(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temp:
             base=pathlib.Path(temp)
             src=base/"proc.cpp"
-            src.write_text(
-                'struct PROCESSDATACONTEXT {};\\n'
-                'struct ProcSystem { int DoProcessDataCtx(void*,PROCESSDATACONTEXT*); };\\n'
-                'int ProcSystem::DoProcessDataCtx(void*,PROCESSDATACONTEXT*) { return 42; }\\n'
-            .replace('\\\\n','\\n'))
+            src.write_text(chr(10).join([
+                "struct PROCESSDATACONTEXT {};",
+                "struct ProcSystem { int DoProcessDataCtx(void*,PROCESSDATACONTEXT*); };",
+                "int ProcSystem::DoProcessDataCtx(void*,PROCESSDATACONTEXT*) { return 42; }",
+                ""
+            ]))
             so=base/"fixture.so"
             subprocess.run(["g++","-std=c++17","-O2","-shared","-fPIC",
                             str(src),"-o",str(so)],check=True)
