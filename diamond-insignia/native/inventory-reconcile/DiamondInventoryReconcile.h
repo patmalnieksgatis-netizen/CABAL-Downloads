@@ -37,6 +37,7 @@ enum class AuditStatus : std::uint8_t {
     QuantityCodecFailed,
     UnrelatedInventoryChanged,
     TicketIdentityChanged,
+    TicketStackIncreased,
     TicketTotalsMismatch,
 };
 struct Audit {
