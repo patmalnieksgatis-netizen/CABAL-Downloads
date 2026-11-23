@@ -467,3 +467,36 @@ a complete Diamond game implementation.
 fail closed in the World48 / 0BDA planner and transaction core. The
 old synthetic `0xAF` case is not used as substitute for real tickets.
 No VM or server files changed.
+
+## 2026-11-23: first physically linked REAL Server01 WorldSvr 0BDA + ODBC fullchain
+
+NEW implementation: native/grade2-ingress/Diamond0BDAAuthenticatedIngress,
+native/world-session-bridge/DiamondWorldSessionAuthority,
+native/real-gamedata-transaction/Diamond0BDARealServer01Bridge,
+DiamondRealGameDataOdbc and 00_server01_clone_atomic_rankup_v291.sql.
+
+- Host-owned WorldSvr exclusive owner lease authenticates UserNum and
+  CharacterIdx against exact v14 UserData memory offsets and registry;
+  the lock is retained through the commit callback.
+- REAL Server01 stored procedure (draft, NOT installed) performs one
+  serializable Inventory Data+WarExp CAS and new Grade2 ledger+durable
+  replay receipt transaction (not Server01_DiamondLab). The default
+  clone approval gate prevents accidental installation.
+- Native C++ ODBC callback checks real DB_NAME, stages 100 B0 ticket units
+  on a copied GameData blob, binds the SQL parameters, calls the actual
+  stored-procedure name, and reads back a committed receipt. Unknown
+  SQL outcomes are InDoubtRecoveryRequired, never retried blindly.
+- Physically linked single C++ chain and tests, including default-off
+  C2S handling and Platinum pass-through. GitHub Actions native run
+  45248282385 PASSED at commit 2926f8916e41baaa65f516acb4a16f8d77cd0c10.
+  Both SQL safety and Offline Policy companion workflows PASSED.
+- Detailed integration and unresolved prerequisites:
+  native/real-gamedata-transaction/REAL_SERVER01_ATOMIC_FULLCHAIN_20261123.md
+
+CRITICAL: still no actual WorldSvr 0BDA PROCEDUREMAP installation,
+native Memory-to-GameData save barrier, confirmed UserNum<->CharacterIdx
+account mapping on the live target, client response serializer or true
+Diamond rank client-state ABI. The new rank ledger is not a verified
+native Diamond status. WarExpEarn/Used accounting is not verified.
+Do NOT deploy these SQL/native sources on a playing server yet.
+All changes GitHub-only, no VM/SQL/WorldSvr mutation.
