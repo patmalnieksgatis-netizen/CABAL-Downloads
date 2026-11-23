@@ -38,6 +38,14 @@ class Tests(unittest.TestCase):
         self.assertNotIn(0x0BDC,[row[4] for row in gap.CLIENT.values()])
         self.assertEqual(gap.S2C[0x0BDF][2],0x6DAD14)
 
+    def test_distinct_s2c_read_paths_are_pinned(self):
+        self.assertEqual(set(gap.S2C_READ_ANCHORS),{0x0BDB,0x0BDC,0x0BDD,0x0BDF})
+        self.assertEqual(len(gap.S2C_READ_ANCHORS[0x0BDC]),5)
+        self.assertEqual(gap.S2C_READ_ANCHORS[0x0BDF][-1],
+                         (0x6DADBF,"448b4e07"))
+        self.assertEqual(gap.S2C_READ_ANCHORS[0x0BDD][0],
+                         (0x6DB102,"80790601"))
+
     def test_static_client_cluster_and_bad_elf(self):
         self.assertEqual([x[4] for x in gap.CLIENT.values()],
                          [0x0B10,0x0BDA,0x0BDB,0x0BDD,0x0BDF,0x0BE0])
