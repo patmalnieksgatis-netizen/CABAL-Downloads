@@ -34,6 +34,30 @@ python3 diamond-insignia/native/client291-semantic-proof/verify_merit_client_ser
 
 The exact source binaries are **not** committed to this public GitHub repository. GitHub CI runs synthetic fixed-length/RIP-displacement tests and hash rejection; local SHA-pinned execution separately verified the real binary pair.
 
+
+## Additional exact client S2C registration proof
+
+The same SHA-pinned client binary separately registers **incoming**
+server-to-client opcodes via `0x16BB3C` and callback binder `0x2879E4`:
+
+| Incoming S2C | Client handler RVA | Matching UI C2S |
+| --- | --- | --- |
+| `0x0BDA` | `0x6DA920` | `0x21C / 0x0BDA` |
+| `0x0BDB` | `0x6DAED8` | `0x21D / 0x0BDB` |
+| `0x0BDC` | `0x6DB154` | **no outgoing UI counterpart in this five-command neighborhood** |
+| `0x0BDD` | `0x6DB0FC` | `0x21E / 0x0BDD` |
+| `0x0BDF` | `0x6DAD14` | `0x21F / 0x0BDF` |
+| `0x0BE0` | `0x6DB3B4` | `0x220 / 0x0BE0` |
+
+Each mapping is checked using the actual `mov [rbp+0x10],opcode`
+instruction, callback `lea rdx,[rip+disp32]` and the exact
+callback-registration target `0x2879E4`. This proves the client contains
+a receiving dispatch table for the same new Merit-adjacent family and one
+additional `0x0BDC` S2C handler. It **does not** prove actual packet
+payload layout, that the handler is exercised at runtime, or its
+Diamond meaning. In particular, do not manufacture responses of guessed
+length or fill missing DWORDs with zero.
+
 ## Critical next engineering task — towards actually playable Diamond
 
 1. Analyze exact callback flows of `0x0BDA/0x0BDB/0x0BDD/0x0BDF/0x0BE0`: field offsets, conditional send paths, relevant Merit UI state and matching S2C handlers. Prove which, if any, is the actual Diamond rank-up.
