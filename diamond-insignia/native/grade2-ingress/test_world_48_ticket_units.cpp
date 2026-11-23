@@ -55,6 +55,11 @@ int main() {
     Expect(Ticket(100),Meta(0x66,1000),100);
     // Unrecognized type returns singleton rather than guessed count.
     Expect(Ticket(123),Meta(0x47,1000),1);
+    // REAL VM metadata captured 2026-11-23: item 33554961 kind=0xB0,
+    // metadata signed stack field=999. This is an EXACT mirror of 0xAE0E90,
+    // NOT proof that 1 is the quantity of a 999-configured inventory stack.
+    Expect(Ticket(123),Meta(0xB0,999),1);
+    Expect(Ticket(500),Meta(0xB0,999),1);
     auto none=Read(Ticket(0),Meta(0x46,1000));
     assert(none.verdict==TicketUnitsVerdict::ZeroUnits);
     auto unknown=Meta(0x46,1000);
@@ -79,7 +84,8 @@ int main() {
            TicketUnitsVerdict::MalformedRecord);
     assert(DecodeTicketSlot48(record.data(),47,Meta(0xAF,1000)).verdict==
            TicketUnitsVerdict::MalformedRecord);
-    std::cout<<"WORLDSVR_0xAE0E90_QUANTITY_BRANCHES=PASS\n"
+    std::cout<<"WORLDSVR_LIVE_TICKET_B0_999_FALLBACK_SINGLETON_ONLY=PASS\n"
+             <<"WORLDSVR_0xAE0E90_QUANTITY_BRANCHES=PASS\n"
              <<"WORLD_48_BYTE_SLOT_ITEM_ID_AND_OPTION_OFFSETS=PASS\n"
              <<"TICKET_CLASS_METADATA_REQUIRED=PASS\n"
              <<"NO_UNVERIFIED_GAME_STACK_DEBIT=PASS\n";
