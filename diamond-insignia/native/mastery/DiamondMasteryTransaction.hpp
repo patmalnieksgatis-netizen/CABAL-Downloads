@@ -27,14 +27,18 @@ struct Receipt {
     int level=0;
     int remaining_points=0;
 };
+enum class ReadStatus { Ready, Missing, PendingRecovery, PendingSync };
 class Store {
 public:
     virtual ~Store()=default;
-    // Read must return the authoritative current user state.
-    virtual bool Read(std::uint32_t user,TrustedState& out)=0;
+    // Read must return authoritative state and the durable pending-operation
+    // status. A pending operation is not eligible for a new proposal.
+    virtual ReadStatus Read(std::uint32_t user,TrustedState& out)=0;
     // Implementations MUST compare the entire relevant before-state,
     // enforce unique (user,intent), and commit level, points, revision
-    // and receipt together. An uncertain write is never retried here.
+    // and receipt together. Under the same atomic storage lock, refuse an
+    // existing pending operation, and record pending sync/recovery durably
+    // before returning. An uncertain write is never retried here.
     virtual Receipt Commit(const Operation& operation)=0;
 };
 enum class Status { Rejected, CommittedPendingSync, RecoveryRequired };
@@ -49,7 +53,18 @@ inline Result Execute(Store& store,const Request& req,
     if(!req.user || !req.intent || !req.revision)return result;
     Operation operation{};
     operation.request=req;
-    if(!store.Read(req.user,operation.before))return result;
+    ReadStatus read=ReadStatus::Missing;
+    try {
+        read=store.Read(req.user,operation.before);
+    } catch(...) {
+        // A failed read cannot authorize an operation.
+        return result;
+    }
+    if(read==ReadStatus::PendingRecovery || read==ReadStatus::PendingSync) {
+        result.status=Status::RecoveryRequired;
+        return result;
+    }
+    if(read!=ReadStatus::Ready)return result;
     const auto proposal=mastery_level_up(operation.before,catalog,
                                          req.mastery_id,req.revision);
     result.rule=proposal.result;
