@@ -1,0 +1,19 @@
+name: Diamond V20 native rank-up integration
+on:
+  push:
+    branches: [feature/diamond-native-registration-v19-20261124]
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  offline-integration:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compile and run native registry-to-bridge fixture
+        run: |
+          g++ -std=c++17 -O2 -Wall -Wextra -Werror diamond-insignia/worldsvr-ingress/test_native_rankup_v20.cpp -o /tmp/test-native-rankup-v20
+          /tmp/test-native-rankup-v20
+      - name: Check actual Server01 bridge and authenticated ingress sources
+        run: |
+          g++ -std=c++17 -fsyntax-only diamond-insignia/native/real-gamedata-transaction/Diamond0BDARealServer01Bridge.cpp diamond-insignia/native/grade2-ingress/Diamond0BDAAuthenticatedIngress.cpp
