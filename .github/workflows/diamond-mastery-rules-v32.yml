@@ -5,6 +5,8 @@ on:
       - feature/diamond-native-registration-v19-20261124
     paths:
       - 'diamond-insignia/native/diamond_rules.hpp'
+      - 'diamond-insignia/native/mastery/**'
+      - 'diamond-insignia/worldsvr-ingress/test_mastery_transaction_v33.cpp'
       - 'diamond-insignia/worldsvr-ingress/test_mastery_rules_v32.cpp'
       - '.github/workflows/diamond-mastery-rules-v32.yml'
   workflow_dispatch:
@@ -19,3 +21,5 @@ jobs:
         run: |
           g++ -std=c++17 -Wall -Wextra -Werror -O2 diamond-insignia/worldsvr-ingress/test_mastery_rules_v32.cpp -o /tmp/diamond-rules
           /tmp/diamond-rules
+          g++ -std=c++17 -Wall -Wextra -Werror -O2 diamond-insignia/worldsvr-ingress/test_mastery_transaction_v33.cpp -o /tmp/diamond-mastery-transaction
+          /tmp/diamond-mastery-transaction
