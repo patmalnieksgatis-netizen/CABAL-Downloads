@@ -9,16 +9,22 @@ struct Fixture final : Store {
     unsigned commits=0;
     bool uncertain=false, wrong_receipt=false, throw_commit=false;
     std::set<std::uint64_t> intents;
-    bool Read(std::uint32_t user,TrustedState& out) override {
-        if(user!=7)return false;
-        out=state;return true;
+    ReadStatus pending=ReadStatus::Ready;
+    ReadStatus Read(std::uint32_t user,TrustedState& out) override {
+        if(user!=7)return ReadStatus::Missing;
+        if(pending!=ReadStatus::Ready)return pending;
+        out=state;return ReadStatus::Ready;
     }
     Receipt Commit(const Operation& o) override {
         ++commits;
-        if(o.before.revision!=state.revision || !intents.insert(o.request.intent).second)
+        if(pending!=ReadStatus::Ready || o.before.revision!=state.revision || !intents.insert(o.request.intent).second)
             return {};
-        if(uncertain)return {StorageStatus::Uncertain};
+        if(uncertain){
+            pending=ReadStatus::PendingRecovery;
+            return {StorageStatus::Uncertain};
+        }
         state=o.after;
+        pending=(throw_commit || wrong_receipt)?ReadStatus::PendingRecovery:ReadStatus::PendingSync;
         if(throw_commit)throw std::runtime_error("synthetic storage disconnect");
         return {StorageStatus::Committed,o.request.user,o.request.intent,
                 state.revision,o.request.mastery_id,
@@ -40,6 +46,9 @@ int main() {
     auto r=Execute(f,q,specs);
     assert(r.status==Status::CommittedPendingSync);
     assert(f.state.free_points==3 && f.state.revision==9 && f.commits==1);
+    assert(Execute(f,{7,92,9,159},specs).status==Status::RecoveryRequired && f.commits==1);
+    // Synthetic independent reconciliation completed.
+    f.pending=ReadStatus::Ready;
     assert(Execute(f,q,specs).rule==Error::Stale && f.commits==1);
     assert(Execute(f,{8,92,9,159},specs).status==Status::Rejected && f.commits==1);
     auto u=fixture();u.uncertain=true;
@@ -49,5 +58,8 @@ int main() {
     auto t=fixture();t.throw_commit=true;
     assert(Execute(t,q,specs).status==Status::RecoveryRequired && t.commits==1);
     assert(t.state.revision==9);
+    assert(Execute(u,{7,93,8,159},specs).status==Status::RecoveryRequired && u.commits==1);
+    assert(Execute(w,{7,94,9,159},specs).status==Status::RecoveryRequired && w.commits==1);
+    assert(Execute(t,{7,95,9,159},specs).status==Status::RecoveryRequired && t.commits==1);
     std::puts("DIAMOND_MASTERY_TRANSACTION_FIXTURE=PASS");
 }
