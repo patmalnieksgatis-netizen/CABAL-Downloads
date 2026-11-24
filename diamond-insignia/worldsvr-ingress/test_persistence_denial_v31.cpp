@@ -60,5 +60,27 @@ int main() {
         assert(b.Reconcile(s)==Verdict::IllegalPhase);
         blocked(b);
     }
+    {
+        DiamondWorldSaveBarrier b;
+        assert(b.Begin(o,true,true)==Verdict::Ok);
+        assert(b.MarkTimeout()==Verdict::NeedRecovery);
+        blocked(b);
+    }
+    {
+        DiamondWorldSaveBarrier b;
+        assert(b.Begin(o,true,true)==Verdict::Ok);
+        assert(b.MarkNativeMutationApplied(true)==Verdict::Ok);
+        assert(b.MarkTimeout()==Verdict::NeedRecovery);
+        blocked(b);
+    }
+    for(unsigned i=0;i<2;++i) {
+        DiamondWorldSaveBarrier b;
+        assert(b.Begin(o,true,true)==Verdict::Ok);
+        assert(b.MarkNativeMutationApplied(true)==Verdict::Ok);
+        assert(b.MarkSaveSent(i?1:0,i?0:9,0)==Verdict::NeedRecovery);
+        assert(b.GetPhase()==Phase::RecoveryRequired);
+        assert(b.MarkSaveSent(1,9,0)==Verdict::IllegalPhase);
+        blocked(b);
+    }
     std::puts("DIAMOND_OFFLINE_PERSISTENCE_DENIAL=PASS");
 }
