@@ -70,6 +70,26 @@ inline bool valid_levels(const TrustedState& s,const std::map<int,Mastery>& spec
   }
   return true;
 }
+// Validate only the requested mastery and its prerequisite chain. Linked
+// semantics remain unverified; this does not invent unlock or category rules.
+inline bool valid_mastery_definition(const std::map<int,Mastery>& specs, int id) {
+  std::set<int> visited;
+  while (id != 0) {
+    if (id<159 || id>474 || !visited.insert(id).second) return false;
+    const auto it=specs.find(id);
+    if (it==specs.end()) return false;
+    const Mastery& m=it->second;
+    if (m.id!=id || category_root(m.category)==-1 || m.max_level<1 ||
+        m.level_cost.size()!=static_cast<std::size_t>(m.max_level)) return false;
+    for (int cost:m.level_cost) if (cost<0) return false;
+    if (m.prerequisite_id==0) return m.prerequisite_level==0;
+    const auto pre=specs.find(m.prerequisite_id);
+    if (pre==specs.end() || m.prerequisite_level<1 ||
+        m.prerequisite_level>pre->second.max_level) return false;
+    id=m.prerequisite_id;
+  }
+  return false;
+}
 inline TransactionProposal rank_up(const TrustedState& s,uint32_t expected_revision) {
   TransactionProposal r; r.after=s; r.expected_revision=expected_revision;
   if (!s.authoritative) {r.result=Error::Untrusted; return r;}
@@ -99,8 +119,7 @@ inline TransactionProposal mastery_level_up(const TrustedState& s,
   auto it=specs.find(id);
   if (it==specs.end() || id<159 || id>474){r.result=Error::UnknownMastery;return r;}
   const Mastery& m=it->second;
-  if (m.id!=id || category_root(m.category)==-1 || m.max_level<1 ||
-      m.level_cost.size()!=static_cast<std::size_t>(m.max_level)){
+  if (!valid_mastery_definition(specs,id)){
     r.result=Error::InvalidConfig; return r;
   }
   if (s.active_categories.count(m.category)==0){r.result=Error::LockedCategory;return r;}
