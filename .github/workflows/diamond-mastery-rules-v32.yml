@@ -1,0 +1,21 @@
+name: Diamond V32 mastery rules
+on:
+  push:
+    branches:
+      - feature/diamond-native-registration-v19-20261124
+    paths:
+      - 'diamond-insignia/native/diamond_rules.hpp'
+      - 'diamond-insignia/worldsvr-ingress/test_mastery_rules_v32.cpp'
+      - '.github/workflows/diamond-mastery-rules-v32.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  offline:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compile and run isolated rules tests
+        run: |
+          g++ -std=c++17 -Wall -Wextra -Werror -O2 diamond-insignia/worldsvr-ingress/test_mastery_rules_v32.cpp -o /tmp/diamond-rules
+          /tmp/diamond-rules
