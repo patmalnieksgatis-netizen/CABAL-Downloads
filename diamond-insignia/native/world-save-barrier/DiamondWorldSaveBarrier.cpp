@@ -40,7 +40,12 @@ Verdict DiamondWorldSaveBarrier::MarkNativeMutationApplied(
 Verdict DiamondWorldSaveBarrier::MarkSaveSent(std::uint32_t flags,
         std::uint64_t epoch,std::uint32_t outstandingBeforeSend) noexcept {
     if(phase_!=Phase::NativeMutationApplied) return Verdict::IllegalPhase;
-    if(!flags || !epoch) return Verdict::Invalid;
+    if(!flags || !epoch){
+        // A mutation has already been applied. Failure to establish a valid
+        // save cannot be treated as a clean rejection or retried blindly.
+        phase_=Phase::RecoveryRequired;
+        return Verdict::NeedRecovery;
+    }
     if(outstandingBeforeSend!=0){
         phase_=Phase::RecoveryRequired;
         return Verdict::AmbiguousSave;
@@ -87,7 +92,8 @@ Verdict DiamondWorldSaveBarrier::Reconcile(const DurableSnapshot& s) noexcept {
     return Verdict::Ok;
 }
 Verdict DiamondWorldSaveBarrier::MarkTimeout() noexcept {
-    if(phase_!=Phase::SaveSent && phase_!=Phase::AckObserved)
+    if(phase_!=Phase::IntentDurable && phase_!=Phase::NativeMutationApplied &&
+       phase_!=Phase::SaveSent && phase_!=Phase::AckObserved)
         return Verdict::IllegalPhase;
     phase_=Phase::RecoveryRequired;
     return Verdict::NeedRecovery;
