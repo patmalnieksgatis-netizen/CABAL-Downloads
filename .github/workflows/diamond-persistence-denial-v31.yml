@@ -1,0 +1,25 @@
+name: Diamond offline persistence regression V31
+on:
+  push:
+    branches:
+      - feature/diamond-native-registration-v19-20261124
+    paths:
+      - '.github/workflows/diamond-persistence-denial-v31.yml'
+      - 'diamond-insignia/worldsvr-ingress/test_persistence_denial_v31.cpp'
+      - 'diamond-insignia/native/world-save-barrier/**'
+      - 'diamond-insignia/native/grade2-ingress/Diamond0BDASaveReplyGate.*'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  offline:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Compile and run synthetic regression tests
+        run: |
+          cd diamond-insignia
+          g++ -std=c++17 -Wall -Wextra -Werror -O2 worldsvr-ingress/test_persistence_denial_v31.cpp native/world-save-barrier/DiamondWorldSaveBarrier.cpp native/grade2-ingress/Diamond0BDASaveReplyGate.cpp -o /tmp/diamond-persistence-test
+          /tmp/diamond-persistence-test
+          g++ -std=c++17 -Wall -Wextra -Werror -O2 -DDIAMOND_ENABLE_0BDA_CLONE_TRIAL worldsvr-ingress/test_persistence_denial_v31.cpp native/world-save-barrier/DiamondWorldSaveBarrier.cpp native/grade2-ingress/Diamond0BDASaveReplyGate.cpp -o /tmp/diamond-persistence-test-clone
+          /tmp/diamond-persistence-test-clone
