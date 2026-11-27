@@ -226,6 +226,9 @@ The operator wrapper `Test-Diamond-TemporarySql.ps1` transfers the pinned
 runner and SQL source over SSH. The SQL password remains inside sql_main's
 existing environment. No game rows, persistent tables/procedures, services or
 network settings are changed. Temporary objects disappear with the test
-connection. The real SQL engine execution is pending operator relay; this
+connection. The complete PowerShell transport was checked with a substituted
+SSH function; transferred Python parses and its SQL bytes match the canonical
+source. This transport fixture executed no SQL. The real SQL engine execution
+is pending operator relay; this
 test still cannot prove online WorldSvr locking, Mastery stat application,
 relogin initialization or working Diamond gameplay.

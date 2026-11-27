@@ -24,9 +24,10 @@ jobs:
         run: |
           $tokens = $null
           $errors = $null
-          $path = 'diamond-insignia/Collect-Diamond-NativeSources.ps1'
-          [System.Management.Automation.Language.Parser]::ParseFile($path, [ref]$tokens, [ref]$errors) | Out-Null
-          if ($errors.Count) { throw ($errors | Out-String) }
+          foreach ($path in @('diamond-insignia/Collect-Diamond-NativeSources.ps1', 'diamond-insignia/Test-Diamond-TemporarySql.ps1')) {
+            [System.Management.Automation.Language.Parser]::ParseFile($path, [ref]$tokens, [ref]$errors) | Out-Null
+            if ($errors.Count) { throw ($errors | Out-String) }
+          }
       - name: Verify 0BDD slot-cancel candidate remains passive under all build flags
         run: |
           set -euo pipefail
