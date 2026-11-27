@@ -86,6 +86,22 @@ int main() {
     Expect(Ticket(999),proven,999);
     Expect(Ticket(899),proven,899);
     Expect(Ticket(100),proven,100);
+    // The B0 codec validates the entire 64-bit option. Narrowing the live
+    // slot to its low DWORD first silently discards unknown high flags and
+    // makes a live snapshot disagree with the saved 30-byte item record.
+    for(const auto profile:{B0CountProfile::OptionLow10,
+                            B0CountProfile::OptionLow16,
+                            B0CountProfile::PlainPositiveOptionNoFlags}) {
+        proven.b0QuantityProof.provenProfile=profile;
+        for(unsigned bit=0;bit<32;++bit) {
+            auto flagged=Ticket(999);
+            U32(flagged.data()+0x1C,std::uint32_t{1}<<bit);
+            assert(Read(flagged,proven).verdict==
+                   TicketUnitsVerdict::UnverifiedStackQuantity);
+        }
+        Expect(Ticket(999),proven,999);
+    }
+    proven.b0QuantityProof.provenProfile=B0CountProfile::OptionLow10;
     assert(Read(Ticket(1000),proven).verdict==
            TicketUnitsVerdict::UnverifiedStackQuantity);
     assert(Read(Ticket(0),proven).verdict==
@@ -122,6 +138,7 @@ int main() {
     assert(DecodeTicketSlot48(record.data(),47,Meta(0xAF,1000)).verdict==
            TicketUnitsVerdict::MalformedRecord);
     std::cout<<"WORLDSVR_LIVE_B0_999_LOW10_VS_LOW16_UNRESOLVED=PASS\n"
+             <<"B0_ALL_32_HIGH_OPTION_BITS_REJECTED_BEFORE_DEBIT=PASS\n"
              <<"WORLDSVR_B0_INDEPENDENT_UI_PROOF_REQUIRED_FOR_COUNT=PASS\n"
              <<"WORLDSVR_LIVE_TICKET_B0_999_FALLBACK_SINGLETON_ONLY=PASS\n"
              <<"WORLDSVR_0xAE0E90_QUANTITY_BRANCHES=PASS\n"

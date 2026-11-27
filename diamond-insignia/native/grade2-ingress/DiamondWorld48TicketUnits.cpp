@@ -46,9 +46,14 @@ TicketUnitsResult DecodeTicketSlot48(
                 // This is NOT original 0xAE0E90: it is a separately
                 // attested *new* materials-stack decode path. The
                 // real 999/999 sample alone leaves its proof disabled.
+                // Pass the full QWORD to the flag validator. Narrowing
+                // first would erase unknown high option bits and accept
+                // a stack that the persisted-record decoder rejects.
                 const auto verified=diamond_v291::inventory::
                     DecodeB0QuantityWithIndependentProof(
-                        option,meta.kindField38,meta.stackField3C,
+                        std::uint64_t(option) |
+                            (std::uint64_t(U32(p+0x1C))<<32u),
+                        meta.kindField38,meta.stackField3C,
                         meta.b0QuantityProof);
                 if(verified.verdict!=diamond_v291::inventory::
                    B0QuantityVerdict::VerifiedCount) {

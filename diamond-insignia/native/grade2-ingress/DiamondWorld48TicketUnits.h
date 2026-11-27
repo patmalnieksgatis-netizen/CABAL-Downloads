@@ -36,7 +36,7 @@ struct TicketUnitsResult {
 // Original 0xAE0E90 still falls through to numeric 1, but that is NOT
 // an attestation of the actual materials-stack count.
 //
-// Reads +4 occupancy, +8 itemKind and +0x18 item option, which is
+// Reads +4 occupancy, +8 itemKind and the 8-byte +0x18 item option, which is
 // exactly +0x10 from the item pointer passed to original 0xAE0E90.
 // Caller must attest original x64 slot memory, exclusive owner lock,
 // and actual runtime item catalog fields 0x38/0x3C.
