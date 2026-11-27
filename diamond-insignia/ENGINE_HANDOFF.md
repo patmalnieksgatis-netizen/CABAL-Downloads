@@ -1,5 +1,9 @@
 # CABAL v291/EP39 Diamond Insignia — native integration contract and evidence
 
+Read [the 27 November integration checkpoint](INTEGRATION_STATE_20261127.md)
+first: it records the actual forwarding-only runtime, the supplied v14 source,
+the full-width material validation fix and exact client response verification.
+
 **Status:** Design, donor graph checks and SQL Lab V2 prepared; no native WorldSvr
 Diamond handler or production client integration exists yet. Current Platinum
 and Gold are not modified. After Diamond, proceed with Anima Mastery.

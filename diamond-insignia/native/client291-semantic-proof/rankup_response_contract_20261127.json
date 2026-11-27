@@ -1,0 +1,145 @@
+{
+  "client_sha256": "52e7956d4781fea1f0369cac8ab1eac4c3ddec2d1977c6557be53ec2b79885d9",
+  "response_opcode": "0x0BDA",
+  "response_bytes_exercised": 7,
+  "response_cases": [
+    {
+      "status": 0,
+      "ui_present": true,
+      "before": 999,
+      "consumed": 100,
+      "after_option64": 999,
+      "removed_from_container": false,
+      "grade": 1,
+      "packet_reads": [
+        [
+          6,
+          1
+        ]
+      ]
+    },
+    {
+      "status": 1,
+      "ui_present": true,
+      "before": 999,
+      "consumed": 100,
+      "after_option64": 899,
+      "removed_from_container": false,
+      "grade": 2,
+      "packet_reads": [
+        [
+          6,
+          1
+        ]
+      ]
+    },
+    {
+      "status": 2,
+      "ui_present": true,
+      "before": 999,
+      "consumed": 100,
+      "after_option64": 899,
+      "removed_from_container": false,
+      "grade": 2,
+      "packet_reads": [
+        [
+          6,
+          1
+        ]
+      ]
+    },
+    {
+      "status": 255,
+      "ui_present": true,
+      "before": 999,
+      "consumed": 100,
+      "after_option64": 899,
+      "removed_from_container": false,
+      "grade": 2,
+      "packet_reads": [
+        [
+          6,
+          1
+        ]
+      ]
+    },
+    {
+      "status": 1,
+      "ui_present": true,
+      "before": 100,
+      "consumed": 100,
+      "after_option64": 100,
+      "removed_from_container": true,
+      "grade": 2,
+      "packet_reads": [
+        [
+          6,
+          1
+        ]
+      ]
+    },
+    {
+      "status": 1,
+      "ui_present": false,
+      "before": 999,
+      "consumed": 100,
+      "after_option64": 999,
+      "removed_from_container": false,
+      "grade": 1,
+      "packet_reads": [
+        [
+          6,
+          1
+        ]
+      ]
+    }
+  ],
+  "quantity_cases": [
+    {
+      "input_option64": "0x1",
+      "client_quantity32": 1,
+      "option_after_set_899": 899
+    },
+    {
+      "input_option64": "0x63",
+      "client_quantity32": 99,
+      "option_after_set_899": 899
+    },
+    {
+      "input_option64": "0x64",
+      "client_quantity32": 100,
+      "option_after_set_899": 899
+    },
+    {
+      "input_option64": "0x3e7",
+      "client_quantity32": 999,
+      "option_after_set_899": 899
+    },
+    {
+      "input_option64": "0x400",
+      "client_quantity32": 1024,
+      "option_after_set_899": 899
+    },
+    {
+      "input_option64": "0x10000",
+      "client_quantity32": 65536,
+      "option_after_set_899": 899
+    },
+    {
+      "input_option64": "0x1000003e7",
+      "client_quantity32": 999,
+      "option_after_set_899": 899
+    },
+    {
+      "input_option64": "0x80000000000003e7",
+      "client_quantity32": 999,
+      "option_after_set_899": 899
+    }
+  ],
+  "status": "EXACT_CLIENT_INSTRUCTIONS_PASS",
+  "gui_and_inventory_container_services": "STUBBED",
+  "success_execution_stops": "BEFORE_FINAL_GUI_RENDERING",
+  "saved_inventory_option_mapping": "NOT_ESTABLISHED_BY_GETTER_TEST",
+  "worldsvr_or_sql_tested": false,
+  "deployment_ready": false
+}
