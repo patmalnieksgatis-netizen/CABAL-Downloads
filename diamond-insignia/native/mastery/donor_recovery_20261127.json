@@ -1,0 +1,29 @@
+{
+  "active_sha256": "307fc981ec3efe66f6cc1b0606ed7d86cd9e5a6e46205769a9bb34b012464295",
+  "staged_sha256": "b8dda5e7bfc366ea9d0b3b6936b48fe76cb7c98d9771acfa521fa65310b81909",
+  "status": "STATIC_STAGED_SCP_PARITY_PASS",
+  "sections_preserved": 19,
+  "old_mastery_count": 158,
+  "staged_mastery_count": 474,
+  "grade_2_mastery_rows": 316,
+  "added_row_counts": {
+    "MeritMastery_Base": 316,
+    "MeritMastery_Value": 1096,
+    "UpGrade_Material": 1,
+    "SlotOpen_Material": 616,
+    "SlotOpen_Time": 308,
+    "SpecialMastery_Material": 1,
+    "SpecialMastery_Value": 100,
+    "SpecialMastery_Active": 4
+  },
+  "added_rows_total": 2442,
+  "original_rows_all_preserved": true,
+  "confirmed_gameplay": false,
+  "world_server_integration": false,
+  "live_assets_modified": false,
+  "source_zip_sha256": "4b9f6b38098a49ea18e0c4db11f942fe27ef9732beee705f07adffcdb12de99e",
+  "donor_xml_sha256": "297078e4cff0918280c824252c4b46e5b17e15a4c57b941b75e8d9f3081c1b9e",
+  "messages_xml_sha256": "cd627645e7c4d7aa7d5fff66d8dbcf0faa4c8c95dc776fe152778fd8d004cb50",
+  "original_staged_sha_reproduced": false,
+  "game_install_performed": false
+}

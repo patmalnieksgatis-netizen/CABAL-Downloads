@@ -3,6 +3,7 @@ on:
   push:
     branches:
       - feature/diamond-insignia-v291-20261121
+      - feature/diamond-native-registration-v19-20261124
     paths:
       - diamond-insignia/native/**
       - diamond-insignia/client291-real-resource/**
@@ -16,6 +17,16 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Verify bounded donor recovery and preservation of original SCP rows
+        run: python3 -m unittest discover -s diamond-insignia/native/mastery -p 'test_recover_donor_catalog.py' -v
+      - name: Parse native source export without contacting a server
+        shell: pwsh
+        run: |
+          $tokens = $null
+          $errors = $null
+          $path = 'diamond-insignia/Collect-Diamond-NativeSources.ps1'
+          [System.Management.Automation.Language.Parser]::ParseFile($path, [ref]$tokens, [ref]$errors) | Out-Null
+          if ($errors.Count) { throw ($errors | Out-String) }
       - name: Verify 0BDD slot-cancel candidate remains passive under all build flags
         run: |
           set -euo pipefail

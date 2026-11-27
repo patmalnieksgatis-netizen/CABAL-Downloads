@@ -113,12 +113,70 @@ python3 native/client291-semantic-proof/verify_rankup_response_contract.py \
 2. Implement native mutation/reload and durable Diamond state together:
    inventory, WarExp and account progress cannot disagree with ordinary
    WorldSvr/DBAgent saves. The SQL prototype alone does not provide this.
-3. Obtain the previously prepared Diamond/EP45 inputs, then implement their
-   actual effects. The uploaded v14 extension tree is not those inputs.
-   A bounded operator search of `/root` and `/tmp` found only the v14 source
-   archive. A Windows Downloads/Desktop search for the already prepared
-   Diamond ZIPs and `EP45_meritsystem*.xml` has been requested. Do not repeat
-   the completed V35–V37 audit instead of using the recovered inputs.
+3. The donor-input dependency is now resolved by the uploads below. Do not
+   request the XMLs or repeat a Windows file search. Implement actual native
+   effects and point/slot synchronization using the recovered definitions.
 
 No functional Diamond deployment package is ready. Current loaded module
 is still forwarding-only; retain all original working systems.
+
+## Continued after the sources and codec ZIP uploads
+
+Received `CABAL-DIAMOND-SOURCES-1bec4d3ce4.zip` (SHA-256
+`4b9f6b38098a49ea18e0c4db11f942fe27ef9732beee705f07adffcdb12de99e`)
+and the original static client codec report ZIP (SHA-256
+`603c70de796fb627b173c9de30bc271695cfbdd3f98a1ba9fac6c0f35df0923d`).
+The source manifest is a **21 November snapshot**, not a fresh live server
+inspection. The codec ZIP contains a report, not another native module.
+
+`native/mastery/recover_donor_catalog.py` validates archive paths, source
+manifest hashes and exact donor profiles. Bounded raw-DEFLATE decoding after
+the known first-four-byte XOR recovers both original EP45 XMLs:
+
+- definitions: `297078e4cff0918280c824252c4b46e5b17e15a4c57b941b75e8d9f3081c1b9e`;
+- messages: `cd627645e7c4d7aa7d5fff66d8dbcf0faa4c8c95dc776fe152778fd8d004cb50`.
+
+These match the existing donor evidence. v291 ENC was not overwritten or
+claimed compatible with that EP45 decode route. Private XMLs and generated
+SCP remain outside the Git repository.
+
+The recovery builds the 2,442 added rows needed by the existing readers,
+retaining all 19 original sections, headings and Gold/Platinum rows. Its
+staged SCP SHA is `b8dda5e7bfc366ea9d0b3b6936b48fe76cb7c98d9771acfa521fa65310b81909`.
+It has **not** reproduced the old stage file's byte hash `26c9c4...`;
+semantic row preservation was checked separately. Do not replace the old
+deployment hash or install this file as native `MeritSystem.scp`.
+
+The C++ `NativeCatalog` reader now retains all mastery types and 1,096 full
+level definitions, including force IDs, values and value types, rather than
+discarding them while reading costs. It additionally reads 308 slot opening
+definitions with 616 materials and timers, 100 Special Mastery effects and
+the separate Special Mastery cost (1,500 WExp + three tickets). These data
+structures expose definitions to a future native provider; no force effect
+is automatically applied or guessed from an EP45 integer.
+
+The compiled reader's **all 1,096 level records** were independently compared
+with the original XML, including every cost/type/base/bonus field. They match.
+Its complete-slot catalog check passed on the actual recovered input. New
+tests reject malformed forces and incomplete slot/special catalogs. Existing
+V35 and slot input readers accept the recovered bundle. Native/catalog and
+recovery tests pass locally; no online gameplay test is implied.
+
+### Exact next integration boundary
+
+The known v14 tree and cached legacy SDK do not supply a verified exclusive
+owner/save API. The cached SDK declares a 266-slot inventory and mostly
+padding fields; its wrappers even assign two different pointer return types
+to the same address `0xADD2C0`. It is not evidence permitting a live native
+mutation or publishing a map while dispatch is running.
+
+Before writing the real provider, retrieve the current extension sources from
+the task's named `/root/projects/WorldSvr` and `/root/CABAL_NATIVE_EXTRA`
+directories. `Collect-Diamond-NativeSources.ps1` reads only C/C++ headers,
+sources and build descriptions into a Downloads ZIP over existing operator
+SSH. It excludes configuration files and symlinks, caps export size, verifies
+the transferred archive hash, reads no SQL/player rows and restarts nothing.
+Its source-only ZIP fixture and full PowerShell transport fixture pass locally;
+actual Windows/VM execution is pending. Use this to locate any existing owner
+and save implementations before inventing another ABI. Do not collect the
+already recovered donor files again.
