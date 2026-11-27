@@ -1,4 +1,5 @@
 #include "DiamondRealGameDataOdbc.h"
+#include "DiamondWarExpAccounting.h"
 #include <sql.h>
 #include <sqlext.h>
 #include <climits>
@@ -98,25 +99,35 @@ bool VerifiedServer01Database(SQLHDBC db) noexcept {
 }
 bool VerifyCommittedReceipt(SQLHDBC db,const AtomicGradeUpRequest& request,
                             std::vector<std::uint8_t>& after,
-                            std::int64_t afterWexp,std::uint32_t afterTickets) noexcept {
+                            const WarExpLedger& afterLedger,
+                            std::uint32_t afterTickets) noexcept {
     Statement q(db);
     if(!q.Prepare(
-      "SELECT 1 FROM dbo.cabal_diamond_v291_rank_receipt "
-      "WHERE UserNum=? AND ExpectedRevision=? AND CharacterIdx=? "
-      "AND IntentId=? AND AppliedRevision=? AND AfterWarExp=? "
-      "AND AfterTicketUnits=? "
-      "AND AfterInventoryHash=HASHBYTES('SHA2_256',?)"))return false;
+      "SELECT 1 FROM dbo.cabal_diamond_v291_rank_receipt AS r "
+      "WHERE r.UserNum=? AND r.ExpectedRevision=? AND r.CharacterIdx=? "
+      "AND r.IntentId=? AND r.AppliedRevision=? AND r.AfterWarExp=? "
+      "AND r.AfterTicketUnits=? "
+      "AND r.AfterInventoryHash=HASHBYTES('SHA2_256',?) "
+      "AND EXISTS (SELECT 1 FROM dbo.cabal_WarExp_Table AS w "
+      "WHERE w.CharacterIdx=r.CharacterIdx AND w.WarExp=? "
+      "AND w.WarExpEarn=? AND w.WarExpUsed=?) "
+      "AND EXISTS (SELECT 1 FROM dbo.cabal_Inventory_table AS i "
+      "WHERE i.CharacterIdx=r.CharacterIdx AND i.Data=?)"))return false;
     SQLINTEGER user=static_cast<SQLINTEGER>(request.userNum);
     SQLINTEGER rev=static_cast<SQLINTEGER>(request.expectedBefore.revision);
     SQLINTEGER chr=static_cast<SQLINTEGER>(request.characterIdx);
     SQLBIGINT intent=static_cast<SQLBIGINT>(request.durableIntentId);
     SQLINTEGER nextRev=static_cast<SQLINTEGER>(request.intendedAfter.revision);
-    SQLBIGINT wexp=static_cast<SQLBIGINT>(afterWexp);
+    SQLBIGINT wexp=static_cast<SQLBIGINT>(afterLedger.current);
+    SQLBIGINT earned=static_cast<SQLBIGINT>(afterLedger.earned);
+    SQLBIGINT used=static_cast<SQLBIGINT>(afterLedger.used);
     SQLINTEGER count=static_cast<SQLINTEGER>(afterTickets);
-    SQLLEN afterLen=0;
+    SQLLEN afterLen=0,inventoryLen=0;
     if(!q.I32(1,user)||!q.I32(2,rev)||!q.I32(3,chr)||
        !q.I64(4,intent)||!q.I32(5,nextRev)||!q.I64(6,wexp)||
-       !q.I32(7,count)||!q.Binary(8,after,afterLen)||!q.Run())
+       !q.I32(7,count)||!q.Binary(8,after,afterLen)||
+       !q.I64(9,wexp)||!q.I64(10,earned)||!q.I64(11,used)||
+       !q.Binary(12,after,inventoryLen)||!q.Run())
         return false;
     SQLINTEGER found=0;
     return q.FetchI32(found) && found==1;
@@ -153,6 +164,12 @@ AtomicCommitOutcome CommitRealGameDataServer01(
        ctx.inventoryBefore.empty() ||
        ctx.inventoryBefore.size()>15360)
         return rejected;
+
+    const auto ledger=PlanWarExpDebit(
+        {static_cast<std::int64_t>(request.expectedBefore.wexp),
+         ctx.warExpEarnBefore,ctx.warExpUsedBefore},30000);
+    if(!ledger.valid || ledger.after.current!=
+       static_cast<std::int64_t>(request.intendedAfter.wexp))return rejected;
 
     if(request.selectedTicketDebit.status!=
        diamond_v291::gradeup0bda::SelectionVerdict::ExactDebitPlan ||
@@ -235,8 +252,7 @@ AtomicCommitOutcome CommitRealGameDataServer01(
     if(!Ok(SQLCloseCursor(proc.h)))
         return {AtomicCommitState::InDoubtRecoveryRequired,0,0};
 
-    if(!VerifyCommittedReceipt(conn.dbc,request,after,
-                               static_cast<std::int64_t>(newWexp),
+    if(!VerifyCommittedReceipt(conn.dbc,request,after,ledger.after,
                                static_cast<std::uint32_t>(afterTicket)))
         return {AtomicCommitState::InDoubtRecoveryRequired,0,0};
     return {AtomicCommitState::CommittedNeedsIndependentSaveVerification,

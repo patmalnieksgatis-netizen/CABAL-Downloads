@@ -108,7 +108,13 @@ jobs:
       - name: Audit disposable-clone-only ticket metadata capture safety (no process attach)
         run: python3 -m unittest discover -s diamond-insignia/native/grade2-ingress -p 'test_capture_clone_ticket_catalog.py' -v
       - name: Verify actual Server01 atomic inventory WarExp rank receipt SQL offline safety
-        run: python3 -m unittest discover -s diamond-insignia/native/real-gamedata-transaction -p 'test_atomic_sql_static.py' -v
+        run: python3 -m unittest discover -s diamond-insignia/native/real-gamedata-transaction -p 'test_*sql*.py' -v
+      - name: Verify native WExp current earned and used accounting and bigint bounds
+        run: |
+          g++ -std=c++17 -O2 -Wall -Wextra -Werror -pedantic \
+            diamond-insignia/native/real-gamedata-transaction/test_wexp_accounting.cpp \
+            -o /tmp/diamond_wexp_accounting
+          /tmp/diamond_wexp_accounting
       - name: Verify authenticated WorldSvr 0BDA v14 owner lease lasts through real game action callback
         run: |
           set -euo pipefail

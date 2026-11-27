@@ -115,6 +115,7 @@ BEGIN
        @InventoryBefore=@InventoryAfter OR
        @WarExpBefore<30000 OR @WarExpAfter<>@WarExpBefore-30000
        OR @WarExpEarnBefore<0 OR @WarExpUsedBefore<0
+       OR @WarExpUsedBefore>9223372036854745807
        OR @VerifiedTicketUnitsBefore<100
        OR @VerifiedTicketUnitsAfter<>@VerifiedTicketUnitsBefore-100
         THROW 51008,N'STOP: malformed or inconsistent proposed rank-up',1;
@@ -176,9 +177,12 @@ BEGIN
         SET Data=@InventoryAfter
         WHERE CharacterIdx=@CharacterIdx AND Data=@InventoryBefore;
       IF @@ROWCOUNT<>1 THROW 51014,N'STOP: inventory CAS failed',1;
-      -- WarExpEarn/WarExpUsed semantics are NOT assumed; these snapshots
-      -- are checked and left intact until game-specific accounting verified.
-      UPDATE dbo.cabal_WarExp_Table SET WarExp=@WarExpAfter
+      -- Original WorldSvr spending increments userdata+16F0 while reducing
+      -- +16E0. Its packer and DBAgent bind these to WarExpUsed and current
+      -- WarExp respectively. Earned stays unchanged. Overflow is rejected
+      -- before entering the transaction. Replay returns above, never here.
+      UPDATE dbo.cabal_WarExp_Table
+        SET WarExp=@WarExpAfter,WarExpUsed=@WarExpUsedBefore+30000
         WHERE CharacterIdx=@CharacterIdx AND WarExp=@WarExpBefore
           AND WarExpEarn=@WarExpEarnBefore
           AND WarExpUsed=@WarExpUsedBefore;

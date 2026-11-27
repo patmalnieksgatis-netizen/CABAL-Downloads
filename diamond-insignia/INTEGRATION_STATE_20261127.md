@@ -170,13 +170,62 @@ padding fields; its wrappers even assign two different pointer return types
 to the same address `0xADD2C0`. It is not evidence permitting a live native
 mutation or publishing a map while dispatch is running.
 
-Before writing the real provider, retrieve the current extension sources from
-the task's named `/root/projects/WorldSvr` and `/root/CABAL_NATIVE_EXTRA`
-directories. `Collect-Diamond-NativeSources.ps1` reads only C/C++ headers,
-sources and build descriptions into a Downloads ZIP over existing operator
-SSH. It excludes configuration files and symlinks, caps export size, verifies
-the transferred archive hash, reads no SQL/player rows and restarts nothing.
-Its source-only ZIP fixture and full PowerShell transport fixture pass locally;
-actual Windows/VM execution is pending. Use this to locate any existing owner
-and save implementations before inventing another ABI. Do not collect the
-already recovered donor files again.
+The operator has now run `Collect-Diamond-NativeSources.ps1` and supplied the
+95-file export from both named source roots. Do not request it again. The
+upload SHA-256 is
+`c6267d6f41f01fec5c71ca20d297d5ccb58328ce914d49ece2c07f3c4d9dbf49`.
+All 95 source members passed manifest length/hash checks. There are 33 unique
+file contents, including repeated copies of the same old SDK. The primary
+GameStructs.h/.cpp and Proc.h/.cpp exactly match the cached legacy copies.
+The additional Costume refresh sources do not implement a native owner/save
+lease and are not substitutes for one. Source files stay private.
+
+## Native host investigation and WExp correction
+
+`worldsvr-ingress/verify_native_host_contract.py` executes pinned original
+instruction blocks from the exact WorldSvr and DBAgent. It verifies:
+
+- native spending decreases userdata `+0x16E0` and increases `+0x16F0`;
+- native save packing copies those fields and `+0x16E8` to body offsets
+  `0x99`, `0xA1`, `0xA9`;
+- DBAgent binds these values to named parameters 64–66, `WarExpStatus`,
+  `warExpEarn`, `warExpUsed`, in its `set_cabal_character` call;
+- the original dispatcher takes mutex `0x23685E0` around CallProc only when
+  its layer `+0x38` is greater than 1 AND the map locking byte is nonzero.
+
+Three original-code accounting/packing/binding cases and 16 dispatch branch
+cases pass. Clock, SQL/network functions and mutex operations in this
+harness are substituted; there is no live server test. This global,
+conditional dispatch mutex **does not prove a per-character lifetime and
+asynchronous-save fence**. Do not enable host readiness flags from this alone.
+
+The atomic SQL draft previously left WarExpUsed unchanged. It now adds
+30,000 to used while subtracting 30,000 from current, preserves earned,
+rejects bigint overflow before mutation and keeps replay above the update.
+`DiamondWarExpAccounting.h` supplies the checked ledger transition to the
+ODBC bridge. Its committed-receipt query now also requires the actual saved
+inventory and all three WExp counters to match. An old receipt by itself is
+insufficient when ordinary saves could have overwritten game rows.
+
+The C++ ledger/bounds checks, SQL static checks, original-code fixtures,
+ODBC preflight and complete dispatch-to-ODBC link tests pass locally.
+unixODBC development headers were extracted under the Cloud workspace; the
+VM and its packages were not changed. No connection to the real SQL Server
+was made by these local tests, and all online write/response gates remain off.
+
+### Next real SQL engine check, without game rows or persistent installation
+
+`native/real-gamedata-transaction/test_rankup_in_temp_tables.py` builds a test
+from the **actual procedure body**, replacing its targets with connection-local
+`#` tables and a `#` procedure. The application-lock namespace is also unique
+to the test. It checks commit, replay without a second debit, rollback after
+a deliberately failed final receipt, used-counter overflow and stale-counter
+rejection. It refuses non-temporary schema/table references.
+
+The operator wrapper `Test-Diamond-TemporarySql.ps1` transfers the pinned
+runner and SQL source over SSH. The SQL password remains inside sql_main's
+existing environment. No game rows, persistent tables/procedures, services or
+network settings are changed. Temporary objects disappear with the test
+connection. The real SQL engine execution is pending operator relay; this
+test still cannot prove online WorldSvr locking, Mastery stat application,
+relogin initialization or working Diamond gameplay.

@@ -56,5 +56,11 @@ class SqlGates(unittest.TestCase):
         self.assertNotRegex(proc,r"(?i)\bINSERT\s+INTO\s+dbo\.cabal_diamond_v291_rank_state\b")
         self.assertNotRegex(proc,r"(?i)\bUPDATE\s+dbo\.cabal_merit_platinum_table\b")
         self.assertIn("WorldSvr",SQL)
+    def test_native_spent_counter_updates_once_and_is_overflow_guarded(self):
+        proc=SQL.split("CREATE OR ALTER PROCEDURE dbo.cabal_sp_diamond_v291_atomic_rankup",1)[1]
+        self.assertIn("@WarExpUsedBefore>9223372036854745807",proc)
+        self.assertIn("SET WarExp=@WarExpAfter,WarExpUsed=@WarExpUsedBefore+30000",proc)
+        self.assertNotRegex(proc,r"SET\s+WarExpEarn\s*=")
+        self.assertLess(proc.index("SET @Outcome=2"),proc.index("UPDATE dbo.cabal_WarExp_Table"))
 
 if __name__=="__main__":unittest.main()

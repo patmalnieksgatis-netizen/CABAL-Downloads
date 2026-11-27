@@ -1,0 +1,164 @@
+{
+  "status": "PINNED_NATIVE_INSTRUCTIONS_PASS",
+  "world_sha256": "caec7772acd22fd8918cfac386845c644451781e48c51975eaefed334c6705c3",
+  "dba_sha256": "474acd9fec66cde11a55458d77b6b352aacc2a003385d2e9b79fd817b1f4ffce",
+  "accounting_cases": [
+    {
+      "before": [
+        40000,
+        90000,
+        7
+      ],
+      "cost": 30000,
+      "saved_and_bound": [
+        10000,
+        90000,
+        30007
+      ]
+    },
+    {
+      "before": [
+        30000,
+        30000,
+        0
+      ],
+      "cost": 30000,
+      "saved_and_bound": [
+        0,
+        30000,
+        30000
+      ]
+    },
+    {
+      "before": [
+        1000000000000,
+        1000000000001,
+        12345
+      ],
+      "cost": 30000,
+      "saved_and_bound": [
+        999999970000,
+        1000000000001,
+        42345
+      ]
+    }
+  ],
+  "dispatch_cases": [
+    {
+      "layer_field38": 0,
+      "map_locking": 0,
+      "handler_result": 0,
+      "protected": false
+    },
+    {
+      "layer_field38": 0,
+      "map_locking": 0,
+      "handler_result": 7,
+      "protected": false
+    },
+    {
+      "layer_field38": 0,
+      "map_locking": 1,
+      "handler_result": 0,
+      "protected": false
+    },
+    {
+      "layer_field38": 0,
+      "map_locking": 1,
+      "handler_result": 7,
+      "protected": false
+    },
+    {
+      "layer_field38": 1,
+      "map_locking": 0,
+      "handler_result": 0,
+      "protected": false
+    },
+    {
+      "layer_field38": 1,
+      "map_locking": 0,
+      "handler_result": 7,
+      "protected": false
+    },
+    {
+      "layer_field38": 1,
+      "map_locking": 1,
+      "handler_result": 0,
+      "protected": false
+    },
+    {
+      "layer_field38": 1,
+      "map_locking": 1,
+      "handler_result": 7,
+      "protected": false
+    },
+    {
+      "layer_field38": 2,
+      "map_locking": 0,
+      "handler_result": 0,
+      "protected": false
+    },
+    {
+      "layer_field38": 2,
+      "map_locking": 0,
+      "handler_result": 7,
+      "protected": false
+    },
+    {
+      "layer_field38": 2,
+      "map_locking": 1,
+      "handler_result": 0,
+      "protected": true
+    },
+    {
+      "layer_field38": 2,
+      "map_locking": 1,
+      "handler_result": 7,
+      "protected": true
+    },
+    {
+      "layer_field38": 15,
+      "map_locking": 0,
+      "handler_result": 0,
+      "protected": false
+    },
+    {
+      "layer_field38": 15,
+      "map_locking": 0,
+      "handler_result": 7,
+      "protected": false
+    },
+    {
+      "layer_field38": 15,
+      "map_locking": 1,
+      "handler_result": 0,
+      "protected": true
+    },
+    {
+      "layer_field38": 15,
+      "map_locking": 1,
+      "handler_result": 7,
+      "protected": true
+    }
+  ],
+  "native_wexp_offsets": {
+    "current": "0x16E0",
+    "earned": "0x16E8",
+    "used": "0x16F0"
+  },
+  "packed_body_offsets": {
+    "current": "0x99",
+    "earned": "0xA1",
+    "used": "0xA9"
+  },
+  "dbagent_parameters_1_based": {
+    "WarExpStatus": 64,
+    "warExpEarn": 65,
+    "warExpUsed": 66
+  },
+  "dispatch_mutex": "0x23685E0",
+  "dispatch_mutex_scope": "GLOBAL_CONDITIONAL",
+  "per_character_lifetime_or_save_fence_proven": false,
+  "sql_executed": false,
+  "server_or_client_modified": false
+}
