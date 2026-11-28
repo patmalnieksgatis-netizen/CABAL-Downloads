@@ -304,6 +304,46 @@
       ]
     }
   ],
+  "owner_queue_conversion": {
+    "ipc_command": 47,
+    "itc_command": 2032,
+    "bytes": 18,
+    "cases": [
+      {
+        "generation": 1,
+        "allocation_ok": false,
+        "queued": false
+      },
+      {
+        "generation": 1,
+        "allocation_ok": true,
+        "queued": true
+      },
+      {
+        "generation": 77,
+        "allocation_ok": false,
+        "queued": false
+      },
+      {
+        "generation": 77,
+        "allocation_ok": true,
+        "queued": true
+      },
+      {
+        "generation": 4294967295,
+        "allocation_ok": false,
+        "queued": false
+      },
+      {
+        "generation": 4294967295,
+        "allocation_ok": true,
+        "queued": true
+      }
+    ],
+    "original_packet_preserved": true,
+    "queue_service_substituted": true,
+    "session_lifetime_proven": false
+  },
   "cmd47_pending_qword_offsets": [
     "0x2b7b8",
     "0x2b7c0",

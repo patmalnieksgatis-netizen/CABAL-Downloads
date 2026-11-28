@@ -33,6 +33,70 @@ class Image:
         return mapped(self.raw,self.regions,at,n)
 
 
+
+def audit_ack_queue(world):
+    """Execute the original IPC-to-owner-queue conversion with service stubs."""
+    u=Uc(UC_ARCH_X86,UC_MODE_64)
+    for start,size in ((0x7de000,0x1000),(0xb2c000,0x2000),
+                       (0x410000,0x1000),(0x35000000,0x10000)):
+        u.mem_map(start,size)
+    u.mem_write(0x7dec1d,world.read(0x7dec1d,0x7dec9a-0x7dec1d))
+    arena=0x35000000
+    source,copied,ctx,layer,stack=(arena+0x1000,arena+0x2000,
+                                 arena+0x3000,arena+0x4000,arena+0x8000)
+    frames=[]; allocation_ok=True
+
+    def ret(value=0):
+        sp=u.reg_read(UC_X86_REG_RSP)
+        target=struct.unpack('<Q',u.mem_read(sp,8))[0]
+        u.reg_write(UC_X86_REG_RAX,value)
+        u.reg_write(UC_X86_REG_RSP,sp+8)
+        u.reg_write(UC_X86_REG_RIP,target)
+
+    def hook(uc,at,size,opaque):
+        if at==0xb2c580:
+            assert uc.reg_read(UC_X86_REG_RDI)==18
+            ret(copied if allocation_ok else 0)
+        elif at==0x410540:
+            assert uc.reg_read(UC_X86_REG_RDI)==copied
+            assert uc.reg_read(UC_X86_REG_RSI)==source
+            assert uc.reg_read(UC_X86_REG_RDX)==18
+            uc.mem_write(copied,bytes(uc.mem_read(source,18)))
+            ret(copied)
+        elif at==0xb2d370:
+            assert uc.reg_read(UC_X86_REG_RDI)==layer
+            queued=uc.reg_read(UC_X86_REG_RSI)
+            user,packet,n=struct.unpack('<QQQ',uc.mem_read(queued,24))
+            generation=struct.unpack('<I',uc.mem_read(queued+24,4))[0]
+            assert (user,packet,n)==(ctx,copied,18)
+            frames.append((bytes(uc.mem_read(packet,n)),generation))
+            ret()
+    u.hook_add(UC_HOOK_CODE,hook)
+    cases=[]
+    original=struct.pack('<HHI HII',0xb7e2,18,0,47,4242,2)
+    for generation in (1,77,0xffffffff):
+        for allocation_ok in (False,True):
+            before=len(frames)
+            u.mem_write(source,original)
+            u.mem_write(ctx+0xe4,struct.pack('<I',generation))
+            for register,value in ((UC_X86_REG_RBX,source),(UC_X86_REG_R12,ctx),
+                                   (UC_X86_REG_R13,layer),(UC_X86_REG_RBP,stack),
+                                   (UC_X86_REG_RSP,stack-0x200)):
+                u.reg_write(register,value)
+            u.emu_start(0x7dec1d,0x7dec9a,count=100)
+            assert bytes(u.mem_read(source,18))==original
+            if allocation_ok:
+                expected=original[:8]+struct.pack('<H',2032)+original[10:]
+                assert frames[-1]==(expected,generation) and len(frames)==before+1
+            else:
+                assert len(frames)==before
+            cases.append(dict(generation=generation,allocation_ok=allocation_ok,
+                              queued=len(frames)>before))
+    return dict(ipc_command=47,itc_command=2032,bytes=18,cases=cases,
+                original_packet_preserved=True,queue_service_substituted=True,
+                session_lifetime_proven=False)
+
+
 def audit(world_path, dba_path):
     world=Image(world_path,WORLD_SHA)
     dba=Image(dba_path,DBA_SHA)
@@ -220,6 +284,7 @@ def audit(world_path, dba_path):
             'dbagent_parameters_1_based':{'WarExpStatus':64,'warExpEarn':65,'warExpUsed':66},
             'dispatch_mutex':'0x23685E0','dispatch_mutex_scope':'GLOBAL_CONDITIONAL',
             'cmd47_ack_cases':ack_cases,
+            'owner_queue_conversion':audit_ack_queue(world),
             'cmd47_pending_qword_offsets':[hex(x) for x in pending_offsets],
             'cmd47_status_dword_offsets':[hex(x) for x in status_offsets],
             'cmd47_flag_bits':[hex(x) for x in flag_bits],

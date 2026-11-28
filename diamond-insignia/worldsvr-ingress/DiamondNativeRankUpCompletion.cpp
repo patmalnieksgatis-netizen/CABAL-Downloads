@@ -1,5 +1,6 @@
 #include "DiamondNativeRankUpCompletion.h"
 #include <utility>
+#include <cstring>
 
 namespace diamond_v291::completion {
 namespace {
@@ -58,6 +59,21 @@ Result RankUpCompletion::AcceptCommitted(
     state_=State::WaitingForAck; // established BEFORE publish can deliver ACK
     if(!port_.PublishSave(save))return Recover();
     return Result::WaitingForAck;
+}
+Result RankUpCompletion::OnItcSaveAck(const Identity& owner,const void* packet,
+        std::size_t bytes,std::uint64_t epoch,
+        std::uint32_t outstandingAtAck) noexcept {
+    if(state_!=State::WaitingForAck)return Result::WrongPhase;
+    if(!packet || bytes!=kIpcResultSize)return Result::IgnoredAck;
+    const auto* raw=static_cast<const unsigned char*>(packet);
+    if(raw[8]!=0xf0 || raw[9]!=0x07)return Result::IgnoredAck;
+    // The original WorldSvr copies all 18 bytes and rewrites only the opcode.
+    // Leave the owner's queued frame untouched for its original handler.
+    std::array<unsigned char,kIpcResultSize> ipc{};
+    std::memcpy(ipc.data(),raw,ipc.size());
+    ipc[8]=kIpcResultUpdateChDat;
+    ipc[9]=0;
+    return OnSaveAck(owner,ipc.data(),ipc.size(),epoch,outstandingAtAck);
 }
 Result RankUpCompletion::OnSaveAck(const Identity& owner,const void* packet,
         std::size_t bytes,std::uint64_t epoch,

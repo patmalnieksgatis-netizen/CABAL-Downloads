@@ -126,6 +126,24 @@ int main(){
         assert(x.OnSaveAck(identity(),packet.data(),packet.size(),103,1)==c::Result::WrongPhase);
         assert(x.HasRetainedEvidence() && reads==0 && p.sends==0 && p.releases==0);
     }
+    {
+        events.clear();
+        reads=0;
+        Port p;currentPort=&p;c::RankUpCompletion x(p,identity());
+        assert(x.AcceptCommitted(record(),"fixture-no-connection")==c::Result::WaitingForAck);
+        auto itc=packet;
+        itc[8]=0xf0;itc[9]=7;
+        const auto original=itc;
+        assert(x.OnItcSaveAck(identity(),packet.data(),packet.size(),101,1)==c::Result::IgnoredAck);
+        assert(x.OnSaveAck(identity(),itc.data(),itc.size(),101,1)==c::Result::IgnoredAck);
+        assert(x.OnItcSaveAck(identity(),itc.data(),itc.size()-1,101,1)==c::Result::IgnoredAck);
+        auto foreign=identity();++foreign.sessionGeneration;
+        assert(x.OnItcSaveAck(foreign,itc.data(),itc.size(),101,1)==c::Result::IgnoredAck);
+        assert(reads==0 && p.sends==0);
+        assert(x.OnItcSaveAck(identity(),itc.data(),itc.size(),101,1)==c::Result::Completed);
+        assert(itc==original && p.sends==1 && p.releases==1);
+        assert(x.OnItcSaveAck(identity(),itc.data(),itc.size(),102,1)==c::Result::WrongPhase);
+    }
     for(int failure=0;failure<10;++failure){
         events.clear();reads=0;readback=true;changeSessionOnRead=false;
         Port p;currentPort=&p;c::RankUpCompletion x(p,identity());

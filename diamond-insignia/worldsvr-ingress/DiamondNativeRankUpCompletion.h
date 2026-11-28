@@ -65,6 +65,12 @@ public:
     Result OnSaveAck(const Identity&,const void* packet,std::size_t bytes,
                      std::uint64_t receiveEpoch,
                      std::uint32_t outstandingAtAck) noexcept;
+    // Owner-executor entry after native IPC47 -> ITC2032 queue conversion.
+    // The host resolves Identity from the queued session generation under
+    // its lease, before native pending flags are cleared.
+    Result OnItcSaveAck(const Identity&,const void* packet,std::size_t bytes,
+                        std::uint64_t receiveEpoch,
+                        std::uint32_t outstandingAtAck) noexcept;
     void MarkInDoubt() noexcept;
     void MarkInDoubt(std::unique_ptr<real_gamedata::RankUpCommitRecord>,
                      std::string connectionString) noexcept;

@@ -204,3 +204,32 @@ and barrier tests also passed ASan/UBSan. The host still needs to supply
 an exclusive save window and deliver overlapping native saves to the
 coordinator. Two ACKs with identical fields cannot be distinguished from
 the wire alone. The active SQL procedure was inspected without executing it.
+
+## Owner-thread save result entry
+
+The original IPC handler copies an 18-byte result and changes opcode 47
+to internal command 2032 before enqueueing it on the character's owner
+layer. It also copies the current USERCONTEXT generation DWORD into the
+queued process context. The generation copy occurs when the ACK is
+received, rather than when its corresponding save was sent.
+
+The new `OnItcSaveAck` entry accepts internal command 2032 and forwards an
+owned, normalized 18-byte copy to the existing completion checks. The
+original queued frame is preserved for the original handler. Internal and
+IPC entries reject the other stage's command. Both require the trusted
+host to resolve the queued generation under the held session lease.
+
+The native instruction verifier now executes this conversion for three
+generation values, with successful and failed allocation. The allocator,
+copy service and queue service are substituted. All six cases passed and
+the original source packet remained unchanged. The completion test checks
+a valid internal response, wrong-stage/truncated responses, another
+generation and duplicate completion. Normal and ASan/UBSan tests passed.
+The default build still refuses rank-up completion.
+
+This supplies the correct completion entry for the owner-thread callback.
+The callback is not installed in the active WorldSvr. The exact native
+session lifetime/save exclusion provider, event ownership and recovery
+still need implementation before this entry can be used in gameplay.
+A queued generation by itself cannot distinguish a delayed old ACK from a
+new session that currently owns the same character.
