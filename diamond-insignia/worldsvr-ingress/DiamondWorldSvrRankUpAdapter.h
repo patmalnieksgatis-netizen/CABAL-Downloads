@@ -118,7 +118,8 @@ private:
         }
         // Registration and completion allocation precede all SQL. Retaining
         // an uncertain result in Finish requires no further allocation.
-        if(!entry->session->Populate(request.transaction,request.bridge) || !request.completion ||
+        if(!entry->session->Populate(request.transaction,request.bridge) ||
+           entry->interrupted || !request.completion ||
            !request.completion->ReadyForCommit()) {
             request.completion.reset();
             entry->session->CancelBeforeCommit();

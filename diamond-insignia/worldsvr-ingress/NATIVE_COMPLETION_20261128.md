@@ -298,3 +298,26 @@ before returning the user pointer. Its imported ACE reference-counting APIs
 offer another investigation route, but their imports do not establish that
 the character data stays owned across disconnect and reuse. No verified
 provider for that boundary was recovered or installed in this change.
+
+## Local preparation and module check
+
+A new registered-handler regression interrupted the owner during
+`NativeSession::Populate`. Previously the adapter returned a prepared
+request and the handler entered the transaction despite that interruption.
+Begin now checks the recorded interruption before handing the request to
+the transaction. The regression failed before the change and passes after
+it, verifying zero bridge calls and clean pre-commit cancellation.
+
+Default, clone and ASan/UBSan registered-handler tests passed, along with
+completion regressions. The complete Server01 ODBC/native bridge source
+units linked into default and clone shared modules with undefined symbols
+rejected. Both loaded in an isolated local process, reported ABI
+`0x20261129` and rejected a missing host. Native session acquisition and SQL
+were substituted in the handler test. No WorldSvr or client was launched
+during module loading.
+
+These local checks validate source behavior and binary linkage. The real
+`AcquireSession` provider remains unimplemented. Consequently there is
+no running local game installation or tested server deployment package.
+The application adapter cannot retain native character data merely by
+owning a C++ wrapper around it.

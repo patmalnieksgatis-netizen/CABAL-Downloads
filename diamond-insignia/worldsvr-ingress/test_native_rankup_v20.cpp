@@ -9,6 +9,7 @@ namespace gu=diamond_v291::gradeup0bda;
 namespace rg=diamond_v291::real_gamedata;
 namespace completion=diamond_v291::completion;
 static int nativeReleases=0,nativeCancels=0,nativeDestroyed=0;
+static void (*duringPopulate)() noexcept=nullptr;
 struct Port final:completion::NativeSession {
     const void* nativeUser=nullptr;
     explicit Port(const void* user=nullptr):nativeUser(user){}
@@ -19,6 +20,7 @@ struct Port final:completion::NativeSession {
         transaction.attestedUserNum=5005;transaction.attestedCharacterIdx=24055;
         transaction.attestedSessionGeneration=77;
         transaction.attestedWorldUserCtx=nativeUser;
+        if(duringPopulate)duringPopulate();
         return true;
     }
     void CancelBeforeCommit() noexcept override{++nativeCancels;}
@@ -172,6 +174,14 @@ int main(){
     nextState=gu::GameActionState::RuleRejected;
     assert(entry(nullptr,&c)==0);
     assert(adapter->PendingCount()==0 && nativeCancels==2 && nativeDestroyed==3);
+    // An interruption while loading the owner must be rejected before SQL.
+    nextState=gu::GameActionState::CommittedPendingSaveProof;
+    const auto beforeInterruptedLoad=bridgeCalls;
+    duringPopulate=[]() noexcept {adapter->Interrupt({5005,24055,77,998877});};
+    assert(entry(nullptr,&c)==0);
+    duringPopulate=nullptr;
+    assert(bridgeCalls==beforeInterruptedLoad && adapter->PendingCount()==0);
+    assert(nativeCancels==3 && nativeDestroyed==4);
     // An uncertain transaction stays owned across disconnect and another begin.
     nextState=gu::GameActionState::InDoubtRecoveryRequired;
     assert(entry(nullptr,&c)==0 && adapter->PendingCount()==1);
@@ -179,7 +189,7 @@ int main(){
     adapter->Interrupt(owner);
     assert(adapter->SaveRouted(owner,0x802,100,0)==completion::Result::WrongPhase);
     assert(entry(nullptr,&c)==0 && bridgeCalls==uncertainCalls);
-    assert(adapter->PendingCount()==1 && nativeReleases==1 && nativeCancels==3);
+    assert(adapter->PendingCount()==1 && nativeReleases==1 && nativeCancels==4);
     Destroy(user[kDiamond]);user[kDiamond]=nullptr;diamond_v20::binding=nullptr;
     std::puts("HOST_BEGIN_FINISH_AND_QUEUED_EVENTS=PASS");
     std::puts("PENDING_SESSION_AND_RECOVERY_OWNERSHIP=PASS");
