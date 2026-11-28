@@ -65,7 +65,7 @@ def audit(world_path, dba_path):
                        (0x452000,0x1000),(0xb2e000,0x1000),(0xb49000,0x1000),
                        (0x410000,0x2000),(0x30000000,0x40000),
                        (0x7de000,0x2000),(0xadd000,0x1000),
-                       (0x2163000,0x1000)):
+                       (0x2163000,0x1000),(0x75d000,0x1000)):
         u.mem_map(start,size)
     u.mem_write(0xa41694,world.read(0xa41694,0x17))
     u.mem_write(0x8be6d8,world.read(0x8be6d8,0x2a))
@@ -73,11 +73,12 @@ def audit(world_path, dba_path):
     # Includes the original branches to lock/unlock blocks at 0xB2E930/918.
     u.mem_write(0xb2e000,world.read(0xb2e000,0x1000))
     u.mem_write(0x7ded30,world.read(0x7ded30,0x190))
+    u.mem_write(0xa41788,world.read(0xa41788,0x1d))
     arena=0x30000000
     user,payload,sql_frame,stack,layer,proc,ctx=(arena,arena+0x2000,arena+0x4000,
                                               arena+0x7000,arena+0x8000,
                                               arena+0x9000,arena+0xa000)
-    sql_values=[];events=[];depth=0;handler_result=0
+    sql_values=[];events=[];sent=[];depth=0;handler_result=0
 
     def put(at,value,width=8):
         u.mem_write(at,value.to_bytes(width,'little'))
@@ -113,6 +114,15 @@ def audit(world_path, dba_path):
             if uc.reg_read(UC_X86_REG_RSI)!=4242:
                 raise AssertionError('ACK_CHARACTER_LOOKUP')
             ret(ctx)
+        elif at==0x75d4e0:
+            # Capture the native call ABI only; do not emulate a socket or
+            # assert a real network send. Client reader proof is separate.
+            target=uc.reg_read(UC_X86_REG_RDI)
+            packet=uc.reg_read(UC_X86_REG_RSI)
+            size=uc.reg_read(UC_X86_REG_RDX)
+            if target!=ctx or size!=7:
+                raise AssertionError('NATIVE_STATUS_SEND_ARGUMENTS')
+            sent.append(bytes(uc.mem_read(packet,size)).hex());ret()
 
     u.hook_add(UC_HOOK_CODE,hook)
     cases=[]
@@ -194,6 +204,15 @@ def audit(world_path, dba_path):
     run_ack(0x2202)
     if get(user+pending_offsets[0])!=0 or get(user+status_offsets[0],4)!=0:
         raise AssertionError('REPEATED_ACK_CLEAR_SEMANTICS')
+
+    # Original Platinum success reply: the handler passes USERCONTEXT*, a
+    # seven-byte B7E2 status packet, and byte count 7 to the native sender.
+    u.mem_write(stack-0x107,bytes.fromhex('e2b70700100b00'))
+    u.reg_write(UC_X86_REG_RBP,stack);u.reg_write(UC_X86_REG_RSP,stack-0x200)
+    u.reg_write(UC_X86_REG_R12,ctx)
+    u.emu_start(0xa41788,0xa417a5,count=50)
+    if sent!=['e2b70700100b01']:
+        raise AssertionError('NATIVE_SEVEN_BYTE_STATUS_REPLY')
     return {'status':'PINNED_NATIVE_INSTRUCTIONS_PASS','world_sha256':WORLD_SHA,
             'dba_sha256':DBA_SHA,'accounting_cases':cases,'dispatch_cases':guards,
             'native_wexp_offsets':{'current':'0x16E0','earned':'0x16E8','used':'0x16F0'},
@@ -206,6 +225,10 @@ def audit(world_path, dba_path):
             'cmd47_flag_bits':[hex(x) for x in flag_bits],
             'identical_repeated_ack_clears_new_pending_state':True,
             'native_pending_words_prove_unique_operation_completion':False,
+            'native_status_reply_call':{'call_site':'0xA417A0','sender':'0x75D4E0',
+                'arguments':['USERCONTEXT*','packet*','7'],
+                'observed_original_platinum_reply':sent[0],
+                'socket_service_substituted':True,'network_send_tested':False},
             'per_character_lifetime_or_save_fence_proven':False,
             'sql_executed':False,'server_or_client_modified':False}
 

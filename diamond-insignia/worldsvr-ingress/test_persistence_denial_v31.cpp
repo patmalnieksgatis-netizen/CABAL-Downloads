@@ -10,7 +10,8 @@ static Operation operation() {
     Operation o{};
     o.durableIntent=17; o.userNum=7; o.characterIdx=42;
     o.expectedRevision=3; o.appliedRevision=4; o.command=1;
-    o.newBadgeGrade=2; o.newWexp=5000; o.newTickets=23;
+    o.newBadgeGrade=2;o.beforeWexp={35000,90000,7};
+    o.afterWexp={5000,90000,30007};o.newTickets=23;
     return o;
 }
 static void blocked(const DiamondWorldSaveBarrier& b) {

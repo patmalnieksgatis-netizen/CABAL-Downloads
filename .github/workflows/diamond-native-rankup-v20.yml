@@ -10,10 +10,22 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - name: Compile and run native registry-to-bridge fixture
+      - name: Compile native registry SQL-result and asynchronous completion fixtures
         run: |
-          g++ -std=c++17 -O2 -Wall -Wextra -Werror diamond-insignia/worldsvr-ingress/test_native_rankup_v20.cpp -o /tmp/test-native-rankup-v20
-          /tmp/test-native-rankup-v20
+          set -euo pipefail
+          for mode in default clone; do
+            flags=()
+            if [ "$mode" = clone ]; then flags=(-DDIAMOND_ENABLE_0BDA_CLONE_TRIAL); fi
+            for test in test_native_rankup_v20 test_native_rankup_completion; do
+              g++ -std=c++17 -O2 -Wall -Wextra -Werror -pedantic "${flags[@]}" \
+                diamond-insignia/worldsvr-ingress/$test.cpp \
+                diamond-insignia/worldsvr-ingress/DiamondNativeRankUpCompletion.cpp \
+                diamond-insignia/native/world-save-barrier/DiamondWorldSaveBarrier.cpp \
+                diamond-insignia/native/grade2-ingress/Diamond0BDASaveReplyGate.cpp \
+                -o /tmp/$test
+              /tmp/$test
+            done
+          done
       - name: Check actual Server01 bridge and authenticated ingress sources
         run: |
           g++ -std=c++17 -fsyntax-only diamond-insignia/native/real-gamedata-transaction/Diamond0BDARealServer01Bridge.cpp diamond-insignia/native/grade2-ingress/Diamond0BDAAuthenticatedIngress.cpp

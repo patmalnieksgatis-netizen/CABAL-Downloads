@@ -321,6 +321,18 @@
   ],
   "identical_repeated_ack_clears_new_pending_state": true,
   "native_pending_words_prove_unique_operation_completion": false,
+  "native_status_reply_call": {
+    "call_site": "0xA417A0",
+    "sender": "0x75D4E0",
+    "arguments": [
+      "USERCONTEXT*",
+      "packet*",
+      "7"
+    ],
+    "observed_original_platinum_reply": "e2b70700100b01",
+    "socket_service_substituted": true,
+    "network_send_tested": false
+  },
   "per_character_lifetime_or_save_fence_proven": false,
   "sql_executed": false,
   "server_or_client_modified": false

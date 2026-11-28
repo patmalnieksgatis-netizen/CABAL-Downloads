@@ -47,7 +47,11 @@ struct Connection {
 struct Statement {
     SQLHSTMT h=SQL_NULL_HSTMT;
     explicit Statement(SQLHDBC dbc) noexcept {
-        SQLAllocHandle(SQL_HANDLE_STMT,dbc,&h);
+        if(!Ok(SQLAllocHandle(SQL_HANDLE_STMT,dbc,&h)))return;
+        if(!Ok(SQLSetStmtAttr(h,SQL_ATTR_QUERY_TIMEOUT,
+              reinterpret_cast<SQLPOINTER>(static_cast<std::uintptr_t>(30)),0))){
+            SQLFreeHandle(SQL_HANDLE_STMT,h);h=SQL_NULL_HSTMT;
+        }
     }
     ~Statement(){if(h!=SQL_NULL_HSTMT)SQLFreeHandle(SQL_HANDLE_STMT,h);}
     bool Ready() const noexcept{return h!=SQL_NULL_HSTMT;}
@@ -97,27 +101,30 @@ bool VerifiedServer01Database(SQLHDBC db) noexcept {
     if(std::strcmp(name,"Server01")!=0)return false;
     return SQLFetch(q.h)==SQL_NO_DATA;
 }
-bool VerifyCommittedReceipt(SQLHDBC db,const AtomicGradeUpRequest& request,
+bool VerifyCommittedReceipt(SQLHDBC db,const Operation& operation,
                             std::vector<std::uint8_t>& after,
                             const WarExpLedger& afterLedger,
                             std::uint32_t afterTickets) noexcept {
     Statement q(db);
     if(!q.Prepare(
-      "SELECT 1 FROM dbo.cabal_diamond_v291_rank_receipt AS r "
+      "SELECT 1 FROM dbo.cabal_diamond_v291_rank_receipt AS r WITH (HOLDLOCK) "
       "WHERE r.UserNum=? AND r.ExpectedRevision=? AND r.CharacterIdx=? "
       "AND r.IntentId=? AND r.AppliedRevision=? AND r.AfterWarExp=? "
       "AND r.AfterTicketUnits=? "
       "AND r.AfterInventoryHash=HASHBYTES('SHA2_256',?) "
-      "AND EXISTS (SELECT 1 FROM dbo.cabal_WarExp_Table AS w "
+      "AND EXISTS (SELECT 1 FROM dbo.cabal_WarExp_Table AS w WITH (HOLDLOCK) "
       "WHERE w.CharacterIdx=r.CharacterIdx AND w.WarExp=? "
       "AND w.WarExpEarn=? AND w.WarExpUsed=?) "
-      "AND EXISTS (SELECT 1 FROM dbo.cabal_Inventory_table AS i "
-      "WHERE i.CharacterIdx=r.CharacterIdx AND i.Data=?)"))return false;
-    SQLINTEGER user=static_cast<SQLINTEGER>(request.userNum);
-    SQLINTEGER rev=static_cast<SQLINTEGER>(request.expectedBefore.revision);
-    SQLINTEGER chr=static_cast<SQLINTEGER>(request.characterIdx);
-    SQLBIGINT intent=static_cast<SQLBIGINT>(request.durableIntentId);
-    SQLINTEGER nextRev=static_cast<SQLINTEGER>(request.intendedAfter.revision);
+      "AND EXISTS (SELECT 1 FROM dbo.cabal_Inventory_table AS i WITH (HOLDLOCK) "
+      "WHERE i.CharacterIdx=r.CharacterIdx AND i.Data=?) "
+      "AND EXISTS (SELECT 1 FROM dbo.cabal_diamond_v291_rank_state AS s WITH (HOLDLOCK) "
+      "WHERE s.UserNum=r.UserNum AND s.CharacterIdx=r.CharacterIdx "
+      "AND s.BadgeGrade=2 AND s.Revision=r.AppliedRevision)"))return false;
+    SQLINTEGER user=static_cast<SQLINTEGER>(operation.userNum);
+    SQLINTEGER rev=static_cast<SQLINTEGER>(operation.expectedRevision);
+    SQLINTEGER chr=static_cast<SQLINTEGER>(operation.characterIdx);
+    SQLBIGINT intent=static_cast<SQLBIGINT>(operation.durableIntent);
+    SQLINTEGER nextRev=static_cast<SQLINTEGER>(operation.appliedRevision);
     SQLBIGINT wexp=static_cast<SQLBIGINT>(afterLedger.current);
     SQLBIGINT earned=static_cast<SQLBIGINT>(afterLedger.earned);
     SQLBIGINT used=static_cast<SQLBIGINT>(afterLedger.used);
@@ -144,7 +151,7 @@ AtomicCommitOutcome CommitRealGameDataServer01(
        !ctx.driverConfiguredForExactServer01 ||
        !ctx.ownerLockStillHeld ||
        !ctx.independentWarExpAccountingVerified ||
-       !ctx.actualDbOwnerRankRowProvisioned ||
+       !ctx.actualDbOwnerRankRowProvisioned || ctx.committedRankUp || ctx.recoveryRankUp ||
        ctx.attestedWorldUserCtx!=userCtx ||
        ctx.attestedUserNum!=request.userNum ||
        ctx.attestedCharacterIdx!=request.characterIdx ||
@@ -187,6 +194,28 @@ AtomicCommitOutcome CommitRealGameDataServer01(
        staged.proposedGameData.size()>15360)
         return rejected;
 
+    // Allocate/copy completion storage BEFORE attempting SQL. Once SQL may
+    // have committed, an allocation failure must never destroy the evidence.
+    std::unique_ptr<RankUpCommitRecord> record;
+    try {
+        record=std::make_unique<RankUpCommitRecord>();
+        auto& op=record->operation;
+        op.durableIntent=request.durableIntentId;
+        op.userNum=request.userNum;op.characterIdx=request.characterIdx;
+        op.expectedRevision=request.expectedBefore.revision;
+        op.appliedRevision=request.intendedAfter.revision;
+        op.command=1;op.newBadgeGrade=2;
+        op.beforeWexp={static_cast<std::int64_t>(request.expectedBefore.wexp),
+                      ctx.warExpEarnBefore,ctx.warExpUsedBefore};
+        op.afterWexp=ledger.after;
+        op.newTickets=request.intendedAfter.tickets;
+        record->sessionGeneration=request.sessionGeneration;
+        record->inventoryBefore=ctx.inventoryBefore;
+        record->inventoryAfter=staged.proposedGameData;
+        record->selectedSlots=ctx.selectedSlots;
+        record->ticketDebit=request.selectedTicketDebit;
+    }catch(...){return rejected;}
+
     // Only the existing Server01 clone procedure may perform any mutation.
     // It must include CAS checks on actual Inventory/WarExp rows and
     // uniquely commit the grade and receipt in one serializable transaction.
@@ -226,6 +255,7 @@ AtomicCommitOutcome CommitRealGameDataServer01(
 
     // Any error AFTER this mutation attempt is ambiguous: SQL Server
     // could have committed before the ODBC reply was lost. Never retry.
+    ctx.recoveryRankUp=std::move(record);
     if(!proc.Run())return {AtomicCommitState::InDoubtRecoveryRequired,0,0};
     SQLINTEGER outcome=0;
     bool gotResult=false;
@@ -252,10 +282,34 @@ AtomicCommitOutcome CommitRealGameDataServer01(
     if(!Ok(SQLCloseCursor(proc.h)))
         return {AtomicCommitState::InDoubtRecoveryRequired,0,0};
 
-    if(!VerifyCommittedReceipt(conn.dbc,request,after,ledger.after,
+    if(!VerifyCommittedReceipt(conn.dbc,ctx.recoveryRankUp->operation,after,ledger.after,
                                static_cast<std::uint32_t>(afterTicket)))
         return {AtomicCommitState::InDoubtRecoveryRequired,0,0};
+    ctx.committedRankUp=std::move(ctx.recoveryRankUp);
     return {AtomicCommitState::CommittedNeedsIndependentSaveVerification,
             request.durableIntentId,request.intendedAfter.revision};
+}
+bool VerifySavedRankUpServer01(const std::string& connectionString,
+                              const RankUpCommitRecord& committed) noexcept {
+    // The barrier validates the complete operation, including bigint bounds.
+    DiamondWorldSaveBarrier shape;
+    if(!committed.sessionGeneration ||
+       committed.operation.command!=1 ||
+       shape.Begin(committed.operation,true,true)!=Verdict::Ok ||
+       committed.operation.userNum>static_cast<std::uint32_t>(INT_MAX) ||
+       committed.operation.characterIdx>static_cast<std::uint32_t>(INT_MAX) ||
+       committed.operation.durableIntent>static_cast<std::uint64_t>(LLONG_MAX) ||
+       committed.operation.appliedRevision>static_cast<std::uint32_t>(INT_MAX) ||
+       committed.operation.newTickets>static_cast<std::uint32_t>(INT_MAX) ||
+       committed.inventoryAfter.empty() || committed.inventoryAfter.size()>15360 ||
+       committed.inventoryAfter.size()%30!=0)return false;
+    try {
+        auto after=committed.inventoryAfter;
+        Connection connection;
+        return connection.Open(connectionString) &&
+               VerifiedServer01Database(connection.dbc) &&
+               VerifyCommittedReceipt(connection.dbc,committed.operation,after,
+                   committed.operation.afterWexp,committed.operation.newTickets);
+    }catch(...){return false;}
 }
 } // namespace diamond_v291::real_gamedata

@@ -61,6 +61,17 @@ int main(){
     ctx.attestedSessionGeneration=0;
     assert(CommitRealGameDataServer01(&ctx,&fakeUser,cmd).state==
            AtomicCommitState::RolledBackOrRejected);
+    RankUpCommitRecord saved{};
+    assert(!VerifySavedRankUpServer01("",saved));
+    saved.sessionGeneration=77;
+    auto& op=saved.operation;
+    op.userNum=5005;op.characterIdx=24055;op.durableIntent=998877;
+    op.expectedRevision=5;op.appliedRevision=6;op.command=1;op.newBadgeGrade=2;
+    op.beforeWexp={35000,90000,7};op.afterWexp={5000,90000,30007};
+    op.newTickets=899;saved.inventoryAfter.resize(30);
+    // A valid-shaped record still cannot open a connection without host
+    // configuration. No temporary/fixture row is treated as a saved receipt.
+    assert(!VerifySavedRankUpServer01("",saved));
     // No direct SQL in this test: actual DB transactions require a real
     // restorable VM clone, correct SQL approval and live WorldSvr owner.
     std::cout<<"REAL_SERVER01_ODBC_HOST_PREFLIGHT_FAILS_CLOSED=PASS\n"

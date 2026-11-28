@@ -336,6 +336,7 @@ jobs:
             diamond-insignia/native/real-gamedata-transaction/Diamond0BDARealServer01Bridge.cpp \
             diamond-insignia/native/real-gamedata-transaction/test_real_server01_dispatch_chain.cpp \
             diamond-insignia/native/inventory-reconcile/DiamondInventoryReconcile.cpp \
+            diamond-insignia/native/world-save-barrier/DiamondWorldSaveBarrier.cpp \
             -lodbc -o /tmp/diamond_real_server01_fullchain
           /tmp/diamond_real_server01_fullchain
       - name: Verify real Server01 GameData ODBC atomic rankup adapter compilation and no-SQL default gates
@@ -346,6 +347,7 @@ jobs:
             diamond-insignia/native/real-gamedata-transaction/DiamondRealGameDataOdbc.cpp \
             diamond-insignia/native/real-gamedata-transaction/test_real_gamedata_odbc_preflight.cpp \
             diamond-insignia/native/inventory-reconcile/DiamondInventoryReconcile.cpp \
+            diamond-insignia/native/world-save-barrier/DiamondWorldSaveBarrier.cpp \
             -lodbc -o /tmp/diamond_real_gamedata_odbc_preflight
           /tmp/diamond_real_gamedata_odbc_preflight
       - name: Verify restored clone-only ODBC backend and receipt replay

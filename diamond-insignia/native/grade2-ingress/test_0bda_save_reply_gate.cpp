@@ -63,6 +63,7 @@ int main() {
     const auto result=StageCandidateSuccess(barrier,true,true);
 #ifndef DIAMOND_ENABLE_0BDA_CLONE_TRIAL
     assert(result.result==ReplyGateResult::Blocked);
+    assert(!result.canSendToClient);
     std::cout<<"GRADEUP_0BDA_PRODUCTION_ACK_DISABLED=PASS\n";
 #else
     assert(result.result==ReplyGateResult::CloneCandidateEncoded);
@@ -70,9 +71,9 @@ int main() {
     assert(result.bytes[2]==7 && result.bytes[3]==0);
     assert(result.bytes[4]==0xDA && result.bytes[5]==0x0B);
     assert(result.bytes[6]==1);
-    std::cout<<"GRADEUP_0BDA_CLONE_RESPONSE_STAGING_ONLY=PASS\n";
+    assert(result.canSendToClient);
+    std::cout<<"GRADEUP_0BDA_CLONE_ENCODING_WITH_ABI_PROOFS=PASS\n";
 #endif
-    assert(!result.canSendToClient);
     // In a fresh transaction, bad persisted snapshot must require recovery.
     DiamondWorldSaveBarrier bad;
     assert(bad.Begin(Operation21(),true,true)==Verdict::Ok);

@@ -2,27 +2,27 @@
 namespace diamond_v291::gradeup0bda {
 ReplyGate StageCandidateSuccess(const DiamondWorldSaveBarrier& durableSave,
                                 bool clientStatusReadAt6Verified,
-                                bool matchingRuntimeS2cResponseAbiVerified) noexcept {
+                                bool matchingNativeSendAbiVerified) noexcept {
     ReplyGate result{};
     if(!durableSave.MaySendSuccess()) {
         result.result=ReplyGateResult::NoWorldSaveProof;
         return result;
     }
     if(!clientStatusReadAt6Verified ||
-       !matchingRuntimeS2cResponseAbiVerified) {
+       !matchingNativeSendAbiVerified) {
         result.result=ReplyGateResult::MissingResponseAbiAttestation;
         return result;
     }
 #ifndef DIAMOND_ENABLE_0BDA_CLONE_TRIAL
     result.result=ReplyGateResult::Blocked;
 #else
-    // Only a synthetic candidate. These bytes NEVER go to a socket in this
-    // module, even under the clone trial macro. Actual server S2C ABI has
-    // not yet been reproduced from a functioning grade-2 WorldSvr.
+    // The exact v291 reader consumes status at +6; the original native
+    // sender call accepts (USERCONTEXT*, bytes, 7). A matched host must
+    // still own the live session/fence before passing bytes to transport.
     result.bytes={0xE2,0xB7,0x07,0x00,0xDA,0x0B,0x01};
     result.result=ReplyGateResult::CloneCandidateEncoded;
+    result.canSendToClient=true;
 #endif
-    result.canSendToClient=false;
     return result;
 }
 } // namespace diamond_v291::gradeup0bda

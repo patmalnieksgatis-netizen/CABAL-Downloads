@@ -6,6 +6,7 @@ IMAGE="sha256:2805f2cd7dacf0547b8762437009a4814ab0c352f913b15c87b3e856f04528bb"
 WORLD_SHA="caec7772acd22fd8918cfac386845c644451781e48c51975eaefed334c6705c3"
 TREE_SHA="2efba153ae4d7bfcbeee2203f7b7d7a47f0a5686e31dc20dd8638ca7ac3947c2"
 UNITS=[
+"worldsvr-ingress/DiamondNativeRankUpCompletion.cpp",
 "native/grade2-ingress/DiamondWorld48TicketUnits.cpp",
 "native/world-session-bridge/deps/EventPassOwnerV282.cpp",
 "native/inventory-reconcile/DiamondInventoryReconcile.cpp",
@@ -20,7 +21,7 @@ UNITS=[
 ENTRY=r'''
 #include "worldsvr-ingress/DiamondNativeRankUpV20.h"
 extern "C" __attribute__((visibility("default")))
-unsigned cabal_diamond291_abi() noexcept { return 27; }
+unsigned cabal_diamond291_abi() noexcept { return diamond_v20::kCompletionHostAbi; }
 extern "C" __attribute__((visibility("default")))
 int cabal_diamond291_register(const diamond_v19::Host* host,
                              const diamond_v20::Binding* binding) noexcept {
@@ -90,7 +91,8 @@ def main():
     run(container+flags+["/diamond/smoke.cpp",*units,"-o","/result/smoke",*libs],timeout=900)
     run(container+["/result/smoke"])
     print("V27_REAL_LINK_DENIAL_SMOKE=PASS",flush=True)
-    run(container+flags+["/diamond/worldsvr-ingress/test_native_rankup_v20.cpp","-o","/result/wiring-test"],timeout=120)
+    wiring=["/diamond/"+p for p in ("worldsvr-ingress/DiamondNativeRankUpCompletion.cpp","native/world-save-barrier/DiamondWorldSaveBarrier.cpp","native/grade2-ingress/Diamond0BDASaveReplyGate.cpp")]
+    run(container+flags+["-DDIAMOND_ENABLE_0BDA_CLONE_TRIAL","/diamond/worldsvr-ingress/test_native_rankup_v20.cpp",*wiring,"-o","/result/wiring-test"],timeout=120)
     run(container+["/result/wiring-test"])
     print("V27_WIRING_TEST=PASS",flush=True)
     name="Diamond291_V27_OFFLINE.so"
@@ -105,7 +107,7 @@ int main(int argc,char** argv) {
     assert(h);
     auto abi=reinterpret_cast<unsigned(*)()>(dlsym(h,"cabal_diamond291_abi"));
     auto reg=reinterpret_cast<int(*)(const diamond_v19::Host*,const void*)>(dlsym(h,"cabal_diamond291_register"));
-    assert(abi && abi()==27 && reg);
+    assert(abi && abi()==diamond_v20::kCompletionHostAbi && reg);
     assert(reg(nullptr,nullptr)==static_cast<int>(diamond_v19::Status::Blocked));
     assert(dlclose(h)==0);
 }

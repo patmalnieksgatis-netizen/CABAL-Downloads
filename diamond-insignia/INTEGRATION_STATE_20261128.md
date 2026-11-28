@@ -1,5 +1,11 @@
 # Diamond integration — 28 November 2026
 
+**Later source integration:** the registered handler, owned SQL commit
+record and asynchronous save/readback/reply completion are now connected.
+See [`NATIVE_COMPLETION_20261128.md`](worldsvr-ingress/NATIVE_COMPLETION_20261128.md).
+Default activation remains blocked. The exact native authority/mutation/save
+provider is still missing; no working in-game installation is claimed.
+
 Continues `INTEGRATION_STATE_20261127.md`. No game installation, persistent
 SQL change, service restart, core replacement or VM network change was made.
 

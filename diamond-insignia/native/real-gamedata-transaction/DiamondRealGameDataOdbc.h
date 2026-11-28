@@ -6,9 +6,11 @@
 // and clone SQL approval have all been independently verified.
 #include "../grade2-ingress/Diamond0BDAGameplayAction.h"
 #include "../inventory-reconcile/DiamondB0SelectedDebit30.h"
+#include "DiamondRankUpCommitRecord.h"
 #include <cstddef>
 #include <cstdint>
 #include <string>
+#include <memory>
 #include <vector>
 
 namespace diamond_v291::real_gamedata {
@@ -30,6 +32,12 @@ struct RealServer01OdbcContext {
     std::int64_t warExpUsedBefore=0;
     std::vector<diamond_v291::inventory::B0WorldToPersistedSlot> selectedSlots{};
     diamond_v291::inventory::B0SelectionPersistenceProof proof{};
+    // Populated only after an actual commit AND independent receipt/game-row
+    // readback. Transfer ownership to native completion before Request dies.
+    std::unique_ptr<RankUpCommitRecord> committedRankUp{};
+    // Installed before SQLExecute, retained if commit outcome/readback is
+    // uncertain. Its existence is NOT proof of commit; never apply as success.
+    std::unique_ptr<RankUpCommitRecord> recoveryRankUp{};
 };
 // MAY be plugged in as GameHost.commit only after a real server-owned
 // Lease + verified clone state loader has populated this structure.
@@ -39,4 +47,9 @@ struct RealServer01OdbcContext {
 diamond_v291::gradeup0bda::AtomicCommitOutcome CommitRealGameDataServer01(
     void* trustedContext,const void* worldUserCtx,
     const diamond_v291::gradeup0bda::AtomicGradeUpRequest& request) noexcept;
+// Fresh connection and one SELECT after native save ACK. Checks the receipt,
+// actual full inventory blob, rank/revision, and every WExp counter together.
+// It never writes SQL. false includes an unavailable/ambiguous readback.
+bool VerifySavedRankUpServer01(const std::string& connectionString,
+                              const RankUpCommitRecord& committed) noexcept;
 } // namespace diamond_v291::real_gamedata
