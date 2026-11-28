@@ -65,6 +65,13 @@ public:
     // Called for every native save route before its ACK is delivered.
     // The expected event uses the reservation's epoch. Competing events for
     // the same character invalidate the operation before readback or reply.
+    // Exact native IPC46 route boundary before publication. Validate the
+    // serialized character, flags and WExp ledger in the actual send buffer.
+    // RecoveryRequired requires the native host to withhold this save and
+    // retain recovery ownership. The hook may not forward a rejected buffer.
+    Result OnNativeSaveRouted(const Identity&,const void* packet,std::size_t bytes,
+                             std::uint64_t routeEpoch,
+                             std::uint32_t outstandingBeforeRoute) noexcept;
     Result OnSaveRouted(const Identity&,std::uint32_t flags,
                         std::uint64_t routeEpoch,
                         std::uint32_t outstandingBeforeRoute) noexcept;

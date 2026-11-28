@@ -65,6 +65,16 @@ static std::array<unsigned char,18> ack(){
     for(int i=0;i<4;++i){a[10+i]=ch>>(8*i);a[14+i]=flags>>(8*i);}
     return a;
 }
+static std::vector<unsigned char> nativeSave() {
+    std::vector<unsigned char> packet(0x5433);
+    const auto put=[&](std::size_t offset,std::uint64_t value,std::size_t n) {
+        for(std::size_t i=0;i<n;++i)packet[offset+i]=value>>(8*i);
+    };
+    put(0,0xc8f3,2);put(4,packet.size(),4);put(12,46,2);
+    put(14,24055,4);put(14+0x15ec,0x802,4);
+    put(14+0x99,5000,8);put(14+0xa1,90000,8);put(14+0xa9,30007,8);
+    return packet;
+}
 int main(){
     const auto packet=ack();
     {
@@ -120,6 +130,36 @@ int main(){
         assert(x.HasRetainedEvidence());
         assert(events.empty() && reads==0 && p.sends==0 && p.releases==0);
         assert(!x.ReadyForCommit());
+    }
+    for(unsigned invalid=0;invalid<10;++invalid) {
+        events.clear();reads=0;
+        Port p;currentPort=&p;c::RankUpCompletion x(p,identity());
+        assert(x.AcceptCommitted(record(),"fixture-no-connection")==c::Result::WaitingForAck);
+        auto packed=nativeSave();
+        std::size_t size=packed.size();
+        switch(invalid) {
+            case 0:packed[0]=0;break;
+            case 1:packed[4]++;break;
+            case 2:packed[12]=47;break;
+            case 3:packed[14]++;break;
+            case 4:packed[14+0x99]++;break;
+            case 5:packed[14+0xa1]++;break;
+            case 6:packed[14+0xa9]++;break;
+            case 7:packed[14+0x15ec]=0;break;
+            case 8:size=20;break;
+            case 9:size=0x4d001;break;
+        }
+        assert(x.OnNativeSaveRouted(identity(),packed.data(),size,100,0)==c::Result::RecoveryRequired);
+        assert(x.HasRetainedEvidence() && p.sends==0 && p.releases==0 && reads==0);
+    }
+    {
+        events.clear();reads=0;
+        Port p;currentPort=&p;c::RankUpCompletion x(p,identity());
+        assert(x.AcceptCommitted(record(),"fixture-no-connection")==c::Result::WaitingForAck);
+        const auto packed=nativeSave();
+        assert(x.OnNativeSaveRouted(identity(),packed.data(),packed.size(),100,0)==c::Result::SaveObserved);
+        assert(x.OnSaveAck(identity(),packet.data(),packet.size(),101,1)==c::Result::Completed);
+        assert(p.sends==1 && p.releases==1 && reads==1);
     }
     for (bool sameFlags : {false,true}) {
         // A newer save for this character can replace WExp even when its

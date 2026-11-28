@@ -379,6 +379,18 @@
     "runtime_hooks_verified": false,
     "live_character_modified": false
   },
+  "native_save_header": {
+    "header_bytes": 14,
+    "magic": "0xC8F3",
+    "command": 46,
+    "frame_length_offset": 4,
+    "command_offset": 12,
+    "save_character_offset": 14,
+    "native_save_character_field": "0x1560",
+    "minimum_fixed_prefix": "0x5433",
+    "original_header_and_character_store_executed": true,
+    "variable_inventory_layout_validated": false
+  },
   "cmd47_pending_qword_offsets": [
     "0x2b7b8",
     "0x2b7c0",

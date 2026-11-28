@@ -188,6 +188,35 @@ def audit_material_debit_and_saved_slot(world):
                 runtime_hooks_verified=False,live_character_modified=False)
 
 
+def audit_native_save_header(world):
+    u=Uc(UC_ARCH_X86,UC_MODE_64)
+    for at,n in ((0x7de000,0x1000),(0x8be000,0x1000),(0x38000000,0x80000)):
+        u.mem_map(at,n)
+    u.mem_write(0x7deb5e,world.read(0x7deb5e,0x7deb88-0x7deb5e))
+    u.mem_write(0x8be485,world.read(0x8be485,0x8be4a9-0x8be485))
+    stack,data=0x38060000,0x38001000
+    packet=stack-0x4d020
+    u.reg_write(UC_X86_REG_RBP,stack)
+    u.emu_start(0x7deb5e,0x7deb88,count=50)
+    raw=bytes(u.mem_read(packet,14))
+    assert struct.unpack_from('<H',raw,0)[0]==0xc8f3
+    assert struct.unpack_from('<I',raw,4)[0]==0x5434
+    assert struct.unpack_from('<H',raw,12)[0]==46
+    u.mem_write(stack-0x240,struct.pack('<Q',data))
+    u.mem_write(stack-0x248,struct.pack('<Q',packet+14))
+    u.mem_write(data+0x1560,struct.pack('<I',24055))
+    u.emu_start(0x8be485,0x8be4a9,count=50)
+    assert struct.unpack('<I',u.mem_read(packet+14,4))[0]==24055
+    # The final size update adds the fixed header/body prefix to variable data.
+    assert world.read(0x7debaa,5)==bytes.fromhex('0533540000')
+    return dict(header_bytes=14,magic='0xC8F3',command=46,
+                frame_length_offset=4,command_offset=12,
+                save_character_offset=14,native_save_character_field='0x1560',
+                minimum_fixed_prefix='0x5433',
+                original_header_and_character_store_executed=True,
+                variable_inventory_layout_validated=False)
+
+
 def audit(world_path, dba_path):
     world=Image(world_path,WORLD_SHA)
     dba=Image(dba_path,DBA_SHA)
@@ -378,6 +407,7 @@ def audit(world_path, dba_path):
             'owner_queue_conversion':audit_ack_queue(world),
             'uninitialize_boundary':audit_uninitialize_boundary(world),
             'native_material_debit':audit_material_debit_and_saved_slot(world),
+            'native_save_header':audit_native_save_header(world),
             'cmd47_pending_qword_offsets':[hex(x) for x in pending_offsets],
             'cmd47_status_dword_offsets':[hex(x) for x in status_offsets],
             'cmd47_flag_bits':[hex(x) for x in flag_bits],

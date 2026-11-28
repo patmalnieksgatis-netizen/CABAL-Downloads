@@ -55,6 +55,17 @@ public:
         }
         return entry->completion->OnSaveRouted(owner,flags,epoch,outstanding);
     }
+    Result NativeSaveRouted(const Identity& owner,const void* packet,
+                           std::size_t bytes,std::uint64_t epoch,
+                           std::uint32_t outstanding) noexcept {
+        auto entry=Find(owner.userNum);
+        if(!entry)return Result::IgnoredEvent;
+        if(!entry->completion) {
+            InterruptEntry(*entry);
+            return Result::RecoveryRequired;
+        }
+        return entry->completion->OnNativeSaveRouted(owner,packet,bytes,epoch,outstanding);
+    }
     Result ItcSaveAck(const Identity& owner,const void* packet,std::size_t bytes,
                       std::uint64_t epoch,std::uint32_t outstanding) noexcept {
         auto entry=Find(owner.userNum);

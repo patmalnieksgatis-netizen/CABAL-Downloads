@@ -385,3 +385,34 @@ with a substituted SSH transport. The target game trace was received. Its observ
 the resulting source connection are recorded in
 `NATIVE_UNINITIALIZE_20261128.md`. Full native lifetime/save integration
 remains pending.
+
+## Native IPC46 buffer validation
+
+The completion and its adapter now accept the actual IPC46 send buffer through
+OnNativeSaveRouted / NativeSaveRouted. This path validates the extended native
+header, encoded byte count, command, saved character index and the three WExp
+counters before accepting the route. It reads the save flags from the packet.
+A mismatch returns RecoveryRequired and retains the committed record. The
+native host must withhold a rejected save before forwarding to 7E14D0.
+
+The original header construction and saved-character store were executed in
+Unicorn against the pinned WorldSvr. The original header is 14 bytes with
+C8F3 magic, a DWORD byte count at offset 4 and command 46 at offset 12. The
+saved character index follows at offset 14. WExp counter offsets within the
+body are 99, A1 and A9 in hexadecimal. The pack flags are at body offset 15EC.
+The native buffer check bounds the fixed prefix and original stack capacity.
+It does not validate every variable inventory record or establish native
+memory ownership.
+
+Ten malformed/stale buffer regressions and a complete valid buffer -> ACK ->
+readback -> single reply regression pass with ASan/UBSan. The database and
+native session services remain substituted in those tests. Actual hook
+installation and a complete NativeSession provider remain pending.
+
+`read_native_save_sites.py` is a bounded operator relay for the current target.
+It verifies the exact executable, reads eight fixed native entry sites and
+three procedure vectors, and reports whether their first 16 bytes still match
+the executable. In particular, native ITC2032 is registered in the OTHER table
+at 2357BC0 + 2032*8, not the user table. The reader opens process memory with
+read-only access. It does not attach a debugger or change game data. Its syntax
+was checked locally. Actual target execution remains pending.

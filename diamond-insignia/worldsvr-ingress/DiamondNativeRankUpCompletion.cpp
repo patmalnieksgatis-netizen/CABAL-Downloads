@@ -8,6 +8,11 @@ bool SameSession(const Identity& a,const Identity& b) noexcept {
     return a.userNum==b.userNum && a.characterIdx==b.characterIdx &&
            a.sessionGeneration==b.sessionGeneration;
 }
+template<class T> T NativeField(const unsigned char* packet,std::size_t offset) noexcept {
+    T value{};
+    std::memcpy(&value,packet+offset,sizeof(value));
+    return value;
+}
 Identity RecordOwner(const real_gamedata::RankUpCommitRecord& r) noexcept {
     return {r.operation.userNum,r.operation.characterIdx,
             r.sessionGeneration,r.operation.durableIntent};
@@ -66,6 +71,31 @@ Result RankUpCompletion::AcceptCommitted(
     state_=State::WaitingForAck; // established BEFORE publish can deliver ACK
     if(!port_.PublishSave(save))return Recover();
     return Result::WaitingForAck;
+}
+Result RankUpCompletion::OnNativeSaveRouted(const Identity& owner,
+        const void* packet,std::size_t bytes,std::uint64_t epoch,
+        std::uint32_t outstandingBeforeRoute) noexcept {
+    if(state_!=State::WaitingForAck)return Result::WrongPhase;
+    if(owner.characterIdx!=identity_.characterIdx)return Result::IgnoredEvent;
+    // 7DEB5E..7DEBB8 constructs a 14-byte IPC header and a fixed body
+    // followed by variable records. The native stack buffer is 0x4D000.
+    constexpr std::size_t header=14,minimum=0x5433,maximum=0x4d000;
+    if(!committed_ || !packet || bytes<minimum || bytes>maximum)return Recover();
+    const auto* raw=static_cast<const unsigned char*>(packet);
+    if(NativeField<std::uint16_t>(raw,0)!=0xc8f3 ||
+       NativeField<std::uint32_t>(raw,4)!=bytes ||
+       NativeField<std::uint16_t>(raw,12)!=46 ||
+       NativeField<std::uint32_t>(raw,header)!=identity_.characterIdx)
+        return Recover();
+    // 8BE6D8..8BE702 stores all three original WExp counters into the body.
+    // A flags-only route notification cannot establish what will be saved.
+    const auto& after=committed_->operation.afterWexp;
+    if(NativeField<std::int64_t>(raw,header+0x99)!=after.current ||
+       NativeField<std::int64_t>(raw,header+0xa1)!=after.earned ||
+       NativeField<std::int64_t>(raw,header+0xa9)!=after.used)
+        return Recover();
+    const auto flags=NativeField<std::uint32_t>(raw,header+0x15ec);
+    return OnSaveRouted(owner,flags,epoch,outstandingBeforeRoute);
 }
 Result RankUpCompletion::OnSaveRouted(const Identity& owner,std::uint32_t flags,
         std::uint64_t epoch,std::uint32_t outstandingBeforeRoute) noexcept {
