@@ -11,7 +11,9 @@ static Operation operation(){
     x.durableIntent=0xACED;
     x.userNum=900001; x.characterIdx=1230001;
     x.expectedRevision=10; x.appliedRevision=11;
-    x.command=1; x.newBadgeGrade=2; x.newWexp=10000;
+    x.command=1; x.newBadgeGrade=2;
+    x.beforeWexp={40000,100000,60000};
+    x.afterWexp={10000,100000,90000};
     x.newTickets=20;
     return x;
 }
@@ -21,7 +23,7 @@ static DurableSnapshot snap(const Operation& x){
     s.receiptCommitted=true;s.durableIntent=x.durableIntent;
     s.userNum=x.userNum;s.characterIdx=x.characterIdx;
     s.revision=x.appliedRevision;s.badgeGrade=x.newBadgeGrade;
-    s.wexp=x.newWexp;s.tickets=x.newTickets;
+    s.wexp=x.afterWexp;s.tickets=x.newTickets;
     s.masteryId=x.masteryId;s.masteryLevel=x.newMasteryLevel;
     return s;
 }
@@ -99,9 +101,42 @@ int main(){
         assert(g.MarkTimeout()==Verdict::NeedRecovery);
         assert(!g.MaySendSuccess());
     }
+    { // Same balance/tickets and a receipt do not prove all native counters
+        for(int field=0;field<3;++field){
+            DiamondWorldSaveBarrier g;
+            ack(packet,o,0x800);
+            assert(g.Begin(o,true,true)==Verdict::Ok);
+            assert(g.MarkNativeMutationApplied(true)==Verdict::Ok);
+            assert(g.MarkSaveSent(0x800,100,0)==Verdict::Ok);
+            assert(g.ObserveIpcResult47(packet,sizeof(packet),101,1)==Verdict::Ok);
+            auto s=snap(o);
+            if(field==0)s.wexp.used=o.beforeWexp.used;
+            if(field==1)s.wexp.earned--;
+            if(field==2)s.wexp={-1,-1,-1};
+            assert(g.Reconcile(s)==Verdict::SnapshotMismatch);
+            assert(g.GetPhase()==Phase::RecoveryRequired);
+            assert(!g.MaySendSuccess());
+        }
+    }
+    { // Never begin a debit with incomplete, stale or overflowing accounting
+        for(int fault=0;fault<7;++fault){
+            auto bad=o;
+            if(fault==0)bad.beforeWexp={-1,-1,-1};
+            if(fault==1)bad.afterWexp={-1,-1,-1};
+            if(fault==2)bad.afterWexp.used=bad.beforeWexp.used;
+            if(fault==3)bad.afterWexp.earned++;
+            if(fault==4)bad.beforeWexp.current=29999;
+            if(fault==5)bad.beforeWexp.used=std::numeric_limits<std::int64_t>::max();
+            if(fault==6)bad.afterWexp.current++;
+            DiamondWorldSaveBarrier g;
+            assert(g.Begin(bad,true,true)==Verdict::Invalid);
+            assert(g.GetPhase()==Phase::Empty);
+        }
+    }
     { // mastery persistence requires mastery-level parity
         Operation mastery=o;mastery.command=2;mastery.masteryId=159;
         mastery.newMasteryLevel=2;mastery.durableIntent++;
+        mastery.beforeWexp=mastery.afterWexp;
         DiamondWorldSaveBarrier g;
         assert(g.Begin(mastery,true,true)==Verdict::Ok);
         assert(g.MarkNativeMutationApplied(true)==Verdict::Ok);
@@ -111,6 +146,20 @@ int main(){
         auto s=snap(mastery);s.masteryLevel=1;
         assert(g.Reconcile(s)==Verdict::SnapshotMismatch);
         assert(!g.MaySendSuccess());
+    }
+    { // A point-funded level must preserve all WExp counters
+        auto mastery=o;mastery.command=2;mastery.masteryId=159;
+        mastery.newMasteryLevel=1;
+        DiamondWorldSaveBarrier g;
+        assert(g.Begin(mastery,true,true)==Verdict::Invalid);
+        mastery.beforeWexp=mastery.afterWexp;
+        assert(g.Begin(mastery,true,true)==Verdict::Ok);
+        assert(g.MarkNativeMutationApplied(true)==Verdict::Ok);
+        assert(g.MarkSaveSent(0x800,200,0)==Verdict::Ok);
+        ack(packet,mastery,0x800);
+        assert(g.ObserveIpcResult47(packet,sizeof(packet),201,1)==Verdict::Ok);
+        assert(g.Reconcile(snap(mastery))==Verdict::Ok);
+        assert(g.MaySendSuccess());
     }
     { // explicit bad revision / invalid Diamond mastery ID
         Operation bad=o;bad.expectedRevision=std::numeric_limits<std::uint32_t>::max();
@@ -124,5 +173,6 @@ int main(){
              <<"IPC_46_47_18B=VALIDATED_AGAINST_SOURCE\n"
              <<"ACK_WITHOUT_DURABLE_RECONCILIATION=CANNOT_ACK_SUCCESS\n"
              <<"AMBIGUOUS_CONCURRENT_SAVE=RECOVERY_REQUIRED\n"
+             <<"WEXP_CURRENT_EARNED_USED_RECONCILIATION=PASS\n"
              <<"LIVE_VM_UNCHANGED=YES\n";
 }

@@ -52,7 +52,8 @@ void TestPersistenceBarrier(bool inventoryVerified,bool expectSuccess) {
     op.userNum=900001;op.characterIdx=7002;
     op.expectedRevision=10;op.appliedRevision=11;
     op.command=1;op.newBadgeGrade=2;
-    op.newWexp=10000;op.newTickets=20;
+    op.beforeWexp={40000,100000,60000};
+    op.afterWexp={10000,100000,90000};op.newTickets=20;
     assert(barrier.Begin(op,true,true)==Verdict::Ok);
     assert(barrier.MarkNativeMutationApplied(true)==Verdict::Ok);
     assert(barrier.MarkSaveSent(1,100,0)==Verdict::Ok);
@@ -68,7 +69,7 @@ void TestPersistenceBarrier(bool inventoryVerified,bool expectSuccess) {
     s.receiptCommitted=true;
     s.durableIntent=op.durableIntent;s.userNum=op.userNum;
     s.characterIdx=op.characterIdx;s.revision=op.appliedRevision;
-    s.badgeGrade=op.newBadgeGrade;s.wexp=op.newWexp;
+    s.badgeGrade=op.newBadgeGrade;s.wexp=op.afterWexp;
     s.tickets=op.newTickets;s.masteryId=0;s.masteryLevel=0;
     const auto verdict=barrier.Reconcile(s);
     assert((verdict==Verdict::Ok)==expectSuccess);

@@ -158,6 +158,169 @@
   },
   "dispatch_mutex": "0x23685E0",
   "dispatch_mutex_scope": "GLOBAL_CONDITIONAL",
+  "cmd47_ack_cases": [
+    {
+      "flags": "0x0",
+      "pending_before": [
+        3,
+        4,
+        5
+      ],
+      "pending_after": [
+        3,
+        4,
+        5
+      ],
+      "status_after": [
+        11,
+        22,
+        33
+      ]
+    },
+    {
+      "flags": "0x2000",
+      "pending_before": [
+        3,
+        4,
+        5
+      ],
+      "pending_after": [
+        0,
+        4,
+        5
+      ],
+      "status_after": [
+        0,
+        22,
+        33
+      ]
+    },
+    {
+      "flags": "0x200",
+      "pending_before": [
+        3,
+        4,
+        5
+      ],
+      "pending_after": [
+        3,
+        0,
+        5
+      ],
+      "status_after": [
+        11,
+        0,
+        33
+      ]
+    },
+    {
+      "flags": "0x2200",
+      "pending_before": [
+        3,
+        4,
+        5
+      ],
+      "pending_after": [
+        0,
+        0,
+        5
+      ],
+      "status_after": [
+        0,
+        0,
+        33
+      ]
+    },
+    {
+      "flags": "0x2",
+      "pending_before": [
+        3,
+        4,
+        5
+      ],
+      "pending_after": [
+        3,
+        4,
+        0
+      ],
+      "status_after": [
+        11,
+        22,
+        0
+      ]
+    },
+    {
+      "flags": "0x2002",
+      "pending_before": [
+        3,
+        4,
+        5
+      ],
+      "pending_after": [
+        0,
+        4,
+        0
+      ],
+      "status_after": [
+        0,
+        22,
+        0
+      ]
+    },
+    {
+      "flags": "0x202",
+      "pending_before": [
+        3,
+        4,
+        5
+      ],
+      "pending_after": [
+        3,
+        0,
+        0
+      ],
+      "status_after": [
+        11,
+        0,
+        0
+      ]
+    },
+    {
+      "flags": "0x2202",
+      "pending_before": [
+        3,
+        4,
+        5
+      ],
+      "pending_after": [
+        0,
+        0,
+        0
+      ],
+      "status_after": [
+        0,
+        0,
+        0
+      ]
+    }
+  ],
+  "cmd47_pending_qword_offsets": [
+    "0x2b7b8",
+    "0x2b7c0",
+    "0x2b7c8"
+  ],
+  "cmd47_status_dword_offsets": [
+    "0x2b7e0",
+    "0x2b7e4",
+    "0x2b7e8"
+  ],
+  "cmd47_flag_bits": [
+    "0x2000",
+    "0x200",
+    "0x2"
+  ],
+  "identical_repeated_ack_clears_new_pending_state": true,
+  "native_pending_words_prove_unique_operation_completion": false,
   "per_character_lifetime_or_save_fence_proven": false,
   "sql_executed": false,
   "server_or_client_modified": false

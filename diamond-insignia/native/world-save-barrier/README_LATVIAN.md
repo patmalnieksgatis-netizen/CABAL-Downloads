@@ -1,5 +1,14 @@
 # CABAL v291 — Diamond Insignia WorldSvr/DBAgent saglabāšanas barjera
 
+**2026-11-28 papildinājums:** barjera tagad prasa pilnu WExp uzskaiti pirms
+un pēc darījuma — atlikumu, iegūto un iztērēto. Rank-up pārbauda native
+`-30000 / nemainīgs / +30000` pāreju; punktu Mastery līmenis tos nemaina.
+Pēc cmd47 jāsakrīt visiem trim saglabātajiem skaitītājiem, ne tikai atlikumam.
+Trūkstoši skaitītāji vai vecais iztērētais WExp neļauj apstiprināt panākumu.
+SQL dzinēja pieci pagaidu tabulu testi lietotāja VM ir izpildīti ar PASS;
+barjera vēl nav pieslēgta aktīvajam WorldSvr. Aktuālais stāvoklis:
+[`INTEGRATION_STATE_20261128.md`](../../INTEGRATION_STATE_20261128.md).
+
 **Datums:** 2026-11-22. **Statuss:** C++17 pirmkods + offline testi PASS; **NAV** pieslēgts aktīvajam WorldSvr/DBAgent, nav MSSQL produkcijas rakstīšanas, nav S2C un nav klientā ieslēgta Diamond iegāde. Šī ir **Diamond Insignia**, nevis Mandarat.
 
 ## Konkrēta izmaiņa pēc ODBC adaptera

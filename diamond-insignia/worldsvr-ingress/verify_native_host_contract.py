@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Exercise pinned native dispatch guards and WarExp save accounting.
+"""Exercise pinned dispatch, WarExp save accounting and cmd47 clear semantics.
 
 Original instructions execute in Unicorn with clock/network/SQL services
 absent. This is not proof of a live owner lifetime or durable SQL commit.
@@ -63,13 +63,16 @@ def audit(world_path, dba_path):
     u=Uc(UC_ARCH_X86,UC_MODE_64)
     for start,size in ((0xa41000,0x1000),(0x8be000,0x1000),(0x537000,0x1000),
                        (0x452000,0x1000),(0xb2e000,0x1000),(0xb49000,0x1000),
-                       (0x410000,0x2000),(0x30000000,0x10000)):
+                       (0x410000,0x2000),(0x30000000,0x40000),
+                       (0x7de000,0x2000),(0xadd000,0x1000),
+                       (0x2163000,0x1000)):
         u.mem_map(start,size)
     u.mem_write(0xa41694,world.read(0xa41694,0x17))
     u.mem_write(0x8be6d8,world.read(0x8be6d8,0x2a))
     u.mem_write(0x53730e,dba.read(0x53730e,0x39))
     # Includes the original branches to lock/unlock blocks at 0xB2E930/918.
     u.mem_write(0xb2e000,world.read(0xb2e000,0x1000))
+    u.mem_write(0x7ded30,world.read(0x7ded30,0x190))
     arena=0x30000000
     user,payload,sql_frame,stack,layer,proc,ctx=(arena,arena+0x2000,arena+0x4000,
                                               arena+0x7000,arena+0x8000,
@@ -104,6 +107,12 @@ def audit(world_path, dba_path):
             if tuple(uc.reg_read(r) for r in (UC_X86_REG_RDI,UC_X86_REG_RSI,UC_X86_REG_RDX))!=(proc,layer,ctx):
                 raise AssertionError('CALLPROC_ARGUMENTS')
             events.append(('handler',depth));ret(handler_result)
+        elif at==0xadd2c0:
+            # Native session lookup is substituted, not claimed as a proven
+            # session lifetime lock. Execute the complete original ACK paths.
+            if uc.reg_read(UC_X86_REG_RSI)!=4242:
+                raise AssertionError('ACK_CHARACTER_LOOKUP')
+            ret(ctx)
 
     u.hook_add(UC_HOOK_CODE,hook)
     cases=[]
@@ -149,12 +158,54 @@ def audit(world_path, dba_path):
                     raise AssertionError(('DISPATCH_SCOPE',events,expected))
                 guards.append({'layer_field38':layer_field,'map_locking':locking,
                                'handler_result':handler_result,'protected':protected})
+
+    # cmd47 clears each selected pending word and status using only CharIdx
+    # and flags. These fields are NOT an operation-specific save receipt.
+    put(ctx+0xe8,user);put(proc+8,payload)
+    put(payload+10,4242,4)
+    pending_offsets=(0x2b7b8,0x2b7c0,0x2b7c8)
+    status_offsets=(0x2b7e0,0x2b7e4,0x2b7e8)
+    flag_bits=(0x2000,0x200,2)
+    put(user+0x2b7f6,0,1)  # skip unrelated client notification service
+    ack_cases=[]
+
+    def run_ack(flags):
+        put(payload+14,flags,4)
+        u.reg_write(UC_X86_REG_RSI,proc)
+        u.reg_write(UC_X86_REG_RSP,stack)
+        u.emu_start(0x7ded30,0x7ded94,count=120)
+
+    for mask in range(8):
+        flags=sum(bit for i,bit in enumerate(flag_bits) if mask&(1<<i))
+        for off,value in zip(pending_offsets,(3,4,5)):put(user+off,value)
+        for off,value in zip(status_offsets,(11,22,33)):put(user+off,value,4)
+        run_ack(flags)
+        actual=tuple(get(user+off) for off in pending_offsets)
+        statuses=tuple(get(user+off,4) for off in status_offsets)
+        expected=tuple(0 if flags&bit else n for bit,n in zip(flag_bits,(3,4,5)))
+        expected_status=tuple(0 if flags&bit else n for bit,n in zip(flag_bits,(11,22,33)))
+        if actual!=expected or statuses!=expected_status:
+            raise AssertionError(('NATIVE_ACK_CLEAR_SEMANTICS',flags,actual,statuses))
+        ack_cases.append({'flags':hex(flags),'pending_before':[3,4,5],
+                          'pending_after':list(actual),'status_after':list(statuses)})
+    # A repeated identical ACK also clears newly set pending state. Therefore
+    # merely observing zero native words cannot establish unique completion.
+    put(user+pending_offsets[0],1);put(user+status_offsets[0],7,4)
+    run_ack(0x2202)
+    if get(user+pending_offsets[0])!=0 or get(user+status_offsets[0],4)!=0:
+        raise AssertionError('REPEATED_ACK_CLEAR_SEMANTICS')
     return {'status':'PINNED_NATIVE_INSTRUCTIONS_PASS','world_sha256':WORLD_SHA,
             'dba_sha256':DBA_SHA,'accounting_cases':cases,'dispatch_cases':guards,
             'native_wexp_offsets':{'current':'0x16E0','earned':'0x16E8','used':'0x16F0'},
             'packed_body_offsets':{'current':'0x99','earned':'0xA1','used':'0xA9'},
             'dbagent_parameters_1_based':{'WarExpStatus':64,'warExpEarn':65,'warExpUsed':66},
             'dispatch_mutex':'0x23685E0','dispatch_mutex_scope':'GLOBAL_CONDITIONAL',
+            'cmd47_ack_cases':ack_cases,
+            'cmd47_pending_qword_offsets':[hex(x) for x in pending_offsets],
+            'cmd47_status_dword_offsets':[hex(x) for x in status_offsets],
+            'cmd47_flag_bits':[hex(x) for x in flag_bits],
+            'identical_repeated_ack_clears_new_pending_state':True,
+            'native_pending_words_prove_unique_operation_completion':False,
             'per_character_lifetime_or_save_fence_proven':False,
             'sql_executed':False,'server_or_client_modified':False}
 
@@ -168,4 +219,5 @@ if __name__=='__main__':
     result=audit(a.world,a.dba)
     a.output.write_text(json.dumps(result,indent=2)+'\n',encoding='utf-8')
     print(result['status']+'; ACCOUNTING_CASES='+str(len(result['accounting_cases']))+
-          '; DISPATCH_CASES='+str(len(result['dispatch_cases']))+'; SQL_EXECUTED=NO')
+          '; DISPATCH_CASES='+str(len(result['dispatch_cases']))+
+          '; ACK_CASES='+str(len(result['cmd47_ack_cases']))+'; SQL_EXECUTED=NO')

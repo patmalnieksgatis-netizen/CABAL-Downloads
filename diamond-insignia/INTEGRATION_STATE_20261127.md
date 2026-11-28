@@ -229,6 +229,7 @@ network settings are changed. Temporary objects disappear with the test
 connection. The complete PowerShell transport was checked with a substituted
 SSH function; transferred Python parses and its SQL bytes match the canonical
 source. This transport fixture executed no SQL. The real SQL engine execution
-is pending operator relay; this
+passed through the operator relay on 28 November; see
+`INTEGRATION_STATE_20261128.md` and the recorded sanitized receipt. This
 test still cannot prove online WorldSvr locking, Mastery stat application,
 relogin initialization or working Diamond gameplay.

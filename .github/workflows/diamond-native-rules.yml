@@ -42,6 +42,8 @@ jobs:
             diamond-insignia/native/grade2-ingress/test_grade2_ingress.cpp \
             -o /tmp/diamond_grade2_clone_trial
           /tmp/diamond_grade2_clone_trial
+      - name: Reconcile every native WExp counter after cmd47, including stale saves
+        run: bash diamond-insignia/native/world-save-barrier/run-tests.sh
       - name: Gate 0BDA clone response on cmd46-47 durable persisted reconciliation
         run: |
           set -euo pipefail

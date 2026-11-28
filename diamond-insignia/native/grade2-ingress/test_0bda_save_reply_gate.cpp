@@ -21,7 +21,8 @@ Operation Operation21() {
     o.durableIntent=0xCAFEu;o.userNum=9911;o.characterIdx=2020;
     o.expectedRevision=21;o.appliedRevision=22;o.command=1;
     o.masteryId=0;o.newMasteryLevel=0;o.newBadgeGrade=2;
-    o.newWexp=10000;o.newTickets=20;
+    o.beforeWexp={40000,100000,60000};
+    o.afterWexp={10000,100000,90000};o.newTickets=20;
     return o;
 }
 DurableSnapshot Snapshot21() {
@@ -29,7 +30,7 @@ DurableSnapshot Snapshot21() {
     s.verifiedGameInventory=true;s.verifiedGameWexp=true;
     s.receiptCommitted=true;s.durableIntent=0xCAFEu;
     s.userNum=9911;s.characterIdx=2020;s.revision=22;
-    s.badgeGrade=2;s.wexp=10000;s.tickets=20;
+    s.badgeGrade=2;s.wexp={10000,100000,90000};s.tickets=20;
     s.masteryId=0;s.masteryLevel=0;
     return s;
 }

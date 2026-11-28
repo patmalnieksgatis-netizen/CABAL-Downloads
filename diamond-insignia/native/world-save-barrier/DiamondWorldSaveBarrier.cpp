@@ -11,6 +11,21 @@ std::uint32_t ReadU32(const unsigned char* p) noexcept {
     return static_cast<std::uint32_t>(ReadU16(p)) |
            static_cast<std::uint32_t>(ReadU16(p+2)) << 16;
 }
+bool SameLedger(const real_gamedata::WarExpLedger& a,
+                const real_gamedata::WarExpLedger& b) noexcept {
+    return a.current==b.current && a.earned==b.earned && a.used==b.used;
+}
+bool ValidAccounting(const Operation& op) noexcept {
+    const auto& before=op.beforeWexp;
+    if(before.current<0 || before.earned<0 || before.used<0) return false;
+    if(op.command==1){
+        const auto debit=real_gamedata::PlanWarExpDebit(before,30000);
+        return debit.valid && SameLedger(debit.after,op.afterWexp);
+    }
+    // Command 2 buys a level with mastery points. It must not spend WExp;
+    // Special Mastery activation is a separate, currently unbound operation.
+    return op.command==2 && SameLedger(before,op.afterWexp);
+}
 }
 Verdict DiamondWorldSaveBarrier::Begin(const Operation& op,
                                       bool sessionAttested,
@@ -20,7 +35,7 @@ Verdict DiamondWorldSaveBarrier::Begin(const Operation& op,
        !op.userNum || !op.characterIdx ||
        op.expectedRevision==std::numeric_limits<std::uint32_t>::max() ||
        op.appliedRevision != op.expectedRevision+1 ||
-       op.newBadgeGrade!=2 ||
+       op.newBadgeGrade!=2 || !ValidAccounting(op) ||
        (op.command!=1 && op.command!=2) ||
        (op.command==1 && (op.masteryId!=0 || op.newMasteryLevel!=0)) ||
        (op.command==2 && (op.masteryId<159 || op.masteryId>474 ||
@@ -82,7 +97,8 @@ Verdict DiamondWorldSaveBarrier::Reconcile(const DurableSnapshot& s) noexcept {
        s.userNum!=operation_.userNum || s.characterIdx!=operation_.characterIdx ||
        s.revision!=operation_.appliedRevision ||
        s.badgeGrade!=operation_.newBadgeGrade ||
-       s.wexp!=operation_.newWexp || s.tickets!=operation_.newTickets ||
+       !SameLedger(s.wexp,operation_.afterWexp) ||
+       s.tickets!=operation_.newTickets ||
        s.masteryId!=operation_.masteryId ||
        s.masteryLevel!=operation_.newMasteryLevel){
         phase_=Phase::RecoveryRequired;

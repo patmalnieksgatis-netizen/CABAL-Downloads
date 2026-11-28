@@ -4,6 +4,7 @@
 // Attested state MUST originate from trusted live WorldSvr and persisted DB.
 #include <cstddef>
 #include <cstdint>
+#include "../real-gamedata-transaction/DiamondWarExpAccounting.h"
 
 namespace diamond_v291 {
 constexpr std::uint16_t kIpcUpdateChDat = 46;
@@ -21,7 +22,10 @@ struct Operation {
     std::int32_t masteryId = 0;
     std::int32_t newMasteryLevel = 0;
     std::uint32_t newBadgeGrade = 0;
-    std::uint64_t newWexp = 0;
+    // All three native/saved counters are required. Missing host reads fail
+    // validation rather than silently treating earned/used as zero.
+    real_gamedata::WarExpLedger beforeWexp{-1,-1,-1};
+    real_gamedata::WarExpLedger afterWexp{-1,-1,-1};
     std::uint32_t newTickets = 0; // item 33554961 actual inventory count
 };
 
@@ -34,7 +38,7 @@ struct DurableSnapshot {
     std::uint32_t characterIdx = 0;
     std::uint32_t revision = 0;
     std::uint32_t badgeGrade = 0;
-    std::uint64_t wexp = 0;
+    real_gamedata::WarExpLedger wexp{-1,-1,-1};
     std::uint32_t tickets = 0;
     std::int32_t masteryId = 0;
     std::int32_t masteryLevel = 0;

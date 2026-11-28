@@ -1,0 +1,21 @@
+{
+  "evidence_source": "operator_supplied_console_output",
+  "received_date_europe_riga": "2026-11-28",
+  "helper_commit": "041f5009627f746168898d86dd9ebda554b5167e",
+  "procedure_source_sha256": "1dc000673da9e5e53af7192061b8ba5d7adef8b4b7dc405758e5550f15e46d45",
+  "runner_sha256": "42a04c5e0586428a31416377a01cba1217df13e2e9c21cb245aafb040b0af64f",
+  "status": "TEMP_SQL_ENGINE_TEST_PASS",
+  "cases": {
+    "COMMIT": "PASS",
+    "REPLAY": "PASS",
+    "ATOMIC_ROLLBACK": "PASS",
+    "OVERFLOW": "PASS",
+    "STALE_COUNTERS": "PASS"
+  },
+  "game_rows_read_or_written": false,
+  "persistent_schema_changed": false,
+  "server_restarted": false,
+  "worldsvr_integration_tested": false,
+  "direct_cloud_execution": false,
+  "diamond_gameplay_enabled": false
+}
