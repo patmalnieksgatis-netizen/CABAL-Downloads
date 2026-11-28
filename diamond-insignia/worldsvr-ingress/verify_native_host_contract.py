@@ -97,6 +97,37 @@ def audit_ack_queue(world):
                 session_lifetime_proven=False)
 
 
+def audit_uninitialize_boundary(world):
+    """Execute the original registration slice and initial reset instructions."""
+    u=Uc(UC_ARCH_X86,UC_MODE_64)
+    for at,n in ((0x8ef000,0x1000),(0xad6000,0x1000),
+                 (0x235f000,0x2000),(0x36000000,0x60000)):
+        u.mem_map(at,n)
+    u.mem_write(0x8ef259,world.read(0x8ef259,0x8ef285-0x8ef259))
+    u.mem_write(0xad6060,world.read(0xad6060,0xad6097-0xad6060))
+    arena=0x36000000
+    procedure,vector,data,stack=arena,arena+0x1000,arena+0x10000,arena+0x58000
+    slot=0x235f8c0+143*8
+    assert slot==0x235fd38
+    u.mem_write(slot,struct.pack('<Q',procedure))
+    u.mem_write(procedure,struct.pack('<QQQ',vector,vector,vector+8))
+    u.reg_write(UC_X86_REG_RBP,stack)
+    u.reg_write(UC_X86_REG_RSP,stack-0x4000)
+    u.emu_start(0x8ef259,0x8ef285,count=30)
+    assert struct.unpack('<Q',u.mem_read(vector,8))[0]==0xa4a130
+    assert struct.unpack('<Q',u.mem_read(procedure+8,8))[0]==vector+8
+    u.mem_write(data+0xa24,struct.pack('<QI',16067,0xffffffff))
+    u.reg_write(UC_X86_REG_RDI,data)
+    u.reg_write(UC_X86_REG_RSP,stack)
+    u.emu_start(0xad6060,0xad6097,count=30)
+    assert bytes(u.mem_read(data+0xa24,12))==bytes(12)
+    return dict(user_opcode=143,handler='0xA4A130',registration_slot=hex(slot),
+                reset_entry='0xAD6060',character_index_offset='0xA24',
+                character_identity_cleared=True,
+                original_registration_and_reset_prefix_executed=True,
+                full_native_cleanup_executed=False,lifetime_hold_proven=False)
+
+
 def audit(world_path, dba_path):
     world=Image(world_path,WORLD_SHA)
     dba=Image(dba_path,DBA_SHA)
@@ -285,6 +316,7 @@ def audit(world_path, dba_path):
             'dispatch_mutex':'0x23685E0','dispatch_mutex_scope':'GLOBAL_CONDITIONAL',
             'cmd47_ack_cases':ack_cases,
             'owner_queue_conversion':audit_ack_queue(world),
+            'uninitialize_boundary':audit_uninitialize_boundary(world),
             'cmd47_pending_qword_offsets':[hex(x) for x in pending_offsets],
             'cmd47_status_dword_offsets':[hex(x) for x in status_offsets],
             'cmd47_flag_bits':[hex(x) for x in flag_bits],

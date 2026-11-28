@@ -38,6 +38,12 @@ void RankUpCompletion::MarkInDoubt(
 Result RankUpCompletion::AcceptCommitted(
         std::unique_ptr<real_gamedata::RankUpCommitRecord> record,
         std::string connectionString) noexcept {
+    // A lifecycle callback may interrupt the request while SQL is executing.
+    // Keep its returned commit image, and never apply it to reset native data.
+    if(state_==State::RecoveryRequired && !committed_) {
+        MarkInDoubt(std::move(record),std::move(connectionString));
+        return Result::RecoveryRequired;
+    }
     if(state_!=State::Prepared)return Result::WrongPhase;
     // Retain the already committed evidence even on identity/ABI failure.
     committed_=std::move(record);

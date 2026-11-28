@@ -381,4 +381,7 @@ They verified the hit limit, timeout with no hits, detachment after a source
 error, and rejection of a mismatching executable. Each attached test checked
 that the target remained alive and TracerPid became zero. These tests passed.
 The PowerShell download pin, streaming status and UTF-8 report were tested
-with a substituted SSH transport. The target game trace is pending.
+with a substituted SSH transport. The target game trace was received. Its observed uninitialization chain and
+the resulting source connection are recorded in
+`NATIVE_UNINITIALIZE_20261128.md`. Full native lifetime/save integration
+remains pending.

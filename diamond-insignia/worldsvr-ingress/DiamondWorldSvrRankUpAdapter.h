@@ -28,6 +28,9 @@ class WorldSvrRankUpAdapter final {
     struct Pending {
         std::unique_ptr<NativeSession> session;
         std::unique_ptr<RankUpCompletion> completion;
+        Identity owner{};
+        const void* nativeUser=nullptr;
+        RankUpCompletion* activeCompletion=nullptr;
         bool interrupted=false;
     };
 public:
@@ -47,7 +50,7 @@ public:
         auto entry=Find(owner.userNum);
         if(!entry)return Result::IgnoredEvent;
         if(!entry->completion) {
-            entry->interrupted=true;
+            InterruptEntry(*entry);
             return Result::RecoveryRequired;
         }
         return entry->completion->OnSaveRouted(owner,flags,epoch,outstanding);
@@ -57,7 +60,7 @@ public:
         auto entry=Find(owner.userNum);
         if(!entry)return Result::IgnoredEvent;
         if(!entry->completion) {
-            entry->interrupted=true;
+            InterruptEntry(*entry);
             return Result::RecoveryRequired;
         }
         const auto result=entry->completion->OnItcSaveAck(
@@ -70,17 +73,29 @@ public:
     void Interrupt(const Identity& owner) noexcept {
         auto entry=Find(owner.userNum);
         if(!entry)return;
-        const auto held=entry->session->Owner();
+        const auto held=entry->owner;
         if(held.characterIdx!=owner.characterIdx ||
            held.sessionGeneration!=owner.sessionGeneration)return;
-        entry->interrupted=true;
-        if(entry->completion)entry->completion->MarkInDoubt();
+        InterruptEntry(*entry);
+    }
+    // Called on the account executor BEFORE native uninitialization changes
+    // USERCONTEXT+E8 or resets USERDATACONTEXT. Compare only the stored address.
+    // No lookup or dereference of a character that may already be recycling.
+    void BeforeNativeUninitialize(const void* user) noexcept {
+        if(!user)return;
+        std::lock_guard<std::mutex> lock(registryMutex_);
+        for(auto& pair:pending_)
+            if(pair.second->nativeUser==user)InterruptEntry(*pair.second);
     }
     std::size_t PendingCount() const {
         std::lock_guard<std::mutex> lock(registryMutex_);
         return pending_.size();
     }
 private:
+    static void InterruptEntry(Pending& entry) noexcept {
+        entry.interrupted=true;
+        if(entry.activeCompletion)entry.activeCompletion->MarkInDoubt();
+    }
     static bool Begin(void* context,void* layer,
                       const diamond_v19::ContextPrefix& native,
                       diamond_v20::Request& request) noexcept {
@@ -101,6 +116,9 @@ private:
             entry=std::make_shared<Pending>();
             entry->session=std::move(session);
             request.completion=std::make_unique<RankUpCompletion>(*entry->session,owner);
+            entry->owner=owner;
+            entry->nativeUser=native.user;
+            entry->activeCompletion=request.completion.get();
             bool inserted=false;
             {
                 std::lock_guard<std::mutex> lock(registryMutex_);

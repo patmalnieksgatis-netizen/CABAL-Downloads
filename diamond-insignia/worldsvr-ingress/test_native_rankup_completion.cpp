@@ -112,6 +112,15 @@ int main(){
         assert(x.OnSaveAck(identity(),packet.data(),18,101,1)==c::Result::RecoveryRequired);
         assert(x.HasRetainedEvidence() && reads==0 && p.sends==0 && p.releases==0);
     }
+    {
+        events.clear();reads=0;
+        Port p;currentPort=&p;c::RankUpCompletion x(p,identity());
+        x.MarkInDoubt(); // Lifecycle callback during the SQL commit.
+        assert(x.AcceptCommitted(record(),"fixture-no-connection")==c::Result::RecoveryRequired);
+        assert(x.HasRetainedEvidence());
+        assert(events.empty() && reads==0 && p.sends==0 && p.releases==0);
+        assert(!x.ReadyForCommit());
+    }
     for (bool sameFlags : {false,true}) {
         // A newer save for this character can replace WExp even when its
         // flags omit inventory. A later expected ACK cannot restore ordering.
@@ -203,6 +212,9 @@ int main(){
         p.abi=false;assert(!x.ReadyForCommit());
         p.abi=true;p.held=false;assert(!x.ReadyForCommit());
         p.held=true;x.MarkInDoubt();assert(!x.ReadyForCommit());
+        assert(x.AcceptCommitted(record(),"fixture-no-connection")==c::Result::RecoveryRequired);
+        assert(x.HasRetainedEvidence());
+        // A repeated result cannot replace retained recovery evidence.
         assert(x.AcceptCommitted(record(),"fixture-no-connection")==c::Result::WrongPhase);
         assert(p.sends==0 && p.releases==0);
     }

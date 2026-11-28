@@ -1,5 +1,5 @@
 // V20 integration test: fake registry and bridge, no live SQL or server.
-#include "DiamondWorldSvrRankUpAdapter.h"
+#include "DiamondNativeUninitializeIngress.h"
 #include <cassert>
 #include <array>
 #include <cstdlib>
@@ -10,6 +10,14 @@ namespace rg=diamond_v291::real_gamedata;
 namespace completion=diamond_v291::completion;
 static int nativeReleases=0,nativeCancels=0,nativeDestroyed=0;
 static void (*duringPopulate)() noexcept=nullptr;
+static void (*duringSql)() noexcept=nullptr;
+static int nativeMutations=0;
+static void* nativeUninitUser=nullptr;
+static void (*atNativeUninitialize)() noexcept=nullptr;
+static int OriginalUninitialize(void*,ContextPrefix*) {
+    if(atNativeUninitialize)atNativeUninitialize();
+    return 73;
+}
 struct Port final:completion::NativeSession {
     const void* nativeUser=nullptr;
     explicit Port(const void* user=nullptr):nativeUser(user){}
@@ -25,7 +33,7 @@ struct Port final:completion::NativeSession {
     }
     void CancelBeforeCommit() noexcept override{++nativeCancels;}
     bool HeldSessionMatches(const completion::Identity&) noexcept override{return true;}
-    bool ApplyCommitted(const rg::RankUpCommitRecord&) noexcept override{return true;}
+    bool ApplyCommitted(const rg::RankUpCommitRecord&) noexcept override{++nativeMutations;return true;}
     bool ReserveSave(completion::SaveReservation& r) noexcept override{r={0x802,0,100};return true;}
     bool PublishSave(const completion::SaveReservation&) noexcept override{return true;}
     bool ReplyAbiVerified() const noexcept override{return true;}
@@ -49,6 +57,7 @@ namespace diamond_v291::real_gamedata {
 gu::GameActionResult Execute0BDARealServer01(const void*,const void*,std::size_t n,const Real0BDAHost& h,std::uint64_t reservedIntent) noexcept {
     assert(n==14 && h.transaction && reservedIntent==998877);
     ++bridgeCalls;
+    if(duringSql)duringSql();
     if(nextState==gu::GameActionState::CommittedPendingSaveProof ||
        nextState==gu::GameActionState::InDoubtRecoveryRequired){
         auto record=std::make_unique<RankUpCommitRecord>();
@@ -182,6 +191,41 @@ int main(){
     duringPopulate=nullptr;
     assert(bridgeCalls==beforeInterruptedLoad && adapter->PendingCount()==0);
     assert(nativeCancels==3 && nativeDestroyed==4);
+    // Native uninitialization can arrive while synchronous SQL is running.
+    // The committed image must survive, without mutating a reset character.
+    const auto mutationsBeforeReset=nativeMutations;
+    auto* uninit=Create();
+    assert(Append(uninit,OriginalUninitialize));
+    user[143]=uninit;
+    auto unsafeHost=h;unsafeHost.startupBeforeAnyDispatch=false;
+    assert(!diamond_v291::lifecycle::Install(unsafeHost,*adapter,OriginalUninitialize));
+    assert(!diamond_v291::lifecycle::Install(h,*adapter));
+    assert(diamond_v291::lifecycle::Install(h,*adapter,OriginalUninitialize));
+    auto uninitHandler=*Read<Handler*>(uninit,0);
+    // The same frame/user is forwarded and its return value is preserved.
+    // Reset invalidation must already be visible when native cleanup begins.
+    atNativeUninitialize=[]() noexcept {
+        assert(adapter->SaveRouted({5005,24055,77,998877},0x802,100,0)==
+               completion::Result::RecoveryRequired);
+    };
+    nativeUninitUser=c.user;
+    duringSql=[]() noexcept {
+        ContextPrefix context{nativeUninitUser,nullptr,0};
+        assert(diamond_v291::lifecycle::Handle(nullptr,&context)==73);
+    };
+    assert(uninitHandler==&diamond_v291::lifecycle::Handle);
+    assert(entry(nullptr,&c)==0);
+    duringSql=nullptr;
+    assert(nativeMutations==mutationsBeforeReset);
+    assert(adapter->PendingCount()==1);
+    assert(adapter->SaveRouted(owner,0x802,100,0)==completion::Result::WrongPhase);
+    atNativeUninitialize=nullptr;
+    Destroy(uninit);user[143]=nullptr;
+    diamond_v291::lifecycle::adapter=nullptr;
+    diamond_v291::lifecycle::original=nullptr;
+    // Only the fixture can discard recovery ownership on process teardown.
+    adapter=std::make_unique<completion::WorldSvrRankUpAdapter>(OpenSession,nullptr,bind);
+    diamond_v20::binding=&adapter->Binding();
     // An uncertain transaction stays owned across disconnect and another begin.
     nextState=gu::GameActionState::InDoubtRecoveryRequired;
     assert(entry(nullptr,&c)==0 && adapter->PendingCount()==1);
