@@ -91,7 +91,7 @@ def evidence(elf):
         "low_7_option_bits":["0x10","0x1B","0x66"],
         "low_16_option_bits":["0xAF","0xB8"],
         "bits_22_to_31":["0x43","0x46"],
-        "other":"count 1"},
+        "other":"unmasked numeric ItemOption"},
       "metadata_field3c_le_1":"count 1",
       "static_anchors_checked":len(ANCHORS),
       "original_call_verified":True,

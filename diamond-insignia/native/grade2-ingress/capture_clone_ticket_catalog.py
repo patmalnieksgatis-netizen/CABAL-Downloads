@@ -34,7 +34,7 @@ def classification(kind,stack):
         return "option_unsigned_lower_16_bits"
     if kind in (0x10,0x1B,0x66):
         return "option_unsigned_lower_7_bits"
-    return "original_helper_fallback_one__NOT_verified_ticket_stack_quantity"
+    return "option_numeric_unmasked"
 
 def machine_id_text(text):
     token=text.strip()

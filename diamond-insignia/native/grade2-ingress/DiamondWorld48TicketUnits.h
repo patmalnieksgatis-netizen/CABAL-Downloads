@@ -2,7 +2,7 @@
 // Exact original WorldSvr Platinum inventory helper 0xAE0E90 (read-only).
 // The 48-byte entry stride is proven at 0x587E30; its selected-item
 // count is metadata-dependent and MUST NOT be inferred from client slots.
-// Intended as a verified future GameData quantity read adapter, not a writer.
+// Reads native quantities only. No item mutation or GameData writes.
 #include <cstddef>
 #include <cstdint>
 #include "../inventory-reconcile/DiamondB0QuantityCodec.h"
@@ -17,7 +17,8 @@ struct AttestedItemMetadata {
     std::uint32_t catalogVariant=0;
     std::uint32_t kindField38=0; // exact WorldSvr metadata +0x38
     std::int32_t stackField3C=0; // exact WorldSvr signed comparison at +0x3C
-    // Default disabled. TWO real 999 samples alone do not satisfy proof.
+    // Retained for callers carrying persisted-record quantity evidence.
+    // The native B0 numeric branch is verified by original instructions.
     diamond_v291::inventory::B0QuantityEvidence b0QuantityProof{};
 };
 enum class TicketUnitsVerdict : std::uint8_t {
@@ -30,11 +31,10 @@ struct TicketUnitsResult {
     std::uint32_t rawItemKind=0;
     std::uint32_t rawOptionLow32=0;
 };
-// A metadata +0x3C > 1 with unrecognized +0x38 type reports
-// UnverifiedStackQuantity. REAL B0/999 is rejected by default until an
-// independent native/UI quantity observation proves the option bit profile.
-// Original 0xAE0E90 still falls through to numeric 1, but that is NOT
-// an attestation of the actual materials-stack count.
+// Metadata +0x3C <=1 reports one item. For larger stacks, AE0E90
+// selects masked option counts for known packed types and returns the
+// numeric option for B0. B0 accepts the observed stack limit 999 and a
+// plain positive option in 1..999. Unrecognized metadata is rejected.
 //
 // Reads +4 occupancy, +8 itemKind and the 8-byte +0x18 item option, which is
 // exactly +0x10 from the item pointer passed to original 0xAE0E90.

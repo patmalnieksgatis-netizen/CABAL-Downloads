@@ -43,33 +43,22 @@ TicketUnitsResult DecodeTicketSlot48(
             case 0x10u: case 0x1Bu: case 0x66u:
                 units=option&0x7Fu;break;
             case 0xB0u: {
-                // This is NOT original 0xAE0E90: it is a separately
-                // attested *new* materials-stack decode path. The
-                // real 999/999 sample alone leaves its proof disabled.
-                // Pass the full QWORD to the flag validator. Narrowing
-                // first would erase unknown high option bits and accept
-                // a stack that the persisted-record decoder rejects.
-                const auto verified=diamond_v291::inventory::
-                    DecodeB0QuantityWithIndependentProof(
-                        std::uint64_t(option) |
-                            (std::uint64_t(U32(p+0x1C))<<32u),
-                        meta.kindField38,meta.stackField3C,
-                        meta.b0QuantityProof);
-                if(verified.verdict!=diamond_v291::inventory::
-                   B0QuantityVerdict::VerifiedCount) {
-                    out.quantity=1u; // original helper fallback, NEVER debit
+                // AE0E90 loads the QWORD option before its metadata switch.
+                // B0 returns that numeric value through the unmasked branch.
+                // AE0FD0 subtracts the requested numeric count on the same
+                // metadata branch. The pinned-instruction audit covers 1..999.
+                if(meta.stackField3C!=999 || U32(p+0x1C)!=0 ||
+                   option==0 || option>999) {
                     out.verdict=TicketUnitsVerdict::UnverifiedStackQuantity;
                     return out;
                 }
-                units=verified.quantity;
+                units=option;
                 break;
             }
             default:
-                // Exact original WorldSvr 0xAE0E90 returns 1 here, but
-                // 0xB0/999 was OBSERVED for item 33554961 on the VM.
-                // A 999-configured stack cannot be safely charged using
-                // this fallback without the real item quantity encoding.
-                out.quantity=1u; // original helper's numeric return
+                // Unrecognized ticket metadata stays unsupported. The
+                // original helper's raw numeric option is not a stack limit.
+                out.quantity=option;
                 out.verdict=TicketUnitsVerdict::UnverifiedStackQuantity;
                 return out;
         }

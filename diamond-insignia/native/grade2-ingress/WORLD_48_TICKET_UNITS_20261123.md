@@ -1,3 +1,5 @@
+> The B0 fallback conclusion below is superseded by the original-instruction execution in `worldsvr-ingress/NATIVE_MATERIAL_COUNT_20261128.md`. AE0E90 returns the unmasked numeric option for B0.
+
 # CABAL v291 — actual WorldSvr ticket quantity reader and runtime catalog blocker (2026-11-23)
 
 ## Substantive finding: real server stack codec found

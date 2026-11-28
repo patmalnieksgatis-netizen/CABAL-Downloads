@@ -23,7 +23,7 @@ struct World {
     std::uint32_t registeredUser=5005,registeredCharacter=24055;
     std::uint64_t sessionGeneration=77;
     bool connected=true,foreignData=false,failState=false;
-    bool independentB0Proof=true;
+    bool trustedTicketCatalog=true;
     World() {
         void* p=userData.data();
         std::memcpy(userCtx.data()+0xE8,&p,sizeof(p));
@@ -84,18 +84,11 @@ bool FillOwner(void* opaque,const AttestedLiveWorldUser& user,
     inv.registeredUserNum=user.userNum;
     inv.registeredCharacterIdx=user.characterIdx;
     inv.trustedRevision=out.before.revision;
-    inv.itemCatalog.fromTrustedWorldCatalog=true;
+    inv.itemCatalog.fromTrustedWorldCatalog=world.trustedTicketCatalog;
     inv.itemCatalog.catalogItemIndex=0x211u;
     inv.itemCatalog.catalogVariant=1;
     inv.itemCatalog.kindField38=0xB0;
     inv.itemCatalog.stackField3C=999;
-    auto& proof=inv.itemCatalog.b0QuantityProof;
-    proof.provenProfile=diamond_v291::inventory::B0CountProfile::
-        PlainPositiveOptionNoFlags;
-    proof.independentlyMatchedKnownQuantity=world.independentB0Proof; // SYNTHETIC
-    proof.sameGameBuildAndMaterialKindVerified=true; // SYNTHETIC
-    proof.optionLayoutVerified=true; // SYNTHETIC
-    proof.extraOptionFlagsProvenAbsent=true; // SYNTHETIC
     return true;
 }
 AtomicCommitOutcome Commit(void* opaque,const void* ctx,
@@ -186,12 +179,12 @@ int main() {
     result=ExecuteAuthenticated0BDA(world.userCtx.data(),packet.data(),
                                     packet.size(),wrongHost);
     assert(result.state==GameActionState::MissingRealCommitBackend);
-    world.independentB0Proof=false;
+    world.trustedTicketCatalog=false;
     result=ExecuteAuthenticated0BDA(world.userCtx.data(),packet.data(),
                                     packet.size(),host);
     assert(result.state==GameActionState::InventoryNotVerified);
     assert(world.commits==0);
-    world.independentB0Proof=true;
+    world.trustedTicketCatalog=true;
     for (std::uint64_t reserved : {0u, 998878u}) {
         auto differentRequest=host;
         differentRequest.reservedIntent=reserved;

@@ -1,3 +1,5 @@
+> The B0 fallback conclusion below is superseded by the original-instruction execution in `worldsvr-ingress/NATIVE_MATERIAL_COUNT_20261128.md`. AE0E90 returns the unmasked numeric option for B0.
+
 # CABAL v291 — next evidence for the real B0/999 Merit Ticket quantity
 
 **Date:** 2026-11-23. **VM:** `EP36_291_TEST`. **Status:** bounded read-only code

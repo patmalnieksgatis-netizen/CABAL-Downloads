@@ -73,13 +73,11 @@ int main() {
     unverified=a;
     unverified.selectionSemanticsBoundToGradeUpVerified=false;
     Eq(SelectionVerdict::UnverifiedSelectionSemantics,packet,unverified);
-    // Actual running VM report: item 33554961 / kind 0xB0 /
-    // metadata field3C=999. Original helper falls back to singleton,
-    // but the real amount could be encoded on another path. NO debit.
+    // Captured B0/999 metadata uses the original numeric option path.
     auto actualRuntime=a;
     actualRuntime.itemCatalog.kindField38=kObservedTicketKind38;
     actualRuntime.itemCatalog.stackField3C=kObservedTicketStack3C;
-    Eq(SelectionVerdict::UnsupportedStackQuantityEncoding,packet,actualRuntime);
+    Eq(SelectionVerdict::ExactDebitPlan,packet,actualRuntime);
     auto unknownStack=a;
     unknownStack.itemCatalog.kindField38=0x47u;
     unknownStack.itemCatalog.stackField3C=999;
@@ -97,22 +95,14 @@ int main() {
     assert(plan.slots[1].expectedRemaining==40);
     assert(!plan.slots[1].removeEmptyRecord);
     assert(inventory==original); // never changed live memory
-    // A future independently verified B0 stack decoder can reuse the
-    // real planner. This branch is synthetic ONLY; the two observed
-    // 999/999 saved rows cannot supply independent count evidence.
+    // Original B0 numeric quantities feed the same selected-slot planner.
     Slot(inventory,5,999);
     auto material=a;
     material.itemCatalog.kindField38=kObservedTicketKind38;
     material.itemCatalog.stackField3C=kObservedTicketStack3C;
-    material.itemCatalog.b0QuantityProof.provenProfile=
-        diamond_v291::inventory::B0CountProfile::OptionLow10;
-    material.itemCatalog.b0QuantityProof.sameGameBuildAndMaterialKindVerified=true;
-    material.itemCatalog.b0QuantityProof.optionLayoutVerified=true;
-    material.itemCatalog.b0QuantityProof.extraOptionFlagsProvenAbsent=true;
     Candidate one=Request(5,8);
     one.count=1;
-    Eq(SelectionVerdict::UnsupportedStackQuantityEncoding,one,material);
-    material.itemCatalog.b0QuantityProof.independentlyMatchedKnownQuantity=true;
+    assert(PlanTicketDebit(one,material).status==SelectionVerdict::ExactDebitPlan);
     const auto materialPlan=PlanTicketDebit(one,material);
     assert(materialPlan.status==SelectionVerdict::ExactDebitPlan);
     assert(materialPlan.selectedUnits==999);
@@ -166,7 +156,7 @@ int main() {
     Slot(inventory,8,80,true,false);
     Eq(SelectionVerdict::InvalidTicketRecord,packet,a);
     std::cout<<"GRADE2_0BDA_PROVEN_B0_999_TO_899_SYNTHETIC_PLAN=PASS\n"
-             <<"GRADE2_0BDA_ACTUAL_TICKET_B0_999_UNSAFE_DEBIT_BLOCKED=PASS\n"
+             <<"GRADE2_0BDA_B0_999_NATIVE_QUANTITY_SUPPORTED=PASS\n"
              <<"GRADE2_0BDA_UNVERIFIED_SELECTION_SEMANTICS_BLOCKED=PASS\n"
              <<"GRADE2_0BDA_SELECTION_DUPLICATES_AND_AUTHORITY=PASS\n"
              <<"GRADE2_0BDA_EXACT_100_UNIT_DEBIT_PLAN=PASS\n"

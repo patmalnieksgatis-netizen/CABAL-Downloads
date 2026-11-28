@@ -1,0 +1,414 @@
+{
+  "status": "PINNED_NATIVE_INSTRUCTIONS_PASS",
+  "world_sha256": "caec7772acd22fd8918cfac386845c644451781e48c51975eaefed334c6705c3",
+  "dba_sha256": "474acd9fec66cde11a55458d77b6b352aacc2a003385d2e9b79fd817b1f4ffce",
+  "accounting_cases": [
+    {
+      "before": [
+        40000,
+        90000,
+        7
+      ],
+      "cost": 30000,
+      "saved_and_bound": [
+        10000,
+        90000,
+        30007
+      ]
+    },
+    {
+      "before": [
+        30000,
+        30000,
+        0
+      ],
+      "cost": 30000,
+      "saved_and_bound": [
+        0,
+        30000,
+        30000
+      ]
+    },
+    {
+      "before": [
+        1000000000000,
+        1000000000001,
+        12345
+      ],
+      "cost": 30000,
+      "saved_and_bound": [
+        999999970000,
+        1000000000001,
+        42345
+      ]
+    }
+  ],
+  "dispatch_cases": [
+    {
+      "layer_field38": 0,
+      "map_locking": 0,
+      "handler_result": 0,
+      "protected": false
+    },
+    {
+      "layer_field38": 0,
+      "map_locking": 0,
+      "handler_result": 7,
+      "protected": false
+    },
+    {
+      "layer_field38": 0,
+      "map_locking": 1,
+      "handler_result": 0,
+      "protected": false
+    },
+    {
+      "layer_field38": 0,
+      "map_locking": 1,
+      "handler_result": 7,
+      "protected": false
+    },
+    {
+      "layer_field38": 1,
+      "map_locking": 0,
+      "handler_result": 0,
+      "protected": false
+    },
+    {
+      "layer_field38": 1,
+      "map_locking": 0,
+      "handler_result": 7,
+      "protected": false
+    },
+    {
+      "layer_field38": 1,
+      "map_locking": 1,
+      "handler_result": 0,
+      "protected": false
+    },
+    {
+      "layer_field38": 1,
+      "map_locking": 1,
+      "handler_result": 7,
+      "protected": false
+    },
+    {
+      "layer_field38": 2,
+      "map_locking": 0,
+      "handler_result": 0,
+      "protected": false
+    },
+    {
+      "layer_field38": 2,
+      "map_locking": 0,
+      "handler_result": 7,
+      "protected": false
+    },
+    {
+      "layer_field38": 2,
+      "map_locking": 1,
+      "handler_result": 0,
+      "protected": true
+    },
+    {
+      "layer_field38": 2,
+      "map_locking": 1,
+      "handler_result": 7,
+      "protected": true
+    },
+    {
+      "layer_field38": 15,
+      "map_locking": 0,
+      "handler_result": 0,
+      "protected": false
+    },
+    {
+      "layer_field38": 15,
+      "map_locking": 0,
+      "handler_result": 7,
+      "protected": false
+    },
+    {
+      "layer_field38": 15,
+      "map_locking": 1,
+      "handler_result": 0,
+      "protected": true
+    },
+    {
+      "layer_field38": 15,
+      "map_locking": 1,
+      "handler_result": 7,
+      "protected": true
+    }
+  ],
+  "native_wexp_offsets": {
+    "current": "0x16E0",
+    "earned": "0x16E8",
+    "used": "0x16F0"
+  },
+  "packed_body_offsets": {
+    "current": "0x99",
+    "earned": "0xA1",
+    "used": "0xA9"
+  },
+  "dbagent_parameters_1_based": {
+    "WarExpStatus": 64,
+    "warExpEarn": 65,
+    "warExpUsed": 66
+  },
+  "dispatch_mutex": "0x23685E0",
+  "dispatch_mutex_scope": "GLOBAL_CONDITIONAL",
+  "cmd47_ack_cases": [
+    {
+      "flags": "0x0",
+      "pending_before": [
+        3,
+        4,
+        5
+      ],
+      "pending_after": [
+        3,
+        4,
+        5
+      ],
+      "status_after": [
+        11,
+        22,
+        33
+      ]
+    },
+    {
+      "flags": "0x2000",
+      "pending_before": [
+        3,
+        4,
+        5
+      ],
+      "pending_after": [
+        0,
+        4,
+        5
+      ],
+      "status_after": [
+        0,
+        22,
+        33
+      ]
+    },
+    {
+      "flags": "0x200",
+      "pending_before": [
+        3,
+        4,
+        5
+      ],
+      "pending_after": [
+        3,
+        0,
+        5
+      ],
+      "status_after": [
+        11,
+        0,
+        33
+      ]
+    },
+    {
+      "flags": "0x2200",
+      "pending_before": [
+        3,
+        4,
+        5
+      ],
+      "pending_after": [
+        0,
+        0,
+        5
+      ],
+      "status_after": [
+        0,
+        0,
+        33
+      ]
+    },
+    {
+      "flags": "0x2",
+      "pending_before": [
+        3,
+        4,
+        5
+      ],
+      "pending_after": [
+        3,
+        4,
+        0
+      ],
+      "status_after": [
+        11,
+        22,
+        0
+      ]
+    },
+    {
+      "flags": "0x2002",
+      "pending_before": [
+        3,
+        4,
+        5
+      ],
+      "pending_after": [
+        0,
+        4,
+        0
+      ],
+      "status_after": [
+        0,
+        22,
+        0
+      ]
+    },
+    {
+      "flags": "0x202",
+      "pending_before": [
+        3,
+        4,
+        5
+      ],
+      "pending_after": [
+        3,
+        0,
+        0
+      ],
+      "status_after": [
+        11,
+        0,
+        0
+      ]
+    },
+    {
+      "flags": "0x2202",
+      "pending_before": [
+        3,
+        4,
+        5
+      ],
+      "pending_after": [
+        0,
+        0,
+        0
+      ],
+      "status_after": [
+        0,
+        0,
+        0
+      ]
+    }
+  ],
+  "owner_queue_conversion": {
+    "ipc_command": 47,
+    "itc_command": 2032,
+    "bytes": 18,
+    "cases": [
+      {
+        "generation": 1,
+        "allocation_ok": false,
+        "queued": false
+      },
+      {
+        "generation": 1,
+        "allocation_ok": true,
+        "queued": true
+      },
+      {
+        "generation": 77,
+        "allocation_ok": false,
+        "queued": false
+      },
+      {
+        "generation": 77,
+        "allocation_ok": true,
+        "queued": true
+      },
+      {
+        "generation": 4294967295,
+        "allocation_ok": false,
+        "queued": false
+      },
+      {
+        "generation": 4294967295,
+        "allocation_ok": true,
+        "queued": true
+      }
+    ],
+    "original_packet_preserved": true,
+    "queue_service_substituted": true,
+    "session_lifetime_proven": false
+  },
+  "uninitialize_boundary": {
+    "user_opcode": 143,
+    "handler": "0xA4A130",
+    "registration_slot": "0x235fd38",
+    "reset_entry": "0xAD6060",
+    "character_index_offset": "0xA24",
+    "character_identity_cleared": true,
+    "original_registration_and_reset_prefix_executed": true,
+    "full_native_cleanup_executed": false,
+    "lifetime_hold_proven": false
+  },
+  "native_material_debit": {
+    "debit_function": "0xAE0FD0",
+    "count_function": "0xAE0E90",
+    "metadata_supplied": {
+      "kind": "0xB0",
+      "maximum": 999
+    },
+    "quantity_cases": 999,
+    "requested_debit": 100,
+    "count_helper_returns_full_numeric_option_for_b0": true,
+    "debit_helper_uses_plain_numeric_option": true,
+    "exhausted_return_requires_separate_slot_removal": true,
+    "serialize_entry": "0x8BDE3B",
+    "serialized_row_bytes": 30,
+    "physical_slots_preserved": [
+      47,
+      50,
+      511,
+      521
+    ],
+    "full_slot_removal_executed": false,
+    "runtime_hooks_verified": false,
+    "live_character_modified": false
+  },
+  "cmd47_pending_qword_offsets": [
+    "0x2b7b8",
+    "0x2b7c0",
+    "0x2b7c8"
+  ],
+  "cmd47_status_dword_offsets": [
+    "0x2b7e0",
+    "0x2b7e4",
+    "0x2b7e8"
+  ],
+  "cmd47_flag_bits": [
+    "0x2000",
+    "0x200",
+    "0x2"
+  ],
+  "identical_repeated_ack_clears_new_pending_state": true,
+  "native_pending_words_prove_unique_operation_completion": false,
+  "native_status_reply_call": {
+    "call_site": "0xA417A0",
+    "sender": "0x75D4E0",
+    "arguments": [
+      "USERCONTEXT*",
+      "packet*",
+      "7"
+    ],
+    "observed_original_platinum_reply": "e2b70700100b01",
+    "socket_service_substituted": true,
+    "network_send_tested": false
+  },
+  "per_character_lifetime_or_save_fence_proven": false,
+  "sql_executed": false,
+  "server_or_client_modified": false
+}

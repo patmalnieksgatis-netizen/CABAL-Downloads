@@ -37,31 +37,17 @@ TicketDebitPlan PlanTicketDebit(const Candidate& request,
         out.status=SelectionVerdict::ItemMetadataMissing;
         return out;
     }
-    // The exact running v291 WorldSvr reports kind+0x38=0xB0 and
-    // stack+0x3C=999 for item 33554961. The ORIGINAL 0xAE0E90
-    // decoder's default branch returns a singleton for 0xB0; that
-    // does NOT prove a 999-configured ticket stack really contains 1.
-    // Never authorize a 100-ticket debit using the unverified fallback.
-    // Also refuse any other unknown >1 stack class; it may require an
-    // as-yet unidentified item-specific quantity format.
+    // The original helper returns a numeric option for B0. Restrict that
+    // branch to the observed material limit, then validate each complete
+    // option in DecodeTicketSlot48 before planning any debit.
     if(world.itemCatalog.stackField3C>1) {
         const auto kind=world.itemCatalog.kindField38;
         const bool recognized=(kind==0x43u || kind==0x46u ||
                                kind==0xAFu || kind==0xB8u ||
                                kind==0x10u || kind==0x1Bu ||
-                               kind==0x66u);
-        // B0 is NOT supported merely because real ItemOption=999;
-        // require a separately verified quantity profile. The decoder
-        // rejects nonzero option flags and invalid counts later, too.
-        const auto& proof=world.itemCatalog.b0QuantityProof;
-        const bool verifiedB0=(kind==0xB0u &&
-            world.itemCatalog.stackField3C==999 &&
-            proof.provenProfile!=diamond_v291::inventory::B0CountProfile::Unknown &&
-            proof.independentlyMatchedKnownQuantity &&
-            proof.sameGameBuildAndMaterialKindVerified &&
-            proof.optionLayoutVerified &&
-            proof.extraOptionFlagsProvenAbsent);
-        if(!recognized && !verifiedB0) {
+                               kind==0x66u ||
+                               (kind==0xB0u && world.itemCatalog.stackField3C==999));
+        if(!recognized) {
             out.status=SelectionVerdict::UnsupportedStackQuantityEncoding;
             return out;
         }

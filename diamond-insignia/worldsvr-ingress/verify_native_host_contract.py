@@ -128,6 +128,66 @@ def audit_uninitialize_boundary(world):
                 full_native_cleanup_executed=False,lifetime_hold_proven=False)
 
 
+def audit_material_debit_and_saved_slot(world):
+    """Execute native B0 debit and row serialization with supplied metadata."""
+    u=Uc(UC_ARCH_X86,UC_MODE_64)
+    item=33554961
+    metadata=0x12e8e00+(((item>>25)&3)*25<<15)+(item&0xfff)*200
+    for at,n in ((0xae0000,0x2000),(0x8bd000,0x1000),
+                 (metadata&~4095,0x2000),(0x37000000,0x10000)):
+        u.mem_map(at,n)
+    u.mem_write(0xae0e90,world.read(0xae0e90,0xae12d0-0xae0e90))
+    u.mem_write(0x8bde3b,world.read(0x8bde3b,0x8bde74-0x8bde3b))
+    entry,out,stack,end=0x37001000,0x37002000,0x37008000,0x3700f000
+    u.mem_write(metadata+0x38,struct.pack('<Ii',0xb0,999))
+
+    def call(at):
+        u.mem_write(stack,struct.pack('<Q',end))
+        u.reg_write(UC_X86_REG_RSP,stack)
+        u.emu_start(at,end,count=1000)
+        assert u.reg_read(UC_X86_REG_RIP)==end
+        return u.reg_read(UC_X86_REG_RAX)
+
+    # This metadata was observed on the operator's VM. Its contents are
+    # supplied here, rather than recovered from a static ELF BSS section.
+    cases=0
+    for quantity in range(1,1000):
+        u.mem_write(entry,struct.pack('<IIQQQI',47,1,item,901,quantity,0))
+        u.reg_write(UC_X86_REG_RDI,entry+8)
+        count=call(0xae0e90)
+        assert count==quantity # Unmasked numeric option for B0.
+        u.reg_write(UC_X86_REG_RDI,entry+8)
+        u.reg_write(UC_X86_REG_RSI,100)
+        u.reg_write(UC_X86_REG_RDX,out)
+        exhausted=call(0xae0fd0)&255
+        remaining=struct.unpack('<Q',u.mem_read(entry+24,8))[0]
+        consumed=struct.unpack('<Q',u.mem_read(out,8))[0]
+        assert remaining==max(0,quantity-100)
+        assert consumed==min(quantity,100)
+        assert exhausted==(quantity<=100)
+        cases+=1
+    slots=(47,50,511,521)
+    for slot in slots:
+        u.mem_write(entry,struct.pack('<IIQQQI',slot,1,item,901,899,17))
+        u.mem_write(stack-0x4c,bytes(4))
+        for reg,value in ((UC_X86_REG_RBX,entry),(UC_X86_REG_R15,out),
+                          (UC_X86_REG_RBP,stack)):
+            u.reg_write(reg,value)
+        u.emu_start(0x8bde3b,0x8bde74,count=100)
+        expected=struct.pack('<QQQHI',item,901,899,slot,17)
+        assert bytes(u.mem_read(out,30))==expected
+    return dict(debit_function='0xAE0FD0',count_function='0xAE0E90',
+                metadata_supplied=dict(kind='0xB0',maximum=999),
+                quantity_cases=cases,requested_debit=100,
+                count_helper_returns_full_numeric_option_for_b0=True,
+                debit_helper_uses_plain_numeric_option=True,
+                exhausted_return_requires_separate_slot_removal=True,
+                serialize_entry='0x8BDE3B',serialized_row_bytes=30,
+                physical_slots_preserved=list(slots),
+                full_slot_removal_executed=False,
+                runtime_hooks_verified=False,live_character_modified=False)
+
+
 def audit(world_path, dba_path):
     world=Image(world_path,WORLD_SHA)
     dba=Image(dba_path,DBA_SHA)
@@ -317,6 +377,7 @@ def audit(world_path, dba_path):
             'cmd47_ack_cases':ack_cases,
             'owner_queue_conversion':audit_ack_queue(world),
             'uninitialize_boundary':audit_uninitialize_boundary(world),
+            'native_material_debit':audit_material_debit_and_saved_slot(world),
             'cmd47_pending_qword_offsets':[hex(x) for x in pending_offsets],
             'cmd47_status_dword_offsets':[hex(x) for x in status_offsets],
             'cmd47_flag_bits':[hex(x) for x in flag_bits],

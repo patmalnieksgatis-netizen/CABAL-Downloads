@@ -119,44 +119,33 @@ int main() {
     assert(state.lastPlannedTickets==100 && state.lastWexpDelta==30000);
     assert(rows==untouched); // mock callback never edits any world state
 
-    // Real EP36_291_TEST item catalog kind=0xB0, stack setting=999.
-    // The original quantity helper would return 1, but there is no
-    // verified true-stack debit codec. Do not even reach commit().
+    // Unsupported B0 metadata must not reach the commit callback.
     auto observedOwner=owner;
     observedOwner.selectedInventory.itemCatalog.kindField38=kObservedTicketKind38;
-    observedOwner.selectedInventory.itemCatalog.stackField3C=kObservedTicketStack3C;
+    observedOwner.selectedInventory.itemCatalog.stackField3C=1000; // Unsupported B0 limit.
     const auto unsafe=PrepareAndCommitRealGradeUp(
         pkt.data(),pkt.size(),observedOwner,host);
     assert(unsafe.state==GameActionState::InventoryNotVerified);
     assert(unsafe.inventory==SelectionVerdict::UnsupportedStackQuantityEncoding);
     assert(state.calls==1);
-    // Full synthetic path for the REAL observed B0 material kind and
-    // raw 999 count: independent UI/native proof is SYNTHETIC ONLY here.
-    // The owner's two saved raw 999 rows are not such an attestation.
+    // Original B0/999 numeric quantities reach the substituted backend.
     Ticket(rows,5,999);
     auto plainOwner=owner;
     plainOwner.before.tickets=999;
     plainOwner.selectedInventory.itemCatalog.kindField38=kObservedTicketKind38;
     plainOwner.selectedInventory.itemCatalog.stackField3C=kObservedTicketStack3C;
-    auto& b0=plainOwner.selectedInventory.itemCatalog.b0QuantityProof;
-    b0.provenProfile=diamond_v291::inventory::B0CountProfile::
-        PlainPositiveOptionNoFlags;
-    b0.independentlyMatchedKnownQuantity=true; // SYNTHETIC
-    b0.sameGameBuildAndMaterialKindVerified=true; // SYNTHETIC
-    b0.optionLayoutVerified=true; // SYNTHETIC
-    b0.extraOptionFlagsProvenAbsent=true; // SYNTHETIC
     const std::array<std::uint8_t,14> singleRequest={
         0xe2,0xb7,14,0,0,0,0,0,0xda,0x0b,1,0,5,0
     };
     HostFixture plainFixture{};
     auto plainHost=host;
     plainHost.context=&plainFixture;
-    b0.independentlyMatchedKnownQuantity=false;
+    plainOwner.selectedInventory.itemCatalog.fromTrustedWorldCatalog=false;
     const auto blocked=PrepareAndCommitRealGradeUp(
         singleRequest.data(),singleRequest.size(),plainOwner,plainHost);
     assert(blocked.state==GameActionState::InventoryNotVerified);
     assert(plainFixture.calls==0);
-    b0.independentlyMatchedKnownQuantity=true;
+    plainOwner.selectedInventory.itemCatalog.fromTrustedWorldCatalog=true;
     const auto plain=PrepareAndCommitRealGradeUp(
         singleRequest.data(),singleRequest.size(),plainOwner,plainHost);
     assert(plain.state==GameActionState::CommittedPendingSaveProof);
@@ -248,7 +237,7 @@ int main() {
     assert(rows==untouched);
     std::cout<<"0BDA_B0_PLAIN_999_TO_899_SYNTHETIC_END_TO_END=PASS\n"
              <<"0BDA_SERVER01_REAL_PK_AND_SINGLE_SQL_TX_GATE=PASS\n"
-             <<"0BDA_REAL_B0_999_TICKET_METADATA_COMMIT_BLOCKED=PASS\n"
+             <<"0BDA_UNSUPPORTED_B0_LIMIT_COMMIT_BLOCKED=PASS\n"
              <<"0BDA_GAMEPLAY_ENTRY_ORIGINAL_PLATINUM_PASSTHROUGH=PASS\n"
              <<"0BDA_GAMEPLAY_RULES_SELECTED_TICKETS_AND_WEXP_IN_ONE_PATH=PASS\n"
              <<"0BDA_GAMEPLAY_FAIL_CLOSED_AND_NO_S2C_WITHOUT_DURABLE_SAVE=PASS\n"
