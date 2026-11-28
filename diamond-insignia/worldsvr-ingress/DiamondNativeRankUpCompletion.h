@@ -44,7 +44,7 @@ enum class State : std::uint8_t {
 };
 enum class Result : std::uint8_t {
     WaitingForAck, WrongPhase, IgnoredAck, RecoveryRequired,
-    ReplyBlocked, Completed
+    ReplyBlocked, Completed, SaveObserved, IgnoredEvent
 };
 class RankUpCompletion final {
 public:
@@ -62,6 +62,12 @@ public:
     bool ReadyForCommit() noexcept;
     Result AcceptCommitted(std::unique_ptr<real_gamedata::RankUpCommitRecord>,
                            std::string connectionString) noexcept;
+    // Called for every native save route before its ACK is delivered.
+    // The expected event uses the reservation's epoch. Competing events for
+    // the same character invalidate the operation before readback or reply.
+    Result OnSaveRouted(const Identity&,std::uint32_t flags,
+                        std::uint64_t routeEpoch,
+                        std::uint32_t outstandingBeforeRoute) noexcept;
     Result OnSaveAck(const Identity&,const void* packet,std::size_t bytes,
                      std::uint64_t receiveEpoch,
                      std::uint32_t outstandingAtAck) noexcept;
@@ -87,6 +93,8 @@ private:
     DiamondWorldSaveBarrier barrier_{};
     std::unique_ptr<real_gamedata::RankUpCommitRecord> committed_{};
     std::string connectionString_{}; // private process memory; never logged
+    SaveReservation reservation_{};
+    bool routeObserved_=false;
     bool replyAttempted_=false;
 };
 } // namespace diamond_v291::completion

@@ -233,3 +233,30 @@ session lifetime/save exclusion provider, event ownership and recovery
 still need implementation before this entry can be used in gameplay.
 A queued generation by itself cannot distinguish a delayed old ACK from a
 new session that currently owns the same character.
+
+## Track the outbound save before accepting its result
+
+The completion now retains the native save reservation and exposes
+`OnSaveRouted`. The expected route must have the reserved owner, intent,
+flags and epoch, with zero earlier outstanding saves. The host delivers
+these events on the owner executor before its result events.
+
+A second route for the same character invalidates the completion before
+the competing ACK arrives. This includes identical flags, a repeated route
+event, another intent and a changed session generation. Earlier events
+and routes for unrelated characters are ignored. A valid ACK without an
+observed matching route also requires recovery. No database readback or
+client success is attempted after a route conflict.
+
+Normal completion, default-disabled completion, registered-handler wiring
+and ASan/UBSan tests passed locally. The tests substitute the native port.
+They cover six missing/competing route cases and verify that the retained
+record survives each case without a reply or fence release.
+
+The completion layout changed. The exported host ABI is now `0x20261129`.
+Both sides must be rebuilt. The native provider must allocate the
+reservation epoch for the actual route event and retain ownership while
+the queued event is pending. This change supplies event processing in the
+completion; it does not install native interception or implement session
+lifetime ownership. The game VM remains on the earlier forwarding-only
+configuration. No runtime update is ready for installation.

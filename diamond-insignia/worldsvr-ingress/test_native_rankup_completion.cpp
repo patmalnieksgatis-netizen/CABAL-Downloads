@@ -78,6 +78,7 @@ int main(){
 #else
         assert(x.ReadyForCommit());
         assert(x.AcceptCommitted(record(),"fixture-no-connection")==c::Result::WaitingForAck);
+        assert(x.OnSaveRouted(identity(),0x802,100,0)==c::Result::SaveObserved);
         assert((events==std::vector<int>{1,2,3}) && reads==0 && p.sends==0);
         auto foreign=identity();foreign.sessionGeneration++;
         assert(x.OnSaveAck(foreign,packet.data(),18,101,1)==c::Result::IgnoredAck);
@@ -106,6 +107,7 @@ int main(){
         reads=0;
         Port p;currentPort=&p;c::RankUpCompletion x(p,identity());
         assert(x.AcceptCommitted(record(),"fixture-no-connection")==c::Result::WaitingForAck);
+        assert(x.OnSaveRouted(identity(),0x802,100,0)==c::Result::SaveObserved);
         p.held=false; // Disconnect while the native save is in flight.
         assert(x.OnSaveAck(identity(),packet.data(),18,101,1)==c::Result::RecoveryRequired);
         assert(x.HasRetainedEvidence() && reads==0 && p.sends==0 && p.releases==0);
@@ -117,6 +119,7 @@ int main(){
         reads=0;
         Port p;currentPort=&p;c::RankUpCompletion x(p,identity());
         assert(x.AcceptCommitted(record(),"fixture-no-connection")==c::Result::WaitingForAck);
+        assert(x.OnSaveRouted(identity(),0x802,100,0)==c::Result::SaveObserved);
         auto otherSave=packet;
         auto source=identity();
         if (sameFlags) ++source.intent; // Host associated this ACK with another request.
@@ -131,6 +134,7 @@ int main(){
         reads=0;
         Port p;currentPort=&p;c::RankUpCompletion x(p,identity());
         assert(x.AcceptCommitted(record(),"fixture-no-connection")==c::Result::WaitingForAck);
+        assert(x.OnSaveRouted(identity(),0x802,100,0)==c::Result::SaveObserved);
         auto itc=packet;
         itc[8]=0xf0;itc[9]=7;
         const auto original=itc;
@@ -143,6 +147,30 @@ int main(){
         assert(x.OnItcSaveAck(identity(),itc.data(),itc.size(),101,1)==c::Result::Completed);
         assert(itc==original && p.sends==1 && p.releases==1);
         assert(x.OnItcSaveAck(identity(),itc.data(),itc.size(),102,1)==c::Result::WrongPhase);
+    }
+    for (int conflict=0;conflict<6;++conflict) {
+        events.clear();
+        reads=0;
+        Port p;currentPort=&p;c::RankUpCompletion x(p,identity());
+        assert(x.AcceptCommitted(record(),"fixture-no-connection")==c::Result::WaitingForAck);
+        if(conflict==0) { // An ACK alone does not prove our route occurred.
+            assert(x.OnSaveAck(identity(),packet.data(),18,101,1)==c::Result::RecoveryRequired);
+        } else {
+            auto sender=identity();
+            auto unrelated=sender;++unrelated.characterIdx;
+            assert(x.OnSaveRouted(unrelated,0x802,101,0)==c::Result::IgnoredEvent);
+            assert(x.OnSaveRouted(sender,0x802,99,0)==c::Result::IgnoredEvent);
+            assert(x.OnSaveRouted(sender,0x802,100,0)==c::Result::SaveObserved);
+            if(conflict==1)++sender.intent;
+            if(conflict==2)++sender.sessionGeneration;
+            const auto epoch=conflict==3?100:101;
+            const auto flags=conflict==4?0x800:0x802;
+            const auto outstanding=conflict==5?1:0;
+            assert(x.OnSaveRouted(sender,flags,epoch,outstanding)==c::Result::RecoveryRequired);
+        }
+        // The competing save need not have delivered an ACK yet.
+        assert(x.OnSaveAck(identity(),packet.data(),18,103,1)==c::Result::WrongPhase);
+        assert(x.HasRetainedEvidence() && reads==0 && p.sends==0 && p.releases==0);
     }
     for(int failure=0;failure<10;++failure){
         events.clear();reads=0;readback=true;changeSessionOnRead=false;
@@ -159,6 +187,7 @@ int main(){
         auto started=x.AcceptCommitted(std::move(r),"fixture-no-connection");
         c::Result result=started;
         if(started==c::Result::WaitingForAck){
+            assert(x.OnSaveRouted(identity(),0x802,100,0)==c::Result::SaveObserved);
             if(failure==8)p.abi=false;
             result=x.OnSaveAck(identity(),packet.data(),18,101,failure==9?2:1);
         }

@@ -56,9 +56,23 @@ Result RankUpCompletion::AcceptCommitted(
     if(!port_.ReserveSave(save) ||
        barrier_.MarkSaveSent(save.flags,save.epoch,save.outstandingBefore)!=Verdict::Ok)
         return Recover();
+    reservation_=save;
     state_=State::WaitingForAck; // established BEFORE publish can deliver ACK
     if(!port_.PublishSave(save))return Recover();
     return Result::WaitingForAck;
+}
+Result RankUpCompletion::OnSaveRouted(const Identity& owner,std::uint32_t flags,
+        std::uint64_t epoch,std::uint32_t outstandingBeforeRoute) noexcept {
+    if(state_!=State::WaitingForAck)return Result::WrongPhase;
+    if(owner.characterIdx!=identity_.characterIdx)return Result::IgnoredEvent;
+    if(epoch<reservation_.epoch)return Result::IgnoredEvent;
+    if(!SameSession(identity_,owner) || owner.intent!=identity_.intent ||
+       !port_.HeldSessionMatches(identity_) || routeObserved_ ||
+       epoch!=reservation_.epoch || flags!=reservation_.flags ||
+       outstandingBeforeRoute!=0)
+        return Recover();
+    routeObserved_=true;
+    return Result::SaveObserved;
 }
 Result RankUpCompletion::OnItcSaveAck(const Identity& owner,const void* packet,
         std::size_t bytes,std::uint64_t epoch,
@@ -85,7 +99,8 @@ Result RankUpCompletion::OnSaveAck(const Identity& owner,const void* packet,
     if(ack==Verdict::Invalid || ack==Verdict::ForeignAck ||
        ack==Verdict::StaleAck || ack==Verdict::DuplicateAck)
         return Result::IgnoredAck;
-    if(ack!=Verdict::Ok || owner.intent!=identity_.intent)return Recover();
+    if(ack!=Verdict::Ok || owner.intent!=identity_.intent || !routeObserved_)
+        return Recover();
     // Actual ODBC readback, not a host-provided arbitrary snapshot/boolean.
     // Keep the native fence held while a fresh connection checks game rows.
     if(!real_gamedata::VerifySavedRankUpServer01(connectionString_,*committed_) ||

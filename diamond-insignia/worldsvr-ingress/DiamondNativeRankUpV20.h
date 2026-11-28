@@ -13,7 +13,7 @@
 namespace diamond_v20 {
 // Request now carries owned asynchronous completion. Do not mix an older
 // compiled begin/finish provider with this header, even on the same WorldSvr.
-inline constexpr unsigned kCompletionHostAbi=0x20261128u;
+inline constexpr unsigned kCompletionHostAbi=0x20261129u;
 namespace rg=diamond_v291::real_gamedata;
 namespace gu=diamond_v291::gradeup0bda;
 struct Request {
