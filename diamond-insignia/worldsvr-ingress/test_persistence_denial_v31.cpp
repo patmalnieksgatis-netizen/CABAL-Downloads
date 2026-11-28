@@ -42,7 +42,7 @@ int main() {
         assert(b.Begin(o,true,true)==Verdict::Ok);
         assert(b.MarkNativeMutationApplied(true)==Verdict::Ok);
         blocked(b);
-        assert(b.MarkSaveSent(1,9,1)==Verdict::AmbiguousSave);
+        assert(b.MarkSaveSent(kSaveInventory,9,1)==Verdict::AmbiguousSave);
         assert(b.GetPhase()==Phase::RecoveryRequired);
         blocked(b);
     }
@@ -50,7 +50,7 @@ int main() {
         DiamondWorldSaveBarrier b;
         assert(b.Begin(o,true,true)==Verdict::Ok);
         assert(b.MarkNativeMutationApplied(true)==Verdict::Ok);
-        assert(b.MarkSaveSent(1,9,0)==Verdict::Ok);
+        assert(b.MarkSaveSent(kSaveInventory,9,0)==Verdict::Ok);
         blocked(b);
         DurableSnapshot s{};
         assert(b.Reconcile(s)==Verdict::IllegalPhase);
@@ -80,7 +80,7 @@ int main() {
         assert(b.MarkNativeMutationApplied(true)==Verdict::Ok);
         assert(b.MarkSaveSent(i?1:0,i?0:9,0)==Verdict::NeedRecovery);
         assert(b.GetPhase()==Phase::RecoveryRequired);
-        assert(b.MarkSaveSent(1,9,0)==Verdict::IllegalPhase);
+        assert(b.MarkSaveSent(kSaveInventory,9,0)==Verdict::IllegalPhase);
         blocked(b);
     }
     std::puts("DIAMOND_OFFLINE_PERSISTENCE_DENIAL=PASS");

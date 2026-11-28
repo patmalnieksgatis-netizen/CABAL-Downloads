@@ -11,7 +11,7 @@ namespace completion=diamond_v291::completion;
 struct Port final:completion::NativePort {
     bool HeldSessionMatches(const completion::Identity&) noexcept override{return true;}
     bool ApplyCommitted(const rg::RankUpCommitRecord&) noexcept override{return true;}
-    bool ReserveSave(completion::SaveReservation& r) noexcept override{r={0x800,0,100};return true;}
+    bool ReserveSave(completion::SaveReservation& r) noexcept override{r={0x802,0,100};return true;}
     bool PublishSave(const completion::SaveReservation&) noexcept override{return true;}
     bool ReplyAbiVerified() const noexcept override{return true;}
     bool SendRankUpSuccess(const completion::Identity&,const std::array<std::uint8_t,7>&) noexcept override{return true;}

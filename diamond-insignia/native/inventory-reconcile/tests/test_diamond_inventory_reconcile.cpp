@@ -56,11 +56,11 @@ void TestPersistenceBarrier(bool inventoryVerified,bool expectSuccess) {
     op.afterWexp={10000,100000,90000};op.newTickets=20;
     assert(barrier.Begin(op,true,true)==Verdict::Ok);
     assert(barrier.MarkNativeMutationApplied(true)==Verdict::Ok);
-    assert(barrier.MarkSaveSent(1,100,0)==Verdict::Ok);
+    assert(barrier.MarkSaveSent(kSaveInventory,100,0)==Verdict::Ok);
     std::array<unsigned char,18> ack{};
     Put16(ack.data(),0xB7E2);Put16(ack.data()+2,18);
     Put16(ack.data()+8,47);
-    Put32(ack.data()+10,7002);Put32(ack.data()+14,1);
+    Put32(ack.data()+10,7002);Put32(ack.data()+14,kSaveInventory);
     assert(barrier.ObserveIpcResult47(ack.data(),ack.size(),101,1)==Verdict::Ok);
     assert(!barrier.MaySendSuccess()); // IPC ACK itself is NOT durability
     DurableSnapshot s{};

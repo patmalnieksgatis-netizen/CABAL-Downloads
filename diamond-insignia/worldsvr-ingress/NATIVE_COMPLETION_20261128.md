@@ -146,3 +146,32 @@ and asynchronous saves. The native-source ZIP contains the WorldSvr extension
 and copies of its sources. It does not contain the core session lifecycle
 and ordinary character save implementations needed to bind that ownership.
 A runtime test of rank-up, mastery, slot opening and relog remains pending.
+
+## Require a native inventory save for ticket-funded rank-up
+
+The pinned DBAgent calls `dbo.set_cabal_character` with inventory at
+parameter 31 and the three WExp counters at 64–66. Its success ACK echoes
+the requested flags. The archived SQL contract for the 242-parameter
+procedure (UTF-16LE SHA-256
+`e802d1f4054b978c636203b237ad61a423302844a010353bae4721fe8550fab1`)
+uses mask 2 for inventory. The saved Pet implementation independently uses
+the same mask. The active SQL definition still needs to be compared.
+These observations do not establish which flags guarantee a WExp save.
+
+A ticket-funded rank-up now checks for the inventory bit before publishing
+the reserved save. A later SQL readback alone could see the debit from the
+earlier Diamond transaction even if ordinary inventory saving was skipped.
+Other flag bits are preserved and the ACK must still echo the exact mask.
+The constraint applies to rank-up; a point-funded mastery has no ticket debit.
+
+Local regressions cover a save omitting inventory, an extra flag with
+inventory present, and loss of the session before a delayed ACK. Losing the
+session retains the transaction record for recovery and sends no success.
+The barrier suite also passed ASan/UBSan. Actual reconnect, reconciliation
+of pending work, and gameplay remain unverified.
+
+`Read-Diamond-CharacterSave.ps1` exports only the active SQL procedure
+definition through system metadata. The file in Downloads uses UTF-8; the
+reported digest covers the original SQL UTF-16LE bytes. The reader was
+tested locally with Unicode, multiple chunks and a missing chunk using a
+substituted transport. The metadata query passed SQL Server ScriptDom parsing.

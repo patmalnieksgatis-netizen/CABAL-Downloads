@@ -12,7 +12,7 @@ static int reads=0;
 static std::vector<int> events;
 struct Port final:c::NativePort {
     bool held=true,apply=true,reserve=true,publish=true,abi=true,send=true;
-    unsigned outstanding=0,sends=0,releases=0;
+    unsigned flags=0x802,outstanding=0,sends=0,releases=0;
     bool HeldSessionMatches(const c::Identity& id) noexcept override {
         return held && id.userNum==5005 && id.characterIdx==24055 &&
                id.sessionGeneration==77 && id.intent==998877;
@@ -22,7 +22,7 @@ struct Port final:c::NativePort {
         events.push_back(1);return apply;
     }
     bool ReserveSave(c::SaveReservation& r) noexcept override {
-        assert(held);events.push_back(2);r={0x800,outstanding,100};return reserve;
+        assert(held);events.push_back(2);r={flags,outstanding,100};return reserve;
     }
     bool PublishSave(const c::SaveReservation& r) noexcept override {
         assert(held && r.epoch==100);events.push_back(3);return publish;
@@ -61,7 +61,7 @@ static std::unique_ptr<rg::RankUpCommitRecord> record(){
 }
 static std::array<unsigned char,18> ack(){
     std::array<unsigned char,18> a{0xe2,0xb7,18,0,0,0,0,0,47,0};
-    const std::uint32_t ch=24055,flags=0x800;
+    const std::uint32_t ch=24055,flags=0x802;
     for(int i=0;i<4;++i){a[10+i]=ch>>(8*i);a[14+i]=flags>>(8*i);}
     return a;
 }
@@ -91,6 +91,24 @@ int main(){
         assert(x.OnSaveAck(identity(),packet.data(),18,102,1)==c::Result::WrongPhase);
         assert(p.sends==1 && p.releases==1);
 #endif
+    }
+    {
+        events.clear();
+        reads=0;
+        Port p;currentPort=&p;c::RankUpCompletion x(p,identity());
+        p.flags=0x800;
+        assert(x.AcceptCommitted(record(),"fixture-no-connection")==c::Result::RecoveryRequired);
+        assert((events==std::vector<int>{1,2}) && x.HasRetainedEvidence());
+        assert(reads==0 && p.sends==0 && p.releases==0);
+    }
+    {
+        events.clear();
+        reads=0;
+        Port p;currentPort=&p;c::RankUpCompletion x(p,identity());
+        assert(x.AcceptCommitted(record(),"fixture-no-connection")==c::Result::WaitingForAck);
+        p.held=false; // Disconnect while the native save is in flight.
+        assert(x.OnSaveAck(identity(),packet.data(),18,101,1)==c::Result::RecoveryRequired);
+        assert(x.HasRetainedEvidence() && reads==0 && p.sends==0 && p.releases==0);
     }
     for(int failure=0;failure<10;++failure){
         events.clear();reads=0;readback=true;changeSessionOnRead=false;

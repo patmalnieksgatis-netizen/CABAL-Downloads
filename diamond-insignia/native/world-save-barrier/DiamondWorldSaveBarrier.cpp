@@ -55,7 +55,8 @@ Verdict DiamondWorldSaveBarrier::MarkNativeMutationApplied(
 Verdict DiamondWorldSaveBarrier::MarkSaveSent(std::uint32_t flags,
         std::uint64_t epoch,std::uint32_t outstandingBeforeSend) noexcept {
     if(phase_!=Phase::NativeMutationApplied) return Verdict::IllegalPhase;
-    if(!flags || !epoch){
+    const bool missingInventory = operation_.command == 1 && (flags & kSaveInventory) == 0;
+    if(!flags || !epoch || missingInventory){
         // A mutation has already been applied. Failure to establish a valid
         // save cannot be treated as a clean rejection or retried blindly.
         phase_=Phase::RecoveryRequired;

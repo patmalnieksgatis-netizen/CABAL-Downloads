@@ -11,6 +11,7 @@ constexpr std::uint16_t kIpcUpdateChDat = 46;
 constexpr std::uint16_t kIpcResultUpdateChDat = 47;
 constexpr std::uint16_t kIpcMagic = 0xB7E2;
 constexpr std::size_t kIpcResultSize = 18;
+constexpr std::uint32_t kSaveInventory = 0x02;
 
 struct Operation {
     std::uint64_t durableIntent = 0;

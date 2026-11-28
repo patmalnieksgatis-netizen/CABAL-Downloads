@@ -37,14 +37,14 @@ static void ack(unsigned char* p,const Operation& o,std::uint32_t flags){
 int main(){
     const auto o=operation();
     unsigned char packet[kIpcResultSize];
-    ack(packet,o,0x800);
+    ack(packet,o,0x802);
     { // must reconcile full durable state after ACK, never before
         DiamondWorldSaveBarrier g;
         assert(!g.MaySendSuccess());
         assert(g.Begin(o,true,true)==Verdict::Ok);
         assert(!g.MaySendSuccess());
         assert(g.MarkNativeMutationApplied(true)==Verdict::Ok);
-        assert(g.MarkSaveSent(0x800,100,0)==Verdict::Ok);
+        assert(g.MarkSaveSent(0x802,100,0)==Verdict::Ok);
         assert(g.ObserveIpcResult47(packet,sizeof(packet),101,1)==Verdict::Ok);
         assert(!g.MaySendSuccess());
         assert(g.Reconcile(snap(o))==Verdict::Ok);
@@ -56,7 +56,7 @@ int main(){
         DiamondWorldSaveBarrier g;
         assert(g.Begin(o,true,true)==Verdict::Ok);
         assert(g.MarkNativeMutationApplied(true)==Verdict::Ok);
-        assert(g.MarkSaveSent(0x800,100,2)==Verdict::AmbiguousSave);
+        assert(g.MarkSaveSent(0x802,100,2)==Verdict::AmbiguousSave);
         assert(g.GetPhase()==Phase::RecoveryRequired);
         assert(!g.MaySendSuccess());
     }
@@ -64,15 +64,15 @@ int main(){
         DiamondWorldSaveBarrier g;
         assert(g.Begin(o,true,true)==Verdict::Ok);
         assert(g.MarkNativeMutationApplied(true)==Verdict::Ok);
-        assert(g.MarkSaveSent(0x800,100,0)==Verdict::Ok);
+        assert(g.MarkSaveSent(0x802,100,0)==Verdict::Ok);
         assert(g.ObserveIpcResult47(packet,sizeof(packet),99,1)==Verdict::StaleAck);
         wr32(packet+10,o.characterIdx+1);
         assert(g.ObserveIpcResult47(packet,sizeof(packet),101,1)==Verdict::ForeignAck);
-        ack(packet,o,0x801);
+        ack(packet,o,0x803);
         assert(g.ObserveIpcResult47(packet,sizeof(packet),101,1)==Verdict::ForeignAck);
-        ack(packet,o,0x800);packet[8]=99;
+        ack(packet,o,0x802);packet[8]=99;
         assert(g.ObserveIpcResult47(packet,sizeof(packet),101,1)==Verdict::Invalid);
-        ack(packet,o,0x800);
+        ack(packet,o,0x802);
         assert(g.ObserveIpcResult47(packet,sizeof(packet),101,2)==Verdict::AmbiguousSave);
         assert(!g.MaySendSuccess());
     }
@@ -86,7 +86,7 @@ int main(){
         DiamondWorldSaveBarrier g;
         assert(g.Begin(o,true,true)==Verdict::Ok);
         assert(g.MarkNativeMutationApplied(true)==Verdict::Ok);
-        assert(g.MarkSaveSent(0x800,100,0)==Verdict::Ok);
+        assert(g.MarkSaveSent(0x802,100,0)==Verdict::Ok);
         assert(g.ObserveIpcResult47(packet,sizeof(packet),101,1)==Verdict::Ok);
         auto s=snap(o);s.tickets+=1;
         assert(g.Reconcile(s)==Verdict::SnapshotMismatch);
@@ -97,17 +97,17 @@ int main(){
         DiamondWorldSaveBarrier g;
         assert(g.Begin(o,true,true)==Verdict::Ok);
         assert(g.MarkNativeMutationApplied(true)==Verdict::Ok);
-        assert(g.MarkSaveSent(0x800,100,0)==Verdict::Ok);
+        assert(g.MarkSaveSent(0x802,100,0)==Verdict::Ok);
         assert(g.MarkTimeout()==Verdict::NeedRecovery);
         assert(!g.MaySendSuccess());
     }
     { // Same balance/tickets and a receipt do not prove all native counters
         for(int field=0;field<3;++field){
             DiamondWorldSaveBarrier g;
-            ack(packet,o,0x800);
+            ack(packet,o,0x802);
             assert(g.Begin(o,true,true)==Verdict::Ok);
             assert(g.MarkNativeMutationApplied(true)==Verdict::Ok);
-            assert(g.MarkSaveSent(0x800,100,0)==Verdict::Ok);
+            assert(g.MarkSaveSent(0x802,100,0)==Verdict::Ok);
             assert(g.ObserveIpcResult47(packet,sizeof(packet),101,1)==Verdict::Ok);
             auto s=snap(o);
             if(field==0)s.wexp.used=o.beforeWexp.used;
@@ -140,11 +140,20 @@ int main(){
         DiamondWorldSaveBarrier g;
         assert(g.Begin(mastery,true,true)==Verdict::Ok);
         assert(g.MarkNativeMutationApplied(true)==Verdict::Ok);
-        assert(g.MarkSaveSent(0x800,200,0)==Verdict::Ok);
-        ack(packet,mastery,0x800);
+        assert(g.MarkSaveSent(0x802,200,0)==Verdict::Ok);
+        ack(packet,mastery,0x802);
         assert(g.ObserveIpcResult47(packet,sizeof(packet),201,1)==Verdict::Ok);
         auto s=snap(mastery);s.masteryLevel=1;
         assert(g.Reconcile(s)==Verdict::SnapshotMismatch);
+        assert(!g.MaySendSuccess());
+    }
+    { // A successful SQL-only debit can already satisfy readback before native inventory is saved.
+        DiamondWorldSaveBarrier g;
+        assert(g.Begin(o,true,true)==Verdict::Ok);
+        assert(g.MarkNativeMutationApplied(true)==Verdict::Ok);
+        assert(g.MarkSaveSent(0x800,100,0)==Verdict::NeedRecovery);
+        ack(packet,o,0x800);
+        assert(g.ObserveIpcResult47(packet,sizeof(packet),101,1)==Verdict::IllegalPhase);
         assert(!g.MaySendSuccess());
     }
     { // A point-funded level must preserve all WExp counters
