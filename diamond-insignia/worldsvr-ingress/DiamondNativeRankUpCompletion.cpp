@@ -3,9 +3,9 @@
 
 namespace diamond_v291::completion {
 namespace {
-bool Same(const Identity& a,const Identity& b) noexcept {
+bool SameSession(const Identity& a,const Identity& b) noexcept {
     return a.userNum==b.userNum && a.characterIdx==b.characterIdx &&
-           a.sessionGeneration==b.sessionGeneration && a.intent==b.intent;
+           a.sessionGeneration==b.sessionGeneration;
 }
 Identity RecordOwner(const real_gamedata::RankUpCommitRecord& r) noexcept {
     return {r.operation.userNum,r.operation.characterIdx,
@@ -42,7 +42,8 @@ Result RankUpCompletion::AcceptCommitted(
     committed_=std::move(record);
     connectionString_=std::move(connectionString);
     if(!CloneEnabled() || !committed_ || connectionString_.empty() ||
-       !Same(identity_,RecordOwner(*committed_)) ||
+       !SameSession(identity_,RecordOwner(*committed_)) ||
+       identity_.intent!=committed_->operation.durableIntent ||
        !port_.HeldSessionMatches(identity_) ||
        barrier_.Begin(committed_->operation,true,true)!=Verdict::Ok)
         return Recover();
@@ -62,13 +63,13 @@ Result RankUpCompletion::OnSaveAck(const Identity& owner,const void* packet,
         std::size_t bytes,std::uint64_t epoch,
         std::uint32_t outstandingAtAck) noexcept {
     if(state_!=State::WaitingForAck)return Result::WrongPhase;
-    if(!Same(identity_,owner))return Result::IgnoredAck;
+    if(!SameSession(identity_,owner))return Result::IgnoredAck;
     if(!port_.HeldSessionMatches(identity_))return Recover();
     const auto ack=barrier_.ObserveIpcResult47(packet,bytes,epoch,outstandingAtAck);
     if(ack==Verdict::Invalid || ack==Verdict::ForeignAck ||
        ack==Verdict::StaleAck || ack==Verdict::DuplicateAck)
         return Result::IgnoredAck;
-    if(ack!=Verdict::Ok)return Recover();
+    if(ack!=Verdict::Ok || owner.intent!=identity_.intent)return Recover();
     // Actual ODBC readback, not a host-provided arbitrary snapshot/boolean.
     // Keep the native fence held while a fresh connection checks game rows.
     if(!real_gamedata::VerifySavedRankUpServer01(connectionString_,*committed_) ||

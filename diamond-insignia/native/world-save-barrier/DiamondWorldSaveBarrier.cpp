@@ -82,9 +82,11 @@ Verdict DiamondWorldSaveBarrier::ObserveIpcResult47(const void* raw,
        ReadU16(p+8)!=kIpcResultUpdateChDat) return Verdict::Invalid;
     const auto ch=ReadU32(p+10);
     const auto flags=ReadU32(p+14);
-    if(ch!=operation_.characterIdx || flags!=packFlags_)return Verdict::ForeignAck;
+    if(ch!=operation_.characterIdx)return Verdict::ForeignAck;
     if(receiveEpoch<=sendEpoch_)return Verdict::StaleAck;
-    if(outstandingAtAck!=1){
+    // A fresh ACK for a different save of this character contradicts the
+    // exclusive reservation. Even a save omitting inventory can write WExp.
+    if(flags!=packFlags_ || outstandingAtAck!=1){
         phase_=Phase::RecoveryRequired;
         return Verdict::AmbiguousSave;
     }

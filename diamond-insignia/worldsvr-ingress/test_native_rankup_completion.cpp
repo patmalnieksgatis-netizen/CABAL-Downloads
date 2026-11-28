@@ -110,6 +110,22 @@ int main(){
         assert(x.OnSaveAck(identity(),packet.data(),18,101,1)==c::Result::RecoveryRequired);
         assert(x.HasRetainedEvidence() && reads==0 && p.sends==0 && p.releases==0);
     }
+    for (bool sameFlags : {false,true}) {
+        // A newer save for this character can replace WExp even when its
+        // flags omit inventory. A later expected ACK cannot restore ordering.
+        events.clear();
+        reads=0;
+        Port p;currentPort=&p;c::RankUpCompletion x(p,identity());
+        assert(x.AcceptCommitted(record(),"fixture-no-connection")==c::Result::WaitingForAck);
+        auto otherSave=packet;
+        auto source=identity();
+        if (sameFlags) ++source.intent; // Host associated this ACK with another request.
+        else otherSave[14]=0; // 0x800 instead of the reserved 0x802.
+        assert(x.OnSaveAck(source,otherSave.data(),otherSave.size(),100,1)==c::Result::IgnoredAck);
+        assert(x.OnSaveAck(source,otherSave.data(),otherSave.size(),102,1)==c::Result::RecoveryRequired);
+        assert(x.OnSaveAck(identity(),packet.data(),packet.size(),103,1)==c::Result::WrongPhase);
+        assert(x.HasRetainedEvidence() && reads==0 && p.sends==0 && p.releases==0);
+    }
     for(int failure=0;failure<10;++failure){
         events.clear();reads=0;readback=true;changeSessionOnRead=false;
         Port p;currentPort=&p;c::RankUpCompletion x(p,identity());

@@ -155,8 +155,7 @@ the requested flags. The archived SQL contract for the 242-parameter
 procedure (UTF-16LE SHA-256
 `e802d1f4054b978c636203b237ad61a423302844a010353bae4721fe8550fab1`)
 uses mask 2 for inventory. The saved Pet implementation independently uses
-the same mask. The active SQL definition still needs to be compared.
-These observations do not establish which flags guarantee a WExp save.
+the same mask. The subsequent active export confirms the SQL behavior below.
 
 A ticket-funded rank-up now checks for the inventory bit before publishing
 the reserved save. A later SQL readback alone could see the debit from the
@@ -175,3 +174,33 @@ definition through system metadata. The file in Downloads uses UTF-8; the
 reported digest covers the original SQL UTF-16LE bytes. The reader was
 tested locally with Unicode, multiple chunks and a missing chunk using a
 substituted transport. The metadata query passed SQL Server ScriptDom parsing.
+
+## Active character save on the v291 test VM
+
+The uploaded procedure matches the historical UTF-16LE digest above.
+ScriptDom parsed 242 parameters. A zero save mask returns before the
+transaction. For a nonzero mask, the following statements run within the
+same transaction, subject to successful execution and commit.
+
+| Data | Condition | Operation |
+| --- | --- | --- |
+| Inventory | Mask includes 2, line 335 | Update the existing character's inventory from the supplied blob |
+| Bike inventory and sold items | Same bit, lines 342 and 348 | Update their respective blobs |
+| Current, earned and used WExp | Unconditional update, line 446 | Assign all three supplied counters by character ID |
+| Missing WExp row | Previous update affected zero rows, line 449 | Insert all three supplied counters |
+
+An inventory-free save can therefore replace the Diamond WExp values.
+The WExp update has no revision or session comparison. An ACK for another
+save within the same character's exclusive window contradicts the assumed
+save ordering, even if the caller reports one outstanding save.
+
+The completion now retains the record for recovery when a fresh ACK for the
+same session and character has different flags, or the host associates it
+with a different intent. Stale ACKs and ACKs for unrelated sessions are
+ignored. A subsequent matching ACK cannot send success for the conflicted
+operation. A clone regression reproduced the old behavior, then passed
+with both kinds of conflicting ACK and the expected late ACK. The completion
+and barrier tests also passed ASan/UBSan. The host still needs to supply
+an exclusive save window and deliver overlapping native saves to the
+coordinator. Two ACKs with identical fields cannot be distinguished from
+the wire alone. The active SQL procedure was inspected without executing it.

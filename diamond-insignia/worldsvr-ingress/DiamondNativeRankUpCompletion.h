@@ -19,7 +19,9 @@ struct SaveReservation {
 // This is the remaining exact-native boundary, not a synthetic lock. The
 // real host owns the fence, port and owner executor until explicit Release.
 // All completion calls must be serialized on that owner executor. Native
-// hooks queue ACKs to it by Identity, never by an unleased raw user pointer.
+// hooks queue ACKs to it by Identity, including competing saves for the
+// same session. Never retain an unleased raw user pointer or discard a
+// competing ACK just because its flags or request ID differ.
 class NativePort {
 public:
     virtual ~NativePort()=default;

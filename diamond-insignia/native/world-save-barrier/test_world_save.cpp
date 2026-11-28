@@ -68,8 +68,8 @@ int main(){
         assert(g.ObserveIpcResult47(packet,sizeof(packet),99,1)==Verdict::StaleAck);
         wr32(packet+10,o.characterIdx+1);
         assert(g.ObserveIpcResult47(packet,sizeof(packet),101,1)==Verdict::ForeignAck);
-        ack(packet,o,0x803);
-        assert(g.ObserveIpcResult47(packet,sizeof(packet),101,1)==Verdict::ForeignAck);
+        ack(packet,o,0x800);
+        assert(g.ObserveIpcResult47(packet,sizeof(packet),100,1)==Verdict::StaleAck);
         ack(packet,o,0x802);packet[8]=99;
         assert(g.ObserveIpcResult47(packet,sizeof(packet),101,1)==Verdict::Invalid);
         ack(packet,o,0x802);
