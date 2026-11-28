@@ -362,3 +362,23 @@ callers before deciding where a lifetime hold could be implemented.
 Direct SSH was retried and returned Connection refused. Availability of an
 existing debugger through the operator relay is the next target prerequisite.
 No debugger attachment, target modification or native pin was performed.
+
+## Bounded target lifecycle trace
+
+The operator confirmed an existing gdb. The trace helper selects a host
+debugger when available and translates the target's container PID through
+NSpid. Otherwise it runs the worker with the container debugger. It pins the
+WorldSvr executable digest before and after attachment.
+
+The helper records up to ten stack program counters at each of three
+candidate transition/removal entries. It stops after 12 hits or 45 seconds.
+GDB's asynchronous MI interface controls interruption, breakpoint deletion
+and detachment. The helper verifies TracerPid after normal detachment.
+Debugger attachment briefly pauses the selected WorldSvr process.
+
+Four local tests used a real gdb attached to a purpose-built child process.
+They verified the hit limit, timeout with no hits, detachment after a source
+error, and rejection of a mismatching executable. Each attached test checked
+that the target remained alive and TracerPid became zero. These tests passed.
+The PowerShell download pin, streaming status and UTF-8 report were tested
+with a substituted SSH transport. The target game trace is pending.
