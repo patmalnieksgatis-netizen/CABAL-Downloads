@@ -321,3 +321,27 @@ These local checks validate source behavior and binary linkage. The real
 no running local game installation or tested server deployment package.
 The application adapter cannot retain native character data merely by
 owning a C++ wrapper around it.
+
+## Native acquisition investigation
+
+Read-only disassembly of the pinned WorldSvr establishes the following
+additional lifecycle boundaries.
+
+- Connection opening assigns a DWORD generation from a shared counter at
+  `USERCONTEXT+0xE4` and increments the counter. This is a 32-bit identity
+  component, rather than a retained reference.
+- The owner dispatcher tests the connection state at `+0x104` and compares
+  its current generation with the queued process context at `+0x18`.
+- The account and connection lookup routines release their respective
+  native registry mutexes before returning their pointers.
+- The inspected removal path returns a registry record to a reusable pool.
+  Keeping the returned address in an addon object does not prevent reuse.
+- The supplied SDK's `GetUserDataCtxByCharIdx` wrapper points to the same
+  native function as `GetUserCtxByCharIdx`. The original function returns
+  USERCONTEXT, and its data pointer is separately loaded at `+0xE8`.
+  The wrapper's declared return type must not be used as a layout proof.
+
+These are static observations of original instructions. Native acquisition,
+reuse exclusion and a reference that owns USERDATACONTEXT across asynchronous
+completion have not been demonstrated. No AcquireSession implementation was
+added based on those unlocked pointers. The active VM was not modified.
