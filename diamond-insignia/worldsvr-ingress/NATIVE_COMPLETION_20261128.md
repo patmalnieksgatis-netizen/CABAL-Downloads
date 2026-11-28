@@ -345,3 +345,20 @@ These are static observations of original instructions. Native acquisition,
 reuse exclusion and a reference that owns USERDATACONTEXT across asynchronous
 completion have not been demonstrated. No AcquireSession implementation was
 added based on those unlocked pointers. The active VM was not modified.
+
+## Candidate native removal entry points
+
+Further disassembly found two manager-level removal paths. One clears the
+world references before altering the account registry. Another clears the
+two adjacent link-state DWORDs and removes the account record under the
+manager mutex. Both reach the original pooled registry removal routine.
+The executable's unwind records bound these functions independently of
+their remaining exported symbol names.
+
+These candidate entry points have not been identified as an exhaustive
+lifetime boundary. A target-side call trace during normal logout, character
+change and world change is needed to distinguish their actual roles and
+callers before deciding where a lifetime hold could be implemented.
+Direct SSH was retried and returned Connection refused. Availability of an
+existing debugger through the operator relay is the next target prerequisite.
+No debugger attachment, target modification or native pin was performed.
