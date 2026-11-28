@@ -115,6 +115,7 @@ AtomicCommitOutcome Commit(void* opaque,const void* ctx,
 AuthenticatedIngressHost Host(World& w,WorldSessionAuthority& authority) {
     AuthenticatedIngressHost host{};
     host.authority=&authority;
+    host.reservedIntent=998877;
     host.data.exactWorldSvrLayoutAndHashVerified=true; // SYNTHETIC
     host.data.readLockedState=&FillOwner;
     host.data.hostContext=&w;
@@ -191,6 +192,14 @@ int main() {
     assert(result.state==GameActionState::InventoryNotVerified);
     assert(world.commits==0);
     world.independentB0Proof=true;
+    for (std::uint64_t reserved : {0u, 998878u}) {
+        auto differentRequest=host;
+        differentRequest.reservedIntent=reserved;
+        result=ExecuteAuthenticated0BDA(world.userCtx.data(),packet.data(),
+                                        packet.size(),differentRequest);
+        assert(result.state==GameActionState::MissingWorldAuthority);
+        assert(world.commits==0 && !world.leaseHeld && world.acquired==world.released);
+    }
     result=ExecuteAuthenticated0BDA(world.userCtx.data(),packet.data(),
                                     packet.size(),host);
     assert(result.state==GameActionState::CommittedPendingSaveProof);

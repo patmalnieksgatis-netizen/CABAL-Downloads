@@ -25,8 +25,8 @@ static gu::GameActionState nextState=gu::GameActionState::CommittedPendingSavePr
 static gu::GameActionState observed=gu::GameActionState::InvalidPacket;
 // Replace the actual transaction symbol only for this offline wiring test.
 namespace diamond_v291::real_gamedata {
-gu::GameActionResult Execute0BDARealServer01(const void*,const void*,std::size_t n,const Real0BDAHost& h) noexcept {
-    assert(n==14 && h.transaction);
+gu::GameActionResult Execute0BDARealServer01(const void*,const void*,std::size_t n,const Real0BDAHost& h,std::uint64_t reservedIntent) noexcept {
+    assert(n==14 && h.transaction && reservedIntent==998877);
     ++bridgeCalls;
     if(nextState==gu::GameActionState::CommittedPendingSaveProof ||
        nextState==gu::GameActionState::InDoubtRecoveryRequired){

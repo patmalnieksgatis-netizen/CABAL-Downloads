@@ -122,3 +122,27 @@ and gameplay verification. No new collection command is requested merely
 to recheck already known SQL results. No installer is provided while the
 native provider is missing. Keep V29 forwarding-only and all current game
 systems unchanged.
+
+## Binding the debit to the reserved request
+
+The registered handler passes the completion's reserved intent to the SQL
+bridge. Under the session lease, the owner reader must return that same
+intent before the commit callback can run. This closes a window in which
+a second request for the same character and session could supply a different
+intent and reach SQL before completion detected the mismatch. The ODBC call
+binds the before/after inventory images already allocated for recovery.
+
+The authenticated ingress regression uses the same account, character and
+session generation for all three cases. A missing or different intent
+produces zero commit calls and releases the inner lease. A matching intent
+reaches the commit callback once. The authenticated ingress test passed with
+ASan and UBSan. Default and clone shared modules linked with unixODBC and
+loaded locally. These checks used no running game server.
+
+The active Mileage and Guardian file hashes reported from the test VM match
+the archived Pet/Costume package. Its native dispatch lock lasts for a
+synchronous request. It does not supply session ownership across disconnect
+and asynchronous saves. The native-source ZIP contains the WorldSvr extension
+and copies of its sources. It does not contain the core session lifecycle
+and ordinary character save implementations needed to bind that ownership.
+A runtime test of rank-up, mastery, slot opening and relog remains pending.

@@ -32,6 +32,7 @@ struct AuthenticatedIngressHost {
     diamond_v291::WorldSessionAuthority* authority=nullptr;
     LockedDataSource data{};
     GameHost game{};
+    std::uint64_t reservedIntent=0; // Owned by the completion before dispatch
 };
 GameActionResult ExecuteAuthenticated0BDA(
     const void* worldUserCtx,

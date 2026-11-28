@@ -47,7 +47,7 @@ GameActionResult ExecuteAuthenticated0BDA(
     }
     if(!host.authority || !host.data.readLockedState ||
        !host.data.exactWorldSvrLayoutAndHashVerified ||
-       !worldUserCtx)return Denied();
+       !worldUserCtx || !host.reservedIntent)return Denied();
 
     Lease lease(host.authority,worldUserCtx);
     diamond_v291::LockedWorldSession locked{};
@@ -82,6 +82,7 @@ GameActionResult ExecuteAuthenticated0BDA(
        owner.registeredUserNum!=identity.userNum ||
        owner.registeredCharacterIdx!=identity.characterIdx ||
        owner.sessionGeneration!=identity.sessionGeneration ||
+       owner.durableIntentId!=host.reservedIntent ||
        !owner.ownerExclusiveLockHeld)
         return Denied();
     // The lock stays held during grade-up validation and through the

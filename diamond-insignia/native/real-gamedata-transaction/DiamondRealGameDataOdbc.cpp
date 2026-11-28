@@ -237,8 +237,9 @@ AtomicCommitOutcome CommitRealGameDataServer01(
     SQLINTEGER chr=static_cast<SQLINTEGER>(request.characterIdx);
     SQLBIGINT intent=static_cast<SQLBIGINT>(request.durableIntentId);
     SQLINTEGER revision=static_cast<SQLINTEGER>(request.expectedBefore.revision);
-    std::vector<std::uint8_t> before=ctx.inventoryBefore;
-    auto after=staged.proposedGameData;
+    // The owned images remain alive in recoveryRankUp through execute and readback.
+    auto& before=record->inventoryBefore;
+    auto& after=record->inventoryAfter;
     SQLLEN beforeLen=0,afterLen=0;
     SQLBIGINT oldWexp=static_cast<SQLBIGINT>(request.expectedBefore.wexp);
     SQLBIGINT newWexp=static_cast<SQLBIGINT>(request.intendedAfter.wexp);

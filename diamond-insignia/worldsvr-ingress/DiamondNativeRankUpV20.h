@@ -77,7 +77,7 @@ inline int Handle(void* layer,diamond_v19::ContextPrefix* ctx) noexcept {
     if(request.fenceToken && request.bridge.transaction==&request.transaction &&
        sameOwner() && request.completion->ReadyForCommit()){
         result=rg::Execute0BDARealServer01(
-            ctx->user,ctx->frame,ctx->length,request.bridge);
+            ctx->user,ctx->frame,ctx->length,request.bridge,request.completion->Owner().intent);
     }
     if(result.state==gu::GameActionState::CommittedPendingSaveProof){
         const auto next=request.completion->AcceptCommitted(

@@ -3,7 +3,8 @@
 namespace diamond_v291::real_gamedata {
 diamond_v291::gradeup0bda::GameActionResult Execute0BDARealServer01(
     const void* worldUserCtx,const void* clientFrame,
-    std::size_t verifiedFrameBytes,const Real0BDAHost& host) noexcept {
+    std::size_t verifiedFrameBytes,const Real0BDAHost& host,
+    std::uint64_t reservedIntent) noexcept {
     using namespace diamond_v291::gradeup0bda;
     const auto candidate=ParseC2s(clientFrame,verifiedFrameBytes);
     if(candidate.state==PacketState::Other) {
@@ -24,6 +25,7 @@ diamond_v291::gradeup0bda::GameActionResult Execute0BDARealServer01(
     // host. Nothing is derived from untrusted client packet bytes.
     AuthenticatedIngressHost native{};
     native.authority=host.authority;
+    native.reservedIntent=reservedIntent;
     native.data=host.ownerState;
     native.game.abiVersion=1;
     native.game.context=host.transaction;
