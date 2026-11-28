@@ -260,3 +260,41 @@ the queued event is pending. This change supplies event processing in the
 completion; it does not install native interception or implement session
 lifetime ownership. The game VM remains on the earlier forwarding-only
 configuration. No runtime update is ready for installation.
+
+## Registered handler ownership adapter
+
+`DiamondWorldSvrRankUpAdapter.h` implements `Binding::begin` and
+`Binding::finish`. It creates the completion and registry entry before SQL
+and retains the acquired native session object alongside the completion
+after the request returns. A second pending operation for that account is
+rejected before reaching the transaction. Registry allocation occurs before
+commit. Finishing a pending or uncertain request moves its completion into
+existing storage.
+
+The adapter forwards native route events and owner-thread ITC results to
+that retained completion. A completed, reconciled operation is removed.
+A known rejection before commit invokes explicit cancellation. Disconnect
+and timeout interrupt the matching generation and retain recovery ownership.
+The host object and its binding have process lifetime. The registry mutex
+protects entries across account executors and is released before any SQL or
+native call. Events for an account must run on its owner executor.
+
+The registered-handler test now uses this adapter in addition to the former
+wiring fixture. It verifies request destruction before the route/ACK,
+session object lifetime, account exclusion, one release after reconciliation,
+duplicate ACK handling, clean rejection, and retained uncertainty across
+disconnect and retry. Default, clone and ASan/UBSan tests passed. The native
+session acquisition and SQL execution are substituted in this test.
+
+The remaining native provider is represented explicitly by
+`AcquireSession` and `NativeSession`. Its acquisition must retain a real
+WorldSvr lifetime/save lease, provide stable authenticated identity and load
+the existing bridge state. Merely allocating a C++ NativeSession does not
+establish native lifetime. The adapter sets no verification flags and a
+missing factory cannot begin a request.
+
+The pinned executable's character lookup releases its native registry mutex
+before returning the user pointer. Its imported ACE reference-counting APIs
+offer another investigation route, but their imports do not establish that
+the character data stays owned across disconnect and reuse. No verified
+provider for that boundary was recovered or installed in this change.
